@@ -25,6 +25,14 @@ export default defineType({
       validation: Rule => Rule.required(),
     }),
     defineField({name: 'notesFromEditor', type: 'text', title: 'Notes from Editor', rows: 3}),
+    defineField({name: 'coverImageUrl', type: 'url', title: 'Cover Image URL'}),
+    defineField({
+      name: 'coverImage',
+      title: 'Cover Image',
+      type: 'image',
+      options: {hotspot: true},
+      fields: [{name: 'alt', type: 'string', title: 'Alt text'}],
+    }),
     defineField({
       name: 'coverOverrides',
       title: 'Cover Overrides',
@@ -44,6 +52,7 @@ export default defineType({
     select: {
       title: 'displayTitle',
       subtitle: 'theme',
+      media: 'coverImage',
     },
   },
 })

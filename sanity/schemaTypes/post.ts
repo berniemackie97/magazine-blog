@@ -19,9 +19,15 @@ export default defineType({
       validation: Rule => Rule.required(),
     }),
     defineField({
+      name: 'issue',
+      type: 'reference',
+      to: [{type: 'issue'}],
+      title: 'Issue (reference)',
+    }),
+    defineField({
       name: 'issueSlug',
       type: 'string',
-      title: 'Issue Slug (optional)',
+      title: 'Issue Slug (optional fallback)',
     }),
     defineField({name: 'sectionId', type: 'string', title: 'Section ID', validation: Rule => Rule.required()}),
     defineField({
@@ -43,7 +49,13 @@ export default defineType({
     defineField({name: 'headline', type: 'string', title: 'Headline', validation: Rule => Rule.required()}),
     defineField({name: 'dek', type: 'text', rows: 2, title: 'Dek'}),
     defineField({name: 'summary', type: 'text', rows: 2, title: 'Summary'}),
-    defineField({name: 'tags', type: 'array', of: [{type: 'string'}], title: 'Tags'}),
+    defineField({
+      name: 'tags',
+      type: 'array',
+      of: [{type: 'string'}],
+      title: 'Tags',
+      options: {layout: 'tags'},
+    }),
     defineField({name: 'draft', type: 'boolean', title: 'Draft', initialValue: false}),
     defineField({
       name: 'coverSlot',
@@ -52,17 +64,56 @@ export default defineType({
       options: {list: ['lead', 'secondary', 'brief']},
     }),
     defineField({name: 'coverPriority', type: 'number', title: 'Cover Priority'}),
+    defineField({name: 'order', type: 'number', title: 'Order'}),
+    defineField({name: 'coverImageUrl', type: 'url', title: 'Cover Image URL'}),
+    defineField({
+      name: 'coverImage',
+      title: 'Cover / Hero Image',
+      type: 'image',
+      options: {hotspot: true},
+      fields: [
+        {name: 'alt', type: 'string', title: 'Alt text'},
+        {name: 'credit', type: 'string', title: 'Credit'},
+      ],
+    }),
     defineField({
       name: 'body',
       type: 'array',
-      of: [{type: 'block'}],
       title: 'Body',
+      of: [
+        {
+          type: 'block',
+          styles: [
+            {title: 'Normal', value: 'normal'},
+            {title: 'H2', value: 'h2'},
+            {title: 'H3', value: 'h3'},
+            {title: 'Quote', value: 'blockquote'},
+          ],
+          marks: {
+            annotations: [
+              {
+                name: 'link',
+                type: 'object',
+                title: 'Link',
+                fields: [
+                  {name: 'href', type: 'url', title: 'URL'},
+                  {name: 'openInNewTab', type: 'boolean', title: 'Open in new tab'},
+                ],
+              },
+            ],
+          },
+        },
+        {type: 'pullQuote'},
+        {type: 'sidebar'},
+        {type: 'figureBlock'},
+      ],
     }),
   ],
   preview: {
     select: {
       title: 'headline',
       subtitle: 'publication.name',
+      media: 'coverImage',
     },
   },
 })

@@ -5,6 +5,20 @@ import * as local from './data';
 
 const useCms = !!client;
 
+function textFromPortable(body: any[] | undefined) {
+  if (!body) return '';
+  return body
+    .map((block) => {
+      if (block._type === 'block' && block.children) {
+        return block.children.map((c: any) => c.text).join(' ');
+      }
+      if (block._type === 'pullQuote' && block.quote) return block.quote;
+      if (block._type === 'sidebar' && block.body) return textFromPortable(block.body);
+      return '';
+    })
+    .join(' ');
+}
+
 type CmsPost = {
   slug: { current: string };
   publication: { id: string; name: string };
@@ -47,13 +61,23 @@ export async function getIssue(publicationId: string, issueSlug: string) {
     groq`*[_type=="issue" && issueSlug==$slug && publication->id==$pub][0]{..., "publicationId":publication->id}`,
     { slug: issueSlug, pub: publicationId }
   );
-  return issue
-    ? {
-        id: issue.issueSlug,
-        collection: 'issues',
-        data: issue,
-      }
-    : null;
+  if (!issue) return null;
+  const normalized = {
+    ...issue,
+    coverOverrides: issue.coverOverrides
+      ? {
+          leadPostSlug: issue.coverOverrides.leadPostSlug,
+          secondaryPostSlugs: (issue.coverOverrides.secondaryPostSlugs || []).map((s: any) =>
+            typeof s === 'string' ? s : s?.value
+          ),
+        }
+      : undefined,
+  };
+  return {
+    id: issue.issueSlug,
+    collection: 'issues',
+    data: normalized,
+  };
 }
 
 export async function getIssuesForPublication(publicationId: string) {
@@ -62,7 +86,21 @@ export async function getIssuesForPublication(publicationId: string) {
     groq`*[_type=="issue" && publication->id==$pub]{..., "publicationId":publication->id} | order(date desc)`,
     { pub: publicationId }
   );
-  return issues.map((issue: any) => ({ id: issue.issueSlug, collection: 'issues', data: issue }));
+  return issues.map((issue: any) => ({
+    id: issue.issueSlug,
+    collection: 'issues',
+      data: {
+        ...issue,
+        coverOverrides: issue.coverOverrides
+          ? {
+              leadPostSlug: issue.coverOverrides.leadPostSlug,
+              secondaryPostSlugs: (issue.coverOverrides.secondaryPostSlugs || []).map((s: any) =>
+                typeof s === 'string' ? s : s?.value
+              ),
+            }
+          : undefined,
+      },
+  }));
 }
 
 export async function getPostsForIssue(publicationId: string, issueSlug: string) {
@@ -79,8 +117,9 @@ export async function getPostsForIssue(publicationId: string, issueSlug: string)
         ...p,
         slug: p.slug,
         publicationId,
+        tags: p.tags || [],
       },
-      readingTimeMinutes: Math.max(1, Math.round(readingTime(p.body ? JSON.stringify(p.body) : '').minutes)),
+      readingTimeMinutes: Math.max(1, Math.round(readingTime(textFromPortable(p.body)).minutes)),
     }))
     .sort((a, b) => new Date(b.data.publishedAt).getTime() - new Date(a.data.publishedAt).getTime());
 }
@@ -112,8 +151,8 @@ export async function getLatestPosts(limit = 12) {
   return posts.map((p) => ({
     id: p.slug,
     collection: 'posts',
-    data: { ...p, slug: p.slug },
-    readingTimeMinutes: Math.max(1, Math.round(readingTime(p.body ? JSON.stringify(p.body) : '').minutes)),
+    data: { ...p, slug: p.slug, tags: p.tags || [] },
+    readingTimeMinutes: Math.max(1, Math.round(readingTime(textFromPortable(p.body)).minutes)),
   }));
 }
 
@@ -126,7 +165,7 @@ export async function getPostsByPublication(publicationId: string) {
   return posts.map((p) => ({
     id: p.slug,
     collection: 'posts',
-    data: { ...p, slug: p.slug },
+    data: { ...p, slug: p.slug, tags: p.tags || [] },
     readingTimeMinutes: Math.max(1, Math.round(readingTime(p.body ? JSON.stringify(p.body) : '').minutes)),
   }));
 }
@@ -142,7 +181,7 @@ export async function getPostBySlug(slug: string) {
         id: post.slug,
         collection: 'posts',
         data: { ...post, slug: post.slug },
-        readingTimeMinutes: Math.max(1, Math.round(readingTime(post.body ? JSON.stringify(post.body) : '').minutes)),
+    readingTimeMinutes: Math.max(1, Math.round(readingTime(textFromPortable(post.body)).minutes)),
       }
     : null;
 }

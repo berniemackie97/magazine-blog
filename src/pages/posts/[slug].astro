@@ -7,6 +7,7 @@ import PostCard from '../../components/PostCard.astro';
 import { getCollection, getEntry } from 'astro:content';
 import { getIssue, getPostsByPublication, getPostsForIssue, getPostBySlug, getLatestPosts, useCms, getPublication as getPublicationCs } from '../../lib/contentSource';
 import readingTime from 'reading-time';
+import PortableTextRenderer from '../../components/PortableTextRenderer';
 
 export async function getStaticPaths() {
   if (useCms) {
@@ -35,7 +36,14 @@ if (!publication) {
 const cmsBody = useCms ? (post as any).data.body ?? [] : null;
 const { Content } = useCms ? { Content: null } : await post.render();
 const bodyText = useCms
-  ? (cmsBody ?? []).map((block: any) => (block.children ? block.children.map((c: any) => c.text).join(' ') : '')).join(' ')
+  ? (cmsBody ?? [])
+      .map((block: any) => {
+        if (block._type === 'block' && block.children) {
+          return block.children.map((c: any) => c.text).join(' ');
+        }
+        return '';
+      })
+      .join(' ')
   : (post as any).body ?? '';
 const readingTimeMinutes = Math.max(1, Math.round(readingTime(bodyText).minutes));
 const issue = (post as any).data.issueSlug ? await getIssue(publicationId, (post as any).data.issueSlug) : null;
@@ -58,18 +66,7 @@ const moreFromPub = ((await getPostsByPublication(publicationId)) as any)
       <p class="mt-3 max-w-3xl text-lg text-neutral-200">{post.data.dek}</p>
       <BylineBlock post={{ ...post, readingTimeMinutes }} publication={publication} />
       <div class="article-body mt-6">
-        {useCms ? (
-          <div class="space-y-4">
-            {cmsBody?.map((block: any) => {
-              if (block._type === 'block') {
-                return <p>{block.children?.map((child: any) => child.text).join(' ')}</p>;
-              }
-              return null;
-            })}
-          </div>
-        ) : (
-          <Content />
-        )}
+        {useCms ? <PortableTextRenderer value={cmsBody} /> : <Content />}
       </div>
     </article>
     {issue && (

@@ -8,7 +8,7 @@ export default defineType({
     defineField({name: 'id', type: 'string', title: 'ID', validation: Rule => Rule.required()}),
     defineField({name: 'name', type: 'string', title: 'Name', validation: Rule => Rule.required()}),
     defineField({name: 'description', type: 'text', rows: 3, title: 'Description'}),
-    defineField({name: 'accent', type: 'string', title: 'Accent Color (hex)' }),
+    defineField({name: 'accent', type: 'string', title: 'Accent Color (hex)', validation: Rule => Rule.regex(/^#/, {name: 'hex color'}) }),
     defineField({name: 'displayFont', type: 'string', title: 'Display Font class'}),
     defineField({
       name: 'sections',
@@ -25,8 +25,15 @@ export default defineType({
       ],
     }),
     defineField({name: 'isFeatured', type: 'boolean', title: 'Featured', initialValue: false}),
+    defineField({
+      name: 'coverImage',
+      title: 'Cover Image',
+      type: 'image',
+      options: {hotspot: true},
+      fields: [{name: 'alt', type: 'string', title: 'Alt text'}],
+    }),
   ],
   preview: {
-    select: {title: 'name', subtitle: 'id'},
+    select: {title: 'name', subtitle: 'id', media: 'coverImage'},
   },
 })

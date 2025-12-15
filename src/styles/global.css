@@ -91,6 +91,60 @@ a {
   letter-spacing: -0.01em;
 }
 
+.newsstand-hero {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(1.5rem, 3vw, 2.5rem);
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.08), rgba(91, 196, 190, 0.06)), #0c0d14;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.4);
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.08), transparent 35%),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.02) 0, rgba(255, 255, 255, 0.02) 1px, transparent 1px, transparent 12px);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.hero-grid {
+  position: relative;
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.hero-title {
+  font-size: clamp(2.5rem, 4vw, 3.4rem);
+  line-height: 1.05;
+  font-family: var(--font-display);
+}
+
+.hero-body {
+  margin-top: 0.6rem;
+  max-width: 34rem;
+  color: rgba(245, 241, 232, 0.86);
+}
+
+.hero-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.hero-card {
+  position: relative;
+  padding: 1.25rem;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.35);
+}
+
 .masthead-ro {
   font-family: 'Playfair Display', 'DM Sans', serif;
   letter-spacing: 0.12em;
