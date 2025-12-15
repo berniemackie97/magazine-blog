@@ -3,7 +3,7 @@ import Layout from '../components/Layout.astro';
 import PageFrame from '../components/PageFrame.astro';
 import RackShelf from '../components/RackShelf.astro';
 import { getCollection, getEntry } from 'astro:content';
-import { getIssuesForPublication, getPostsForIssue, getLatestIssues } from '../lib/data';
+import { getIssuesForPublication, getPostsForIssue, getLatestIssues } from '../lib/contentSource';
 import { coverLinesFromPosts } from '../lib/lineup';
 
 const publications = (await getCollection('publications')).filter((p) => p.data.isFeatured);
@@ -11,12 +11,12 @@ const publications = (await getCollection('publications')).filter((p) => p.data.
 const shelves = await Promise.all(
   publications.map(async (publication) => {
     const issues = (await getIssuesForPublication(publication.id))
-      .filter((issue) => issue.data.status === 'locked')
+      .filter((issue: any) => issue.data.status === 'locked')
       .slice(0, 6);
     const items = await Promise.all(
-      issues.map(async (issue) => {
-        const posts = await getPostsForIssue(publication.id, issue.data.issueSlug);
-        return { issue, publication, coverLines: coverLinesFromPosts(posts, 6) };
+      issues.map(async (issue: any) => {
+        const posts = (await getPostsForIssue(publication.id, issue.data.issueSlug)) as any;
+        return { issue, publication, coverLines: coverLinesFromPosts(posts as any, 6) };
       })
     );
     return { publication, items };
@@ -25,10 +25,10 @@ const shelves = await Promise.all(
 
 const latestArrivals = await getLatestIssues(6);
 const latestShelfItems = await Promise.all(
-  latestArrivals.map(async (issue) => {
+  latestArrivals.map(async (issue: any) => {
     const publication = await getEntry('publications', issue.data.publicationId);
-    const posts = await getPostsForIssue(issue.data.publicationId, issue.data.issueSlug);
-    return { issue, publication: publication!, coverLines: coverLinesFromPosts(posts, 4) };
+    const posts = (await getPostsForIssue(issue.data.publicationId, issue.data.issueSlug)) as any;
+    return { issue, publication: publication!, coverLines: coverLinesFromPosts(posts as any, 4) };
   })
 );
 ---

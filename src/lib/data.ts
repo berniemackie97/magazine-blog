@@ -65,3 +65,8 @@ export async function getPostsByPublication(publicationId: string) {
     .map(withReadingTime)
     .sort((a, b) => new Date(b.data.publishedAt).getTime() - new Date(a.data.publishedAt).getTime());
 }
+
+export async function getPostBySlug(slug: string) {
+  const posts = await getCollection('posts', (entry) => !entry.data.draft && entry.slug === slug);
+  return posts[0] ?? null;
+}

@@ -5,37 +5,48 @@ import SectionTag from '../../components/SectionTag.astro';
 import BylineBlock from '../../components/BylineBlock.astro';
 import PostCard from '../../components/PostCard.astro';
 import { getCollection, getEntry } from 'astro:content';
-import { getIssue, getPostsByPublication, getPostsForIssue } from '../../lib/data';
+import { getIssue, getPostsByPublication, getPostsForIssue, getPostBySlug, getLatestPosts, useCms, getPublication as getPublicationCs } from '../../lib/contentSource';
 import readingTime from 'reading-time';
 
 export async function getStaticPaths() {
+  if (useCms) {
+    const posts = await getLatestPosts(200);
+    return posts.map((post: any) => ({ params: { slug: post.data.slug } }));
+  }
   const posts = await getCollection('posts', ({ data }) => !data.draft);
-  return posts.map((post) => ({
-    params: { slug: post.slug },
-  }));
+  return posts.map((post) => ({ params: { slug: post.slug } }));
 }
 
 const { slug } = Astro.params;
-const posts = await getCollection('posts', ({ data }) => !data.draft);
-const post = posts.find((p) => p.slug === slug);
+const post = useCms
+  ? await getPostBySlug(slug!)
+  : (await getCollection('posts', ({ data }) => !data.draft)).find((p) => p.slug === slug);
 if (!post) {
   throw new Error('Post not found');
 }
 
-const publication = await getEntry('publications', post.data.publicationId);
+const publicationId = (post as any).data.publicationId ?? (post as any).data.publication?.id;
+const postSlug = (post as any).slug ?? (post as any).data.slug;
+const publication = useCms ? await getPublicationCs(publicationId) : await getEntry('publications', publicationId);
 if (!publication) {
   throw new Error('Publication missing');
 }
 
-const { Content } = await post.render();
-const readingTimeMinutes = Math.max(1, Math.round(readingTime(post.body).minutes));
-const issue = post.data.issueSlug ? await getIssue(post.data.publicationId, post.data.issueSlug) : null;
-const issuePosts = issue ? await getPostsForIssue(post.data.publicationId, issue.data.issueSlug) : [];
-const index = issuePosts.findIndex((p) => p.slug === post.slug);
+const cmsBody = useCms ? (post as any).data.body ?? [] : null;
+const { Content } = useCms ? { Content: null } : await post.render();
+const bodyText = useCms
+  ? (cmsBody ?? []).map((block: any) => (block.children ? block.children.map((c: any) => c.text).join(' ') : '')).join(' ')
+  : (post as any).body ?? '';
+const readingTimeMinutes = Math.max(1, Math.round(readingTime(bodyText).minutes));
+const issue = (post as any).data.issueSlug ? await getIssue(publicationId, (post as any).data.issueSlug) : null;
+const issuePosts = issue ? await getPostsForIssue(publicationId, issue.data.issueSlug) : [];
+const index = issuePosts.findIndex((p: any) => (p.slug ?? p.data.slug) === postSlug);
 const prevInIssue = index > 0 ? issuePosts[index - 1] : null;
 const nextInIssue = index >= 0 && index + 1 < issuePosts.length ? issuePosts[index + 1] : null;
 
-const moreFromPub = (await getPostsByPublication(post.data.publicationId)).filter((p) => p.slug !== post.slug).slice(0, 3);
+const moreFromPub = ((await getPostsByPublication(publicationId)) as any)
+  .filter((p: any) => (p.slug ?? p.data.slug) !== postSlug)
+  .slice(0, 3);
 ---
 <Layout title={`${post.data.headline} — ${publication.data.name}`} publication={publication} accent={publication.data.accent}>
   <PageFrame accent={publication.data.accent}>
@@ -47,7 +58,18 @@ const moreFromPub = (await getPostsByPublication(post.data.publicationId)).filte
       <p class="mt-3 max-w-3xl text-lg text-neutral-200">{post.data.dek}</p>
       <BylineBlock post={{ ...post, readingTimeMinutes }} publication={publication} />
       <div class="article-body mt-6">
-        <Content />
+        {useCms ? (
+          <div class="space-y-4">
+            {cmsBody?.map((block: any) => {
+              if (block._type === 'block') {
+                return <p>{block.children?.map((child: any) => child.text).join(' ')}</p>;
+              }
+              return null;
+            })}
+          </div>
+        ) : (
+          <Content />
+        )}
       </div>
     </article>
     {issue && (
@@ -77,7 +99,7 @@ const moreFromPub = (await getPostsByPublication(post.data.publicationId)).filte
       <div class="mt-10">
         <div class="caps mb-2 text-xs font-semibold tracking-[0.18em] text-[var(--accent)]">More from {publication.data.name}</div>
         <div class="grid gap-4 md:grid-cols-3">
-          {moreFromPub.map((p) => (
+          {moreFromPub.map((p: any) => (
             <PostCard post={p} publication={publication} showSummary />
           ))}
         </div>

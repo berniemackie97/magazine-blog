@@ -5,31 +5,42 @@ import Filters from '../components/Filters.astro';
 import PostCard from '../components/PostCard.astro';
 import { getCollection } from 'astro:content';
 import readingTime from 'reading-time';
+import { useCms, getLatestPosts } from '../lib/contentSource';
 
 const publications = await getCollection('publications');
 const publicationMap = Object.fromEntries(publications.map((p) => [p.id, p]));
-const posts = (await getCollection('posts', ({ data }) => !data.draft)).map((post) => ({
+const posts = useCms
+  ? await getLatestPosts(200)
+  : (await getCollection('posts', ({ data }) => !data.draft)).map((post) => ({
+      ...post,
+      readingTimeMinutes: Math.max(1, Math.round(readingTime(post.body).minutes)),
+    }));
+const normalizedPosts = posts.map((post: any) => ({
   ...post,
-  readingTimeMinutes: Math.max(1, Math.round(readingTime(post.body).minutes)),
+  data: {
+    ...post.data,
+    publicationId: post.data.publicationId ?? post.data.publication?.id ?? '',
+    tags: post.data.tags ?? [],
+  },
 }));
 
 const filters = {
   publications: publications.map((p) => ({ label: p.data.name, value: p.id })),
   sections: Array.from(
     new Map(
-      posts.map((p) => {
-        const section = publicationMap[p.data.publicationId].data.sections.find((s) => s.id === p.data.sectionId);
+      normalizedPosts.map((p: any) => {
+        const section = publicationMap[p.data.publicationId]?.data.sections.find((s: any) => s.id === p.data.sectionId);
         return [p.data.sectionId, section?.label ?? p.data.sectionId];
       })
     ).entries()
-  ).map(([value, label]) => ({ value, label })),
-  formats: Array.from(new Set(posts.map((p) => p.data.format))).map((v) => ({ value: v, label: v })),
-  difficulties: Array.from(new Set(posts.map((p) => p.data.difficulty))).map((v) => ({ value: v, label: v })),
-  tags: Array.from(new Set(posts.flatMap((p) => p.data.tags))).map((v) => ({ value: v, label: v })),
+  ).map(([value, label]) => ({ value: value as string, label: label as string })),
+  formats: Array.from(new Set(normalizedPosts.map((p: any) => p.data.format))).map((v) => ({ value: v as string, label: v as string })),
+  difficulties: Array.from(new Set(normalizedPosts.map((p: any) => p.data.difficulty))).map((v) => ({ value: v as string, label: v as string })),
+  tags: Array.from(new Set(normalizedPosts.flatMap((p: any) => p.data.tags ?? []).filter(Boolean))).map((v) => ({ value: v as string, label: v as string })),
 };
 
-const sortedPosts = posts.sort(
-  (a, b) => new Date(b.data.publishedAt).getTime() - new Date(a.data.publishedAt).getTime()
+const sortedPosts = normalizedPosts.sort(
+  (a: any, b: any) => new Date(b.data.publishedAt).getTime() - new Date(a.data.publishedAt).getTime()
 );
 ---
 <Layout title="Archive — Stackbound">
@@ -40,7 +51,7 @@ const sortedPosts = posts.sort(
     </div>
     <Filters {...filters} />
     <div class="grid gap-4 md:grid-cols-3">
-      {sortedPosts.map((post) => (
+      {sortedPosts.map((post: any) => (
         <div
           data-filter-item
           data-publication={post.data.publicationId}

@@ -4,7 +4,7 @@ import PageFrame from '../../../components/PageFrame.astro';
 import IssueOpener from '../../../components/IssueOpener.astro';
 import Toc from '../../../components/Toc.astro';
 import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
-import { getIssue, getPostsForIssue } from '../../../lib/data';
+import { getIssue, getPostsForIssue } from '../../../lib/contentSource';
 import { buildIssueLineup } from '../../../lib/lineup';
 
 export async function getStaticPaths() {
@@ -31,7 +31,7 @@ if (!publication || !issue) {
 }
 
 const posts = await getPostsForIssue(publicationId, issueSlug);
-const { lead, secondary, briefs } = buildIssueLineup(posts, issue);
+const { lead, secondary, briefs } = buildIssueLineup(posts as any, issue as any);
 if (!lead) {
   throw new Error('Lead story required for issue');
 }
@@ -60,9 +60,9 @@ if (!lead) {
         <p class="mt-3 max-w-3xl text-neutral-200">{issue.data.notesFromEditor}</p>
       )}
     </div>
-    <IssueOpener issue={issue} publication={publication} lead={lead} secondary={secondary} briefs={briefs} />
+    <IssueOpener issue={issue as any} publication={publication as any} lead={lead as any} secondary={secondary as any} briefs={briefs as any} />
     <div class="mt-8">
-      <Toc posts={posts} sections={publication.data.sections} />
+      <Toc posts={posts as any} sections={publication.data.sections} />
     </div>
   </PageFrame>
 </Layout>
