@@ -6,6 +6,7 @@ const dataset = process.env.SANITY_DATASET;
 const token = process.env.SANITY_READ_TOKEN;
 
 let client: SanityClient | null = null;
+let previewClient: SanityClient | null = null;
 
 if (projectId && dataset) {
   client = createClient({
@@ -15,6 +16,17 @@ if (projectId && dataset) {
     useCdn: true,
     token,
   });
+
+  if (token) {
+    previewClient = createClient({
+      projectId,
+      dataset,
+      apiVersion: '2024-01-01',
+      useCdn: false,
+      token,
+      perspective: 'previewDrafts',
+    });
+  }
 }
 
-export { client };
+export { client, previewClient };

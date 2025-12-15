@@ -15,11 +15,12 @@
     "cms:seed": "node scripts/seed-sanity.js"
   },
   "dependencies": {
-    "@portabletext/react": "^3.1.0",
     "@astrojs/mdx": "^4.3.13",
+    "@astrojs/react": "^4.4.2",
     "@astrojs/rss": "^4.0.14",
     "@astrojs/sitemap": "^3.6.0",
     "@astrojs/tailwind": "^6.0.2",
+    "@portabletext/react": "^3.1.0",
     "@sanity/client": "^6.15.5",
     "@sanity/vision": "^4.21.1",
     "astro": "^5.16.5",

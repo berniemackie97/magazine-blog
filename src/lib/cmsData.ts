@@ -1,6 +1,6 @@
 import groq from 'groq';
 import readingTime from 'reading-time';
-import { client } from './cmsClient';
+import { client, previewClient } from './cmsClient';
 import * as local from './data';
 
 const useCms = !!client;
@@ -170,18 +170,19 @@ export async function getPostsByPublication(publicationId: string) {
   }));
 }
 
-export async function getPostBySlug(slug: string) {
-  if (!useCms) return local.getPostBySlug(slug);
-  const post: CmsPost | null = await client!.fetch(
-    groq`${postQuery}[slug.current==$slug][0]{..., "publicationId":publication->id, "slug": slug.current}`,
-    { slug }
-  );
+export async function getPostBySlug(slug: string, { includeDraft = false } = {}) {
+  if (!useCms || (!includeDraft && !client)) return local.getPostBySlug(slug);
+  const fetcher = includeDraft && previewClient ? previewClient : client!;
+  const query = includeDraft
+    ? groq`*[_type=="post" && slug.current==$slug] | order(_updatedAt desc)[0]{..., "publicationId":publication->id, "slug": slug.current}`
+    : groq`${postQuery}[slug.current==$slug][0]{..., "publicationId":publication->id, "slug": slug.current}`;
+  const post: CmsPost | null = await fetcher.fetch(query, { slug });
   return post
     ? {
         id: post.slug,
         collection: 'posts',
         data: { ...post, slug: post.slug },
-    readingTimeMinutes: Math.max(1, Math.round(readingTime(textFromPortable(post.body)).minutes)),
+        readingTimeMinutes: Math.max(1, Math.round(readingTime(textFromPortable(post.body)).minutes)),
       }
     : null;
 }

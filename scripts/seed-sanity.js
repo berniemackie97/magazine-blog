@@ -27,15 +27,8 @@ const publicationsDir = path.join(root, 'src', 'content', 'publications');
 const issuesDir = path.join(root, 'src', 'content', 'issues');
 const postsDir = path.join(root, 'src', 'content', 'posts');
 
-function toBlocks(rawContent) {
-  const withoutImports = rawContent
-    .split('\n')
-    .filter((line) => !line.trim().startsWith('import '))
-    .join('\n')
-    .trim();
-  const paragraphs = withoutImports.split(/\n\s*\n/).map((p) => p.replace(/\s+/g, ' ').trim()).filter(Boolean);
-  if (paragraphs.length === 0) return [];
-  return paragraphs.map((text) => ({
+function toSpanBlock(text) {
+  return {
     _type: 'block',
     _key: crypto.randomUUID(),
     style: 'normal',
@@ -48,7 +41,77 @@ function toBlocks(rawContent) {
         marks: [],
       },
     ],
-  }));
+  };
+}
+
+function parseParagraphs(text) {
+  return text
+    .split(/\n\s*\n+/)
+    .map((p) => p.replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+    .map((t) => toSpanBlock(t));
+}
+
+function parseContentToPortableText(rawContent) {
+  const withoutImports = rawContent
+    .split('\n')
+    .filter((line) => !line.trim().startsWith('import '))
+    .join('\n')
+    .trim();
+
+  const blocks = [];
+  const tagRegex = /<(PullQuote|Sidebar|CaptionedFigure)([^>]*)>([\s\S]*?)<\/\1>/gi;
+  let lastIndex = 0;
+  let match;
+
+  while ((match = tagRegex.exec(withoutImports)) !== null) {
+    const [full, tag, attrsRaw, inner] = match;
+    const before = withoutImports.slice(lastIndex, match.index).trim();
+    if (before) {
+      blocks.push(...parseParagraphs(before));
+    }
+
+    if (tag === 'PullQuote') {
+      const quote = inner.replace(/\s+/g, ' ').trim();
+      blocks.push({
+        _type: 'pullQuote',
+        _key: crypto.randomUUID(),
+        quote,
+      });
+    } else if (tag === 'Sidebar') {
+      const titleMatch = /title="([^"]+)"/i.exec(attrsRaw);
+      const title = titleMatch ? titleMatch[1] : undefined;
+      const bodyBlocks = parseParagraphs(inner);
+      blocks.push({
+        _type: 'sidebar',
+        _key: crypto.randomUUID(),
+        title,
+        body: bodyBlocks,
+      });
+    } else if (tag === 'CaptionedFigure') {
+      const srcMatch = /src="([^"]+)"/i.exec(attrsRaw);
+      const altMatch = /alt="([^"]+)"/i.exec(attrsRaw);
+      const imageUrl = srcMatch ? srcMatch[1] : '';
+      const alt = altMatch ? altMatch[1] : '';
+      const caption = inner.replace(/\s+/g, ' ').trim();
+      blocks.push({
+        _type: 'figureBlock',
+        _key: crypto.randomUUID(),
+        imageUrl,
+        alt,
+        caption,
+      });
+    }
+
+    lastIndex = match.index + full.length;
+  }
+
+  const remaining = withoutImports.slice(lastIndex).trim();
+  if (remaining) {
+    blocks.push(...parseParagraphs(remaining));
+  }
+
+  return blocks;
 }
 
 async function loadPublications() {
@@ -117,7 +180,7 @@ async function loadPosts() {
       coverSlot: data.coverSlot,
       coverPriority: data.coverPriority,
       coverImageUrl: data.heroImage || data.coverImageUrl,
-      body: toBlocks(content),
+      body: parseContentToPortableText(content),
     };
   });
 }
