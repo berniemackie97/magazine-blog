@@ -1,0 +1,39 @@
+---
+import MastheadBar from './MastheadBar.astro';
+import type { CollectionEntry } from 'astro:content';
+import PageFrame from './PageFrame.astro';
+import '../styles/tailwind.css';
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  accent?: string;
+  publication?: CollectionEntry<'publications'> | null;
+  heroFrame?: boolean;
+}
+
+const { title = 'Magazine Rack', accent, publication, heroFrame = false } = Astro.props;
+const accentValue = accent ?? publication?.data.accent;
+---
+<!DOCTYPE html>
+<html lang="en" style={accentValue ? `--accent: ${accentValue}` : undefined}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <MastheadBar publication={publication} />
+    <main class="max-w-screen-ultra mx-auto px-[var(--page-pad)] pb-16 pt-8">
+      {
+        heroFrame ? (
+          <PageFrame accent={accentValue}>
+            <slot />
+          </PageFrame>
+        ) : (
+          <slot />
+        )
+      }
+    </main>
+  </body>
+</html>

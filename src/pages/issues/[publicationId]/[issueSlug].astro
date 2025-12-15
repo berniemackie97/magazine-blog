@@ -1,0 +1,68 @@
+---
+import Layout from '../../../components/Layout.astro';
+import PageFrame from '../../../components/PageFrame.astro';
+import IssueOpener from '../../../components/IssueOpener.astro';
+import Toc from '../../../components/Toc.astro';
+import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
+import { getIssue, getPostsForIssue } from '../../../lib/data';
+import { buildIssueLineup } from '../../../lib/lineup';
+
+export async function getStaticPaths() {
+  const issues = await getCollection('issues');
+  const publications = await getCollection('publications');
+  const pubIds = new Set(publications.map((p) => p.id));
+
+  return issues
+    .filter((issue: CollectionEntry<'issues'>) => pubIds.has(issue.data.publicationId))
+    .map((issue: CollectionEntry<'issues'>) => ({
+      params: { publicationId: issue.data.publicationId, issueSlug: issue.data.issueSlug },
+    }));
+}
+
+const { publicationId, issueSlug } = Astro.params;
+if (!publicationId || !issueSlug) {
+  throw new Error('Missing issue params');
+}
+
+const publication = await getEntry('publications', publicationId);
+const issue = await getIssue(publicationId, issueSlug);
+if (!publication || !issue) {
+  throw new Error('Issue not found');
+}
+
+const posts = await getPostsForIssue(publicationId, issueSlug);
+const { lead, secondary, briefs } = buildIssueLineup(posts, issue);
+if (!lead) {
+  throw new Error('Lead story required for issue');
+}
+---
+<Layout title={`${issue.data.displayTitle} — ${publication.data.name}`} publication={publication} accent={publication.data.accent}>
+  <PageFrame accent={publication.data.accent}>
+    <div class="mb-6 border-b border-[var(--rule)] pb-4">
+      <div class="caps text-xs tracking-[0.18em] text-[var(--accent)]">{publication.data.name}</div>
+      <h1 class={`font-display text-3xl leading-tight md:text-4xl ${publication.data.displayFont ?? ''}`}>
+        {issue.data.displayTitle}
+      </h1>
+      <div class="mt-2 flex flex-wrap items-center gap-3 text-sm uppercase tracking-[0.12em] text-neutral-200">
+        <span>Vol {issue.data.volume}</span>
+        <span>·</span>
+        <span>No {issue.data.number}</span>
+        <span>·</span>
+        <span>{new Date(issue.data.date).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+        <span class="rounded-sm border border-[var(--rule)] px-2 py-1 text-xs uppercase tracking-[0.16em] text-[var(--accent)]">
+          {issue.data.status}
+        </span>
+        <span class="rounded-sm bg-[var(--accent)]/10 px-2 py-1 text-xs uppercase tracking-[0.16em] text-[var(--accent)]">
+          {issue.data.theme}
+        </span>
+      </div>
+      {issue.data.notesFromEditor && (
+        <p class="mt-3 max-w-3xl text-neutral-200">{issue.data.notesFromEditor}</p>
+      )}
+    </div>
+    <IssueOpener issue={issue} publication={publication} lead={lead} secondary={secondary} briefs={briefs} />
+    <div class="mt-8">
+      <Toc posts={posts} sections={publication.data.sections} />
+    </div>
+  </PageFrame>
+</Layout>

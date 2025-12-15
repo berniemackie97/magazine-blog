@@ -1,0 +1,34 @@
+---
+publicationId: "red-ops"
+issueSlug: "vol-1-incident-patterns"
+sectionId: "dev"
+format: "postmortem"
+difficulty: "advanced"
+publishedAt: "2024-10-02"
+headline: "Postmortem: The Lag Switch That Wasn't"
+dek: "A multi-tenant service degraded because of a misplaced circuit breaker."
+summary: "We untangled a supposed DDoS that turned out to be a mis-wired circuit breaker in the service graph."
+tags:
+  - incident
+  - reliability
+  - circuits
+draft: false
+coverSlot: "secondary"
+coverPriority: 8
+---
+import PullQuote from "../../components/PullQuote.astro";
+import CaptionedFigure from "../../components/CaptionedFigure.astro";
+
+The pager screamed "DDoS" but the network looked clean. Throughput flat, CPU calm. The only spike was in retries across a narrow slice of tenants.
+
+<PullQuote>
+The breaker meant to protect a noisy dependency instead throttled the path of least resistance: a set of power users who reported the issue first.
+</PullQuote>
+
+We traced requests to a circuit breaker newly inserted between the API tier and a data service. The configuration mirrored production defaults except one flag: *forceHalfOpenWhenIdle=true*. In practice, this flipped the breaker to an always-testing mode once traffic dipped—perfectly timed with maintenance.
+
+<CaptionedFigure src="https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format&fit=crop&w=1200&q=80" alt="Circuit breaker diagram">
+Sequence diagram of the breaker collapsing during idle windows, dropping requests from a single shard.
+</CaptionedFigure>
+
+We reverted the flag, rebalanced shards, and wrote a guardrail that blocks breakers from entering half-open without a minimum sample size.

@@ -1,0 +1,33 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  publication?: CollectionEntry<'publications'> | null;
+}
+
+const { publication } = Astro.props;
+---
+<header class="sticky top-0 z-30 border-b border-[var(--rule)] bg-[rgba(8,10,18,0.9)] backdrop-blur">
+  <div class="mx-auto flex max-w-screen-ultra items-center justify-between px-[var(--page-pad)] py-3">
+    <a href="/" class="flex items-center gap-3">
+      <div class="h-8 w-8 rounded-sm border border-[var(--rule)] bg-[var(--accent)] shadow-paper"></div>
+      <div>
+        <div class="caps text-xs tracking-[0.2em]">Rack</div>
+        <div class="font-display text-lg leading-none">Stackbound Press</div>
+      </div>
+    </a>
+    <nav class="flex items-center gap-6 text-sm font-semibold uppercase tracking-wide">
+      <a href="/issues" class="hover:text-[var(--accent)]">Issues</a>
+      <a href="/archive" class="hover:text-[var(--accent)]">Archive</a>
+      <a href="/publications" class="hover:text-[var(--accent)]">Stands</a>
+    </nav>
+  </div>
+  {publication && (
+    <div class="border-t border-[var(--rule)] bg-[var(--paper)]/80 px-[var(--page-pad)] py-2">
+      <div class="mx-auto flex max-w-screen-ultra items-center justify-between text-xs uppercase tracking-[0.18em]">
+        <span class={publication.data.displayFont ?? ''}>{publication.data.name}</span>
+        <span class="caps text-[var(--accent)]">Accent</span>
+      </div>
+    </div>
+  )}
+</header>

@@ -1,0 +1,45 @@
+---
+import IssueCoverCard from './IssueCoverCard.astro';
+import type { CollectionEntry } from 'astro:content';
+
+interface ShelfItem {
+  issue: CollectionEntry<'issues'>;
+  publication: CollectionEntry<'publications'>;
+  coverLines: string[];
+}
+
+interface Props {
+  title: string;
+  items: ShelfItem[];
+  ctaLabel?: string;
+  ctaHref?: string;
+  scrollOnly?: boolean;
+}
+
+const { title, items, ctaHref, ctaLabel, scrollOnly = false } = Astro.props;
+---
+<section class="mb-14 rack-shelf" style={`--accent:${items[0]?.publication.data.accent ?? 'var(--accent)'}`}>
+  <div class="mb-4 flex items-center justify-between">
+    <div>
+      <div class="caps text-xs tracking-[0.18em] text-[var(--accent)]">Shelf</div>
+      <h2 class="font-display text-2xl md:text-3xl">{title}</h2>
+    </div>
+    {ctaHref && ctaLabel && (
+      <a href={ctaHref} class="btn-link text-[var(--accent)]">
+        {ctaLabel}
+        <span aria-hidden="true">→</span>
+      </a>
+    )}
+  </div>
+  <div class="rack-rail mb-4"></div>
+  <div class={`shelf-scroll ${scrollOnly ? '' : 'lg:grid lg:grid-cols-3 lg:gap-[var(--gutter)] lg:overflow-visible'}`}>
+    {items.map((item) => (
+      <IssueCoverCard
+        issue={item.issue}
+        publication={item.publication}
+        coverLines={item.coverLines}
+        showStatus
+      />
+    ))}
+  </div>
+</section>

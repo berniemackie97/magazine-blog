@@ -1,0 +1,17 @@
+---
+interface Props {
+  accent?: string;
+  padded?: boolean;
+}
+
+const { accent, padded = true } = Astro.props;
+---
+<div
+  class="paper relative overflow-hidden rounded-xl bg-paper shadow-paper"
+  style={accent ? `--accent: ${accent}` : undefined}
+>
+  <div class="texture pointer-events-none absolute inset-0"></div>
+  <div class={`relative ${padded ? 'p-[var(--page-pad)]' : ''}`}>
+    <slot />
+  </div>
+</div>

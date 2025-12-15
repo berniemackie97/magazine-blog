@@ -1,0 +1,92 @@
+---
+interface FilterOption {
+  label: string;
+  value: string;
+}
+
+interface Props {
+  publications: FilterOption[];
+  sections: FilterOption[];
+  formats: FilterOption[];
+  difficulties: FilterOption[];
+  tags: FilterOption[];
+}
+
+const { publications, sections, formats, difficulties, tags } = Astro.props;
+---
+<form class="mb-6 grid gap-3 rounded-lg border border-[var(--rule)] bg-[var(--paper)] p-4 shadow-paper md:grid-cols-5" id="filters">
+  <label class="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-200">
+    Publication
+    <select class="mt-1 w-full border border-[var(--rule)] bg-[var(--paper)] p-2 text-sm" name="publication">
+      <option value="">All</option>
+      {publications.map((p) => (
+        <option value={p.value}>{p.label}</option>
+      ))}
+    </select>
+  </label>
+  <label class="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-200">
+    Section
+    <select class="mt-1 w-full border border-[var(--rule)] bg-[var(--paper)] p-2 text-sm" name="section">
+      <option value="">All</option>
+      {sections.map((s) => (
+        <option value={s.value}>{s.label}</option>
+      ))}
+    </select>
+  </label>
+  <label class="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-200">
+    Format
+    <select class="mt-1 w-full border border-[var(--rule)] bg-[var(--paper)] p-2 text-sm" name="format">
+      <option value="">All</option>
+      {formats.map((f) => (
+        <option value={f.value}>{f.label}</option>
+      ))}
+    </select>
+  </label>
+  <label class="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-200">
+    Difficulty
+    <select class="mt-1 w-full border border-[var(--rule)] bg-[var(--paper)] p-2 text-sm" name="difficulty">
+      <option value="">All</option>
+      {difficulties.map((d) => (
+        <option value={d.value}>{d.label}</option>
+      ))}
+    </select>
+  </label>
+  <label class="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-200">
+    Tag
+    <select class="mt-1 w-full border border-[var(--rule)] bg-[var(--paper)] p-2 text-sm" name="tag">
+      <option value="">All</option>
+      {tags.map((t) => (
+        <option value={t.value}>{t.label}</option>
+      ))}
+    </select>
+  </label>
+</form>
+
+<script is:inline>
+  const form = document.querySelector('#filters');
+  const items = Array.from(document.querySelectorAll('[data-filter-item]'));
+
+  if (form instanceof HTMLFormElement) {
+    form.addEventListener('input', () => {
+      const data = new FormData(form);
+      const filters = {
+        publication: data.get('publication')?.toString() ?? '',
+        section: data.get('section')?.toString() ?? '',
+        format: data.get('format')?.toString() ?? '',
+        difficulty: data.get('difficulty')?.toString() ?? '',
+        tag: data.get('tag')?.toString() ?? '',
+      };
+
+      items.forEach((item) => {
+        if (!(item instanceof HTMLElement)) return;
+        const matches =
+          (!filters.publication || item.dataset.publication === filters.publication) &&
+          (!filters.section || item.dataset.section === filters.section) &&
+          (!filters.format || item.dataset.format === filters.format) &&
+          (!filters.difficulty || item.dataset.difficulty === filters.difficulty) &&
+          (!filters.tag || (item.dataset.tags ?? '').split(',').includes(filters.tag));
+        item.toggleAttribute('hidden', !matches);
+      });
+    });
+  }
+</script>

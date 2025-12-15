@@ -1,0 +1,28 @@
+---
+publicationId: "red-ops"
+issueSlug: "vol-1-livewire"
+sectionId: "lab"
+format: "tool-drop"
+difficulty: "all"
+publishedAt: "2024-12-03"
+headline: "Livewire Probe"
+dek: "A field-flashable probe script for catching runaway UART logs."
+summary: "Small probe that rolls UART logs into JSON chunks and ships them via a side-channel."
+tags:
+  - tooling
+  - uart
+draft: false
+coverSlot: "secondary"
+coverPriority: 4
+---
+import Sidebar from "../../components/Sidebar.astro";
+
+We carried too many UART logs on thumb drives. Livewire Probe lets us stream them through a side-band HTTP channel with a single flag.
+
+<Sidebar title="Install">
+- Drop `livewire-probe.uf2` on the device.
+- Set `PROBE_CHUNK=8k` in env.
+- Run `probe relay --port COM6 --to https://relay.local/hooks`.
+</Sidebar>
+
+The probe buffers logs in ring buffers, strips ANSI, and batches in JSON for quick ingestion. It also stamps the build ID so we can tie logs to binaries.

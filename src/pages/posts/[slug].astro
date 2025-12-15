@@ -1,0 +1,87 @@
+---
+import Layout from '../../components/Layout.astro';
+import PageFrame from '../../components/PageFrame.astro';
+import SectionTag from '../../components/SectionTag.astro';
+import BylineBlock from '../../components/BylineBlock.astro';
+import PostCard from '../../components/PostCard.astro';
+import { getCollection, getEntry } from 'astro:content';
+import { getIssue, getPostsByPublication, getPostsForIssue } from '../../lib/data';
+import readingTime from 'reading-time';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts', ({ data }) => !data.draft);
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+  }));
+}
+
+const { slug } = Astro.params;
+const posts = await getCollection('posts', ({ data }) => !data.draft);
+const post = posts.find((p) => p.slug === slug);
+if (!post) {
+  throw new Error('Post not found');
+}
+
+const publication = await getEntry('publications', post.data.publicationId);
+if (!publication) {
+  throw new Error('Publication missing');
+}
+
+const { Content } = await post.render();
+const readingTimeMinutes = Math.max(1, Math.round(readingTime(post.body).minutes));
+const issue = post.data.issueSlug ? await getIssue(post.data.publicationId, post.data.issueSlug) : null;
+const issuePosts = issue ? await getPostsForIssue(post.data.publicationId, issue.data.issueSlug) : [];
+const index = issuePosts.findIndex((p) => p.slug === post.slug);
+const prevInIssue = index > 0 ? issuePosts[index - 1] : null;
+const nextInIssue = index >= 0 && index + 1 < issuePosts.length ? issuePosts[index + 1] : null;
+
+const moreFromPub = (await getPostsByPublication(post.data.publicationId)).filter((p) => p.slug !== post.slug).slice(0, 3);
+---
+<Layout title={`${post.data.headline} — ${publication.data.name}`} publication={publication} accent={publication.data.accent}>
+  <PageFrame accent={publication.data.accent}>
+    <article class="article">
+      <SectionTag label={post.data.sectionId} />
+      <h1 class={`mt-3 font-display text-4xl leading-tight md:text-5xl ${publication.data.displayFont ?? ''}`}>
+        {post.data.headline}
+      </h1>
+      <p class="mt-3 max-w-3xl text-lg text-neutral-200">{post.data.dek}</p>
+      <BylineBlock post={{ ...post, readingTimeMinutes }} publication={publication} />
+      <div class="article-body mt-6">
+        <Content />
+      </div>
+    </article>
+    {issue && (
+      <div class="mt-10 rounded-lg border border-[var(--rule)] bg-[var(--paper)] p-4 shadow-paper">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="caps text-xs font-semibold tracking-[0.18em] text-[var(--accent)]">In this issue</div>
+            <div class="font-display text-xl">{issue.data.displayTitle}</div>
+          </div>
+          <a href={`/issues/${issue.data.publicationId}/${issue.data.issueSlug}`} class="btn-link text-[var(--accent)]">Issue opener →</a>
+        </div>
+        <div class="mt-3 flex flex-wrap gap-4 text-sm uppercase tracking-[0.14em]">
+          {prevInIssue && (
+            <a href={`/posts/${prevInIssue.slug}`} class="rounded-sm border border-[var(--rule)] px-3 py-2">
+              ← {prevInIssue.data.headline}
+            </a>
+          )}
+          {nextInIssue && (
+            <a href={`/posts/${nextInIssue.slug}`} class="rounded-sm border border-[var(--rule)] px-3 py-2">
+              {nextInIssue.data.headline} →
+            </a>
+          )}
+        </div>
+      </div>
+    )}
+    {moreFromPub.length > 0 && (
+      <div class="mt-10">
+        <div class="caps mb-2 text-xs font-semibold tracking-[0.18em] text-[var(--accent)]">More from {publication.data.name}</div>
+        <div class="grid gap-4 md:grid-cols-3">
+          {moreFromPub.map((p) => (
+            <PostCard post={p} publication={publication} showSummary />
+          ))}
+        </div>
+      </div>
+    )}
+  </PageFrame>
+</Layout>

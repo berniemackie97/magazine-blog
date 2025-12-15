@@ -1,0 +1,14 @@
+{
+  "id": "red-ops",
+  "name": "Red Ops Review",
+  "description": "Reverse engineering, incident writeups, and offensive tooling in print-inspired form.",
+  "accent": "#d63c2d",
+  "displayFont": "display-serif",
+  "sections": [
+    { "id": "dev", "label": "Development" },
+    { "id": "sec", "label": "Security" },
+    { "id": "lab", "label": "Lab Notes" },
+    { "id": "trail", "label": "Trail" }
+  ],
+  "isFeatured": true
+}

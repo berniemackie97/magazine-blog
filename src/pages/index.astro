@@ -1,0 +1,72 @@
+---
+import Layout from '../components/Layout.astro';
+import PageFrame from '../components/PageFrame.astro';
+import RackShelf from '../components/RackShelf.astro';
+import { getCollection, getEntry } from 'astro:content';
+import { getIssuesForPublication, getPostsForIssue, getLatestIssues } from '../lib/data';
+import { coverLinesFromPosts } from '../lib/lineup';
+
+const publications = (await getCollection('publications')).filter((p) => p.data.isFeatured);
+
+const shelves = await Promise.all(
+  publications.map(async (publication) => {
+    const issues = (await getIssuesForPublication(publication.id))
+      .filter((issue) => issue.data.status === 'locked')
+      .slice(0, 6);
+    const items = await Promise.all(
+      issues.map(async (issue) => {
+        const posts = await getPostsForIssue(publication.id, issue.data.issueSlug);
+        return { issue, publication, coverLines: coverLinesFromPosts(posts, 6) };
+      })
+    );
+    return { publication, items };
+  })
+);
+
+const latestArrivals = await getLatestIssues(6);
+const latestShelfItems = await Promise.all(
+  latestArrivals.map(async (issue) => {
+    const publication = await getEntry('publications', issue.data.publicationId);
+    const posts = await getPostsForIssue(issue.data.publicationId, issue.data.issueSlug);
+    return { issue, publication: publication!, coverLines: coverLinesFromPosts(posts, 4) };
+  })
+);
+---
+<Layout title="Stackbound Press — Rack" heroFrame>
+  <div class="space-y-10">
+    <PageFrame>
+      <div class="mb-8 grid gap-6 lg:grid-cols-[1.4fr,1fr] lg:items-center">
+        <div>
+          <div class="caps text-xs tracking-[0.2em] text-[var(--accent)]">Newsstand Lobby</div>
+          <h1 class="font-display text-4xl md:text-5xl leading-tight">Covers first. Then the opener. Then the magazine.</h1>
+          <p class="mt-3 max-w-2xl text-neutral-200">
+            Shelves arranged by imprint, not chronology. Tap a cover, flip an opener, land in a spread.
+          </p>
+          <div class="mt-4 flex gap-3">
+            <a href="/issues" class="btn-link text-[var(--accent)]">Browse all issues →</a>
+            <a href="/archive" class="btn-link text-[var(--accent)]">Archive →</a>
+          </div>
+        </div>
+        <div class="relative overflow-hidden rounded-xl border border-[var(--rule)] bg-[var(--paper)] p-4 shadow-paper">
+          <div class="absolute inset-0 bg-gradient-to-br from-[var(--accent)]/15 to-transparent"></div>
+          <div class="relative">
+            <div class="caps text-[11px] tracking-[0.2em] text-[var(--accent)]">Stackbound Press</div>
+            <div class="mt-2 font-display text-2xl">Two publications, four issues in circulation, more brewing.</div>
+            <p class="mt-2 text-sm text-neutral-200">Designed like a rack: mastheads, badges, cover lines, and rails.</p>
+          </div>
+        </div>
+      </div>
+      <div class="space-y-14">
+        {shelves.map((shelf) => (
+          <RackShelf
+            title={`${shelf.publication.data.name} — Featured`}
+            items={shelf.items}
+            ctaLabel="Pick up latest issue"
+            ctaHref={`/issues/${shelf.publication.id}/${shelf.items[0]?.issue.data.issueSlug}`}
+          />
+        ))}
+        <RackShelf title="Latest Arrivals" items={latestShelfItems} ctaLabel="Browse issues" ctaHref="/issues" scrollOnly />
+      </div>
+    </PageFrame>
+  </div>
+</Layout>

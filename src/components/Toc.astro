@@ -1,0 +1,43 @@
+---
+import SectionTag from './SectionTag.astro';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  posts: (CollectionEntry<'posts'> & { readingTimeMinutes?: number })[];
+  sections: { id: string; label: string }[];
+}
+
+const { posts, sections } = Astro.props;
+const grouped = sections
+  .map((section) => ({
+    section,
+    items: posts.filter((post) => post.data.sectionId === section.id),
+  }))
+  .filter((group) => group.items.length > 0);
+---
+<div class="rounded-lg border border-[var(--rule)] bg-[var(--paper)] p-4 shadow-paper">
+  <div class="caps mb-3 text-xs font-semibold tracking-[0.18em] text-[var(--accent)]">Table of Contents</div>
+  <div class="grid gap-4 md:grid-cols-2">
+    {grouped.map((group) => (
+      <div>
+        <div class="mb-2">
+          <SectionTag label={group.section.label} />
+        </div>
+        <ul class="space-y-2">
+          {group.items.map((post) => (
+            <li>
+              <a href={`/posts/${post.slug}`} class="group flex items-start justify-between gap-3">
+                <span class="font-display text-base leading-tight group-hover:text-[var(--accent)]">
+                  {post.data.headline}
+                </span>
+                <span class="text-[11px] uppercase tracking-[0.14em] text-neutral-300">
+                  {post.readingTimeMinutes ? `${post.readingTimeMinutes}m` : ''}
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
+  </div>
+</div>

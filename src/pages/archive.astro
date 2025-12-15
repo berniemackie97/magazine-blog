@@ -1,0 +1,57 @@
+---
+import Layout from '../components/Layout.astro';
+import PageFrame from '../components/PageFrame.astro';
+import Filters from '../components/Filters.astro';
+import PostCard from '../components/PostCard.astro';
+import { getCollection } from 'astro:content';
+import readingTime from 'reading-time';
+
+const publications = await getCollection('publications');
+const publicationMap = Object.fromEntries(publications.map((p) => [p.id, p]));
+const posts = (await getCollection('posts', ({ data }) => !data.draft)).map((post) => ({
+  ...post,
+  readingTimeMinutes: Math.max(1, Math.round(readingTime(post.body).minutes)),
+}));
+
+const filters = {
+  publications: publications.map((p) => ({ label: p.data.name, value: p.id })),
+  sections: Array.from(
+    new Map(
+      posts.map((p) => {
+        const section = publicationMap[p.data.publicationId].data.sections.find((s) => s.id === p.data.sectionId);
+        return [p.data.sectionId, section?.label ?? p.data.sectionId];
+      })
+    ).entries()
+  ).map(([value, label]) => ({ value, label })),
+  formats: Array.from(new Set(posts.map((p) => p.data.format))).map((v) => ({ value: v, label: v })),
+  difficulties: Array.from(new Set(posts.map((p) => p.data.difficulty))).map((v) => ({ value: v, label: v })),
+  tags: Array.from(new Set(posts.flatMap((p) => p.data.tags))).map((v) => ({ value: v, label: v })),
+};
+
+const sortedPosts = posts.sort(
+  (a, b) => new Date(b.data.publishedAt).getTime() - new Date(a.data.publishedAt).getTime()
+);
+---
+<Layout title="Archive — Stackbound">
+  <PageFrame>
+    <div class="mb-6">
+      <div class="caps text-xs tracking-[0.18em] text-[var(--accent)]">Archive</div>
+      <h1 class="font-display text-3xl md:text-4xl">Every article, filtered without reload.</h1>
+    </div>
+    <Filters {...filters} />
+    <div class="grid gap-4 md:grid-cols-3">
+      {sortedPosts.map((post) => (
+        <div
+          data-filter-item
+          data-publication={post.data.publicationId}
+          data-section={post.data.sectionId}
+          data-format={post.data.format}
+          data-difficulty={post.data.difficulty}
+          data-tags={post.data.tags.join(',')}
+        >
+          <PostCard post={post} publication={publicationMap[post.data.publicationId]} />
+        </div>
+      ))}
+    </div>
+  </PageFrame>
+</Layout>

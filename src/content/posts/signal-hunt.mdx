@@ -1,0 +1,44 @@
+---
+publicationId: "red-ops"
+issueSlug: "vol-1-debugging"
+sectionId: "sec"
+format: "feature"
+difficulty: "intermediate"
+publishedAt: "2024-08-10"
+headline: "Signal Hunt in a Broken Chain"
+dek: "Tracing a ghost packet through firmware bounces and noisy radios."
+summary: "We tore down a field-deployed sensor stack to track a ghost packet that only appeared in storm conditions."
+tags:
+  - reverse-engineering
+  - rf
+  - firmware
+draft: false
+coverSlot: "lead"
+coverPriority: 10
+---
+import PullQuote from "../../components/PullQuote.astro";
+import Sidebar from "../../components/Sidebar.astro";
+import CaptionedFigure from "../../components/CaptionedFigure.astro";
+
+The alert only fired when the ridge was wrapped in rainclouds. A narrowband radio hopped off frequency and pushed a malformed packet that poisoned the mesh.
+
+<PullQuote>
+We learned that a ghost packet is rarely a ghost—it is a breadcrumb left by a rushed patch and a tired engineer.
+</PullQuote>
+
+We began at the tower: a hand-soldered board with a firmware patch that had been applied in the field with a shaky laptop battery. The SHA in the patch notes didn't match the binary on disk. The watchdog timer had been widened to 80ms to "solve" an unrelated issue.
+
+<Sidebar title="Field Fix Checklist">
+- Photograph the board before touching it.
+- Dump flash twice with different tools.
+- Extract build ID strings from UART logs.
+- Reproduce conditions with a noise generator before shipping hardware.
+</Sidebar>
+
+We reproduced the "storm" by saturating the RF front end with a function generator while throttling the backhaul. The mesh stack resorted to an undocumented "chirp" beacon, only present in pre-release firmware. That beacon collided with a watchdog extension and created the ghost.
+
+<CaptionedFigure src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1200&q=80" alt="Annotated RF capture">
+Spectrogram of the chirp beacon colliding with a watchdog ping. The bright seam is the malformed packet.
+</CaptionedFigure>
+
+We reset the timer, stripped the chirp, and shipped a new build. The rain rolled back in and the logs stayed quiet.

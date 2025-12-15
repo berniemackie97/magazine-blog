@@ -1,0 +1,14 @@
+---
+interface Props {
+  src: string;
+  alt?: string;
+}
+
+const { src, alt } = Astro.props;
+---
+<figure class="my-8 overflow-hidden rounded-lg border border-[var(--rule)] bg-[var(--paper)] shadow-paper">
+  <img src={src} alt={alt ?? ''} class="h-auto w-full object-cover" loading="lazy" />
+  <figcaption class="border-t border-[var(--rule)] bg-[var(--paper)] px-4 py-3 text-sm text-neutral-200">
+    <slot />
+  </figcaption>
+</figure>
