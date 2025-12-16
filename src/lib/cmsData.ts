@@ -112,6 +112,7 @@ export async function getPostsForIssue(publicationId: string, issueSlug: string)
   return posts
     .map((p) => ({
       id: p.slug,
+      slug: p.slug,
       collection: 'posts',
       data: {
         ...p,
@@ -150,6 +151,7 @@ export async function getLatestPosts(limit = 12) {
   );
   return posts.map((p) => ({
     id: p.slug,
+    slug: p.slug,
     collection: 'posts',
     data: { ...p, slug: p.slug, tags: p.tags || [] },
     readingTimeMinutes: Math.max(1, Math.round(readingTime(textFromPortable(p.body)).minutes)),
@@ -164,6 +166,7 @@ export async function getPostsByPublication(publicationId: string) {
   );
   return posts.map((p) => ({
     id: p.slug,
+    slug: p.slug,
     collection: 'posts',
     data: { ...p, slug: p.slug, tags: p.tags || [] },
     readingTimeMinutes: Math.max(1, Math.round(readingTime(p.body ? JSON.stringify(p.body) : '').minutes)),
@@ -180,6 +183,7 @@ export async function getPostBySlug(slug: string, { includeDraft = false } = {})
   return post
     ? {
         id: post.slug,
+        slug: post.slug,
         collection: 'posts',
         data: { ...post, slug: post.slug },
         readingTimeMinutes: Math.max(1, Math.round(readingTime(textFromPortable(post.body)).minutes)),
