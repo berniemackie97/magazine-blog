@@ -3,9 +3,11 @@ import mdx from '@astrojs/mdx';
 import tailwind from '@astrojs/tailwind';
 import sitemap from '@astrojs/sitemap';
 import react from '@astrojs/react';
+import vercel from '@astrojs/vercel';
 
 export default defineConfig({
   site: 'https://example.com',
+  adapter: vercel({ mode: 'serverless' }),
   integrations: [react(), mdx(), tailwind(), sitemap()],
   markdown: {
     shikiConfig: {

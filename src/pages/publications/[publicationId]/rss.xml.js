@@ -1,6 +1,11 @@
 import rss from '@astrojs/rss';
 import { getCollection, getEntry } from 'astro:content';
 
+export async function getStaticPaths() {
+  const publications = await getCollection('publications');
+  return publications.map((pub) => ({ params: { publicationId: pub.id } }));
+}
+
 export async function GET(context) {
   const { publicationId } = context.params;
   const publication = publicationId ? await getEntry('publications', publicationId) : null;

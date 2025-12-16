@@ -32,9 +32,7 @@ if (!publication || !issue) {
 
 const posts = await getPostsForIssue(publicationId, issueSlug);
 const { lead, secondary, briefs } = buildIssueLineup(posts as any, issue as any);
-if (!lead) {
-  throw new Error('Lead story required for issue');
-}
+const hasLead = !!lead;
 ---
 <Layout title={`${issue.data.displayTitle} - ${publication.data.name}`} publication={publication} accent={publication.data.accent}>
   <PageFrame accent={publication.data.accent}>
@@ -60,9 +58,18 @@ if (!lead) {
         <p class="mt-3 max-w-3xl text-[var(--muted)]">{issue.data.notesFromEditor}</p>
       )}
     </div>
-    <IssueOpener issue={issue as any} publication={publication as any} lead={lead as any} secondary={secondary as any} briefs={briefs as any} />
-    <div class="mt-8">
-      <Toc posts={posts as any} sections={publication.data.sections} />
-    </div>
+    {hasLead ? (
+      <>
+        <IssueOpener issue={issue as any} publication={publication as any} lead={lead as any} secondary={secondary as any} briefs={briefs as any} />
+        <div class="mt-8">
+          <Toc posts={posts as any} sections={publication.data.sections} />
+        </div>
+      </>
+    ) : (
+      <div class="feature-card border border-[var(--rule)] bg-[var(--paper-2)]/80 p-4 shadow-paper">
+        <div class="rack-eyebrow mb-2">Lineup pending</div>
+        <p class="text-[var(--muted)]">This issue is missing a lead story. Add a lead post to publish its opener.</p>
+      </div>
+    )}
   </PageFrame>
 </Layout>
