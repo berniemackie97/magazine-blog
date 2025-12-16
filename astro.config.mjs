@@ -6,7 +6,7 @@ import react from '@astrojs/react';
 import vercel from '@astrojs/vercel';
 
 export default defineConfig({
-  site: 'https://example.com',
+  site: 'https://magazine-blog-chi.vercel.app/',
   adapter: vercel({ mode: 'serverless' }),
   integrations: [react(), mdx(), tailwind(), sitemap()],
   markdown: {
