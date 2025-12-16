@@ -5,7 +5,15 @@ import SectionTag from '../../components/SectionTag.astro';
 import BylineBlock from '../../components/BylineBlock.astro';
 import PostCard from '../../components/PostCard.astro';
 import { getCollection, getEntry } from 'astro:content';
-import { getIssue, getPostsByPublication, getPostsForIssue, getPostBySlug, getLatestPosts, useCms, getPublication as getPublicationCs } from '../../lib/contentSource';
+import {
+  getIssue,
+  getPostsByPublication,
+  getPostsForIssue,
+  getPostBySlug,
+  getLatestPosts,
+  useCms,
+  getPublication as getPublicationCs,
+} from '../../lib/contentSource';
 import readingTime from 'reading-time';
 import PortableTextRenderer from '../../components/PortableTextRenderer';
 
@@ -56,37 +64,37 @@ const moreFromPub = ((await getPostsByPublication(publicationId)) as any)
   .filter((p: any) => (p.slug ?? p.data.slug) !== postSlug)
   .slice(0, 3);
 ---
-<Layout title={`${post.data.headline} — ${publication.data.name}`} publication={publication} accent={publication.data.accent}>
+<Layout title={`${post.data.headline} - ${publication.data.name}`} publication={publication} accent={publication.data.accent}>
   <PageFrame accent={publication.data.accent}>
     <article class="article">
       <SectionTag label={post.data.sectionId} />
-      <h1 class={`mt-3 font-display text-4xl leading-tight md:text-5xl ${publication.data.displayFont ?? ''}`}>
+      <h1 class={`mt-3 rack-title text-4xl leading-tight md:text-5xl ${publication.data.displayFont ?? ''}`}>
         {post.data.headline}
       </h1>
-      <p class="mt-3 max-w-3xl text-lg text-neutral-200">{post.data.dek}</p>
+      <p class="mt-3 max-w-3xl text-lg text-[var(--muted)]">{post.data.dek}</p>
       <BylineBlock post={{ ...post, readingTimeMinutes }} publication={publication} />
       <div class="article-body mt-6">
         {useCms ? <PortableTextRenderer value={cmsBody} /> : <Content />}
       </div>
     </article>
     {issue && (
-      <div class="mt-10 rounded-lg border border-[var(--rule)] bg-[var(--paper)] p-4 shadow-paper">
+      <div class="mt-10 feature-card border border-[var(--rule)] bg-[var(--paper-2)]/85 p-4 shadow-paper">
         <div class="flex items-center justify-between">
           <div>
-            <div class="caps text-xs font-semibold tracking-[0.18em] text-[var(--accent)]">In this issue</div>
-            <div class="font-display text-xl">{issue.data.displayTitle}</div>
+            <div class="rack-eyebrow mb-1">In this issue</div>
+            <div class="font-display text-xl text-[var(--ink)]">{issue.data.displayTitle}</div>
           </div>
-          <a href={`/issues/${issue.data.publicationId}/${issue.data.issueSlug}`} class="btn-link text-[var(--accent)]">Issue opener →</a>
+          <a href={`/issues/${issue.data.publicationId}/${issue.data.issueSlug}`} class="btn-link">Issue opener</a>
         </div>
         <div class="mt-3 flex flex-wrap gap-4 text-sm uppercase tracking-[0.14em]">
           {prevInIssue && (
-            <a href={`/posts/${prevInIssue.slug}`} class="rounded-sm border border-[var(--rule)] px-3 py-2">
-              ← {prevInIssue.data.headline}
+            <a href={`/posts/${prevInIssue.slug}`} class="rounded-sm border border-[var(--rule)] bg-[var(--paper-3)]/70 px-3 py-2">
+              Prev: {prevInIssue.data.headline}
             </a>
           )}
           {nextInIssue && (
-            <a href={`/posts/${nextInIssue.slug}`} class="rounded-sm border border-[var(--rule)] px-3 py-2">
-              {nextInIssue.data.headline} →
+            <a href={`/posts/${nextInIssue.slug}`} class="rounded-sm border border-[var(--rule)] bg-[var(--paper-3)]/70 px-3 py-2">
+              Next: {nextInIssue.data.headline}
             </a>
           )}
         </div>
@@ -94,7 +102,7 @@ const moreFromPub = ((await getPostsByPublication(publicationId)) as any)
     )}
     {moreFromPub.length > 0 && (
       <div class="mt-10">
-        <div class="caps mb-2 text-xs font-semibold tracking-[0.18em] text-[var(--accent)]">More from {publication.data.name}</div>
+        <div class="rack-eyebrow mb-2">More from {publication.data.name}</div>
         <div class="grid gap-4 md:grid-cols-3">
           {moreFromPub.map((p: any) => (
             <PostCard post={p} publication={publication} showSummary />

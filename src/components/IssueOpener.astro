@@ -13,11 +13,11 @@ interface Props {
 }
 
 const { issue, publication, lead, secondary, briefs } = Astro.props;
-const badge = `Vol ${issue.data.volume} No ${issue.data.number}`;
+const badge = `Vol ${issue.data.volume} / No ${issue.data.number}`;
 ---
 <div class="grid gap-6 lg:grid-cols-[2fr,1fr]" style={`--accent:${publication.data.accent}`}>
   <div class="space-y-6">
-    <article class="relative overflow-hidden rounded-xl border border-[var(--rule)] bg-gradient-to-br from-[var(--accent)]/90 to-[var(--accent)]/60 p-6 text-white shadow-paper">
+    <article class="relative overflow-hidden rounded-xl border border-[var(--rule)] bg-gradient-to-br from-[var(--accent)]/85 via-[var(--accent)]/70 to-[var(--accent-strong)]/60 p-6 text-white shadow-paper">
       <div class="flex items-center justify-between text-xs uppercase tracking-[0.18em]">
         <span class="font-mono">{badge}</span>
         <span>{new Date(issue.data.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
@@ -33,9 +33,9 @@ const badge = `Vol ${issue.data.volume} No ${issue.data.number}`;
       <p class="mt-3 max-w-2xl text-lg leading-relaxed md:text-xl">{lead.data.dek}</p>
       <div class="mt-4 flex flex-wrap gap-3 text-xs uppercase tracking-[0.18em]">
         <span>{publication.data.name}</span>
-        <span aria-hidden="true">•</span>
+        <span aria-hidden="true">|</span>
         <span>{lead.readingTimeMinutes} min read</span>
-        <span aria-hidden="true">•</span>
+        <span aria-hidden="true">|</span>
         <span>{lead.data.format}</span>
       </div>
     </article>
@@ -47,13 +47,13 @@ const badge = `Vol ${issue.data.volume} No ${issue.data.number}`;
       </div>
     )}
   </div>
-    <div class="space-y-4">
+  <div class="space-y-4">
     {briefs.length > 0 && <BriefRail briefs={briefs} publication={publication} />}
-    <div class="rounded-lg border border-[var(--rule)] bg-[var(--paper)] p-4 shadow-paper">
-      <div class="caps mb-2 text-xs font-semibold tracking-[0.18em] text-[var(--accent)]">Status</div>
+    <div class="feature-card border border-[var(--rule)] bg-[var(--paper-2)]/85 p-4 shadow-paper">
+      <div class="rack-eyebrow mb-2">Status</div>
       <div class="flex items-center justify-between text-sm">
         <span class="font-semibold uppercase tracking-[0.12em]">{issue.data.status}</span>
-        <span class="rounded-sm border border-[var(--rule)] px-2 py-1 text-xs">{issue.data.theme}</span>
+        <span class="rounded-sm border border-[var(--rule)] bg-[var(--accent)]/15 px-2 py-1 text-xs">{issue.data.theme}</span>
       </div>
     </div>
   </div>

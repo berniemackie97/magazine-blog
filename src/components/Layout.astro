@@ -23,17 +23,19 @@ const accentValue = accent ?? publication?.data.accent;
     <title>{title}</title>
   </head>
   <body>
-    <MastheadBar publication={publication} />
-    <main class="max-w-screen-ultra mx-auto px-[var(--page-pad)] pb-16 pt-8">
-      {
-        heroFrame ? (
-          <PageFrame accent={accentValue}>
+    <div class="site-surface">
+      <MastheadBar publication={publication} />
+      <main class="page-shell">
+        {
+          heroFrame ? (
+            <PageFrame accent={accentValue}>
+              <slot />
+            </PageFrame>
+          ) : (
             <slot />
-          </PageFrame>
-        ) : (
-          <slot />
-        )
-      }
-    </main>
+          )
+        }
+      </main>
+    </div>
   </body>
 </html>

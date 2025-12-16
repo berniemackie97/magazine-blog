@@ -8,8 +8,8 @@ import { coverLinesFromPosts } from '../../lib/lineup';
 
 const publications = await getCollection('publications');
 const standThemes: Record<string, { backdrop: string; ornament?: string }> = {
-  'red-ops': { backdrop: 'linear-gradient(135deg, rgba(255,107,107,0.18), rgba(40,10,16,0.9))' },
-  'field-guide': { backdrop: 'linear-gradient(135deg, rgba(58,224,194,0.15), rgba(12,40,40,0.9))' },
+  'red-ops': { backdrop: 'linear-gradient(135deg, rgba(255,107,107,0.12), rgba(40,10,16,0.82))' },
+  'field-guide': { backdrop: 'linear-gradient(135deg, rgba(58,224,194,0.12), rgba(12,40,40,0.82))' },
 };
 
 const cards = await Promise.all(
@@ -20,38 +20,33 @@ const cards = await Promise.all(
   })
 );
 ---
-<Layout title="Publications — Stackbound">
+<Layout title="Publications - Stackbound">
   <PageFrame>
     <div class="mb-6">
-      <div class="caps text-xs tracking-[0.18em] text-[var(--accent)]">Stands</div>
-      <h1 class="font-display text-3xl md:text-4xl">Choose a publication.</h1>
-      <p class="max-w-2xl text-neutral-200">Each stand keeps its own accent color, typography, and section taxonomy.</p>
+      <div class="rack-eyebrow">Stands</div>
+      <h1 class="rack-title text-3xl md:text-4xl">Choose a publication.</h1>
+      <p class="max-w-2xl text-[var(--muted)]">Each stand keeps its own accent color, typography, and section taxonomy.</p>
     </div>
     <div class="grid gap-6 md:grid-cols-2">
       {cards.map((card) => {
         const theme = standThemes[card.publication.id] ?? { backdrop: 'linear-gradient(135deg, rgba(255,255,255,0.04), rgba(0,0,0,0.4))' };
         return (
-          <div class="relative overflow-hidden rounded-2xl border border-[var(--rule)] shadow-paper" style={`background:${theme.backdrop};`}>
-            <div class="absolute inset-0 pointer-events-none" aria-hidden="true">
-              <div class="h-full w-full bg-[radial-gradient(circle_at_20%_30%,rgba(255,255,255,0.08),transparent_30%)] opacity-60"></div>
-            </div>
-            <div class="relative p-5 flex flex-col gap-4">
-              <div class="flex items-center justify-between">
-                <div>
-                  <div class="caps text-[10px] tracking-[0.22em] text-[var(--accent)]">{card.publication.data.name}</div>
-                  <p class="mt-1 max-w-xl text-sm text-neutral-200">{card.publication.data.description}</p>
-                </div>
-                <a href={`/publications/${card.publication.id}`} class="btn-link text-[var(--accent)]">Enter stand →</a>
+          <div class="rack-shell" style={`--accent:${card.publication.data.accent};background:${theme.backdrop};`}>
+            <div class="flex items-center justify-between gap-3 mb-3">
+              <div>
+                <div class="rack-eyebrow">{card.publication.data.name}</div>
+                <p class="mt-1 max-w-xl text-sm text-[var(--muted)]">{card.publication.data.description}</p>
               </div>
-              {card.issue ? (
-                <IssueCoverCard issue={card.issue} publication={card.publication} coverLines={card.coverLines} showStatus />
-              ) : (
-                <div class="rounded-lg border border-[var(--rule)] bg-[var(--paper)]/80 p-4 shadow-paper">
-                  <div class="font-display text-xl">{card.publication.data.name}</div>
-                  <p class="text-neutral-200">{card.publication.data.description}</p>
-                </div>
-              )}
+              <a href={`/publications/${card.publication.id}`} class="btn-link">Enter stand</a>
             </div>
+            {card.issue ? (
+              <IssueCoverCard issue={card.issue} publication={card.publication} coverLines={card.coverLines} showStatus />
+            ) : (
+              <div class="feature-card border border-[var(--rule)] bg-[var(--paper-2)]/80 p-4 shadow-paper">
+                <div class="font-display text-xl">{card.publication.data.name}</div>
+                <p class="text-[var(--muted)]">{card.publication.data.description}</p>
+              </div>
+            )}
           </div>
         );
       })}

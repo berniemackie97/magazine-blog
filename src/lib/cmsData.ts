@@ -5,7 +5,7 @@ import * as local from './data';
 
 const useCms = !!client;
 
-function textFromPortable(body: any[] | undefined) {
+function textFromPortable(body: any[] | undefined): string {
   if (!body) return '';
   return body
     .map((block) => {

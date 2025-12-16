@@ -14,46 +14,61 @@ interface Props {
 
 const { publications, sections, formats, difficulties, tags } = Astro.props;
 ---
-<form class="mb-6 grid gap-3 rounded-lg border border-[var(--rule)] bg-[var(--paper)] p-4 shadow-paper md:grid-cols-5" id="filters">
-  <label class="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-200">
+<form class="mb-6 grid gap-3 rounded-xl border border-[var(--rule)] bg-[var(--paper-2)]/90 p-4 shadow-paper md:grid-cols-5" id="filters">
+  <label class="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
     Publication
-    <select class="mt-1 w-full border border-[var(--rule)] bg-[var(--paper)] p-2 text-sm" name="publication">
+    <select
+      class="mt-1 w-full rounded-md border border-[var(--rule)] bg-[var(--paper-3)]/80 p-2 text-sm focus:border-[var(--accent)] focus:outline-none"
+      name="publication"
+    >
       <option value="">All</option>
       {publications.map((p) => (
         <option value={p.value}>{p.label}</option>
       ))}
     </select>
   </label>
-  <label class="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-200">
+  <label class="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
     Section
-    <select class="mt-1 w-full border border-[var(--rule)] bg-[var(--paper)] p-2 text-sm" name="section">
+    <select
+      class="mt-1 w-full rounded-md border border-[var(--rule)] bg-[var(--paper-3)]/80 p-2 text-sm focus:border-[var(--accent)] focus:outline-none"
+      name="section"
+    >
       <option value="">All</option>
       {sections.map((s) => (
         <option value={s.value}>{s.label}</option>
       ))}
     </select>
   </label>
-  <label class="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-200">
+  <label class="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
     Format
-    <select class="mt-1 w-full border border-[var(--rule)] bg-[var(--paper)] p-2 text-sm" name="format">
+    <select
+      class="mt-1 w-full rounded-md border border-[var(--rule)] bg-[var(--paper-3)]/80 p-2 text-sm focus:border-[var(--accent)] focus:outline-none"
+      name="format"
+    >
       <option value="">All</option>
       {formats.map((f) => (
         <option value={f.value}>{f.label}</option>
       ))}
     </select>
   </label>
-  <label class="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-200">
+  <label class="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
     Difficulty
-    <select class="mt-1 w-full border border-[var(--rule)] bg-[var(--paper)] p-2 text-sm" name="difficulty">
+    <select
+      class="mt-1 w-full rounded-md border border-[var(--rule)] bg-[var(--paper-3)]/80 p-2 text-sm focus:border-[var(--accent)] focus:outline-none"
+      name="difficulty"
+    >
       <option value="">All</option>
       {difficulties.map((d) => (
         <option value={d.value}>{d.label}</option>
       ))}
     </select>
   </label>
-  <label class="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-200">
+  <label class="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
     Tag
-    <select class="mt-1 w-full border border-[var(--rule)] bg-[var(--paper)] p-2 text-sm" name="tag">
+    <select
+      class="mt-1 w-full rounded-md border border-[var(--rule)] bg-[var(--paper-3)]/80 p-2 text-sm focus:border-[var(--accent)] focus:outline-none"
+      name="tag"
+    >
       <option value="">All</option>
       {tags.map((t) => (
         <option value={t.value}>{t.label}</option>

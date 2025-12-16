@@ -8,40 +8,33 @@ interface Props {
   showStatus?: boolean;
 }
 
-const palettes: Record<
-  string,
-  { accent: string; ink: string; overlay: string; masthead: string; vibe: string; className?: string }
-> = {
+const palettes: Record<string, { accent: string; ink: string; overlay: string; glow: string }> = {
   'red-ops': {
-    accent: '#ef4444',
-    ink: '#fef2f2',
-    overlay: 'linear-gradient(160deg, rgba(0,0,0,0.7) 0%, rgba(15,6,10,0.85) 50%, rgba(15,6,10,0.4) 100%)',
-    masthead: 'masthead-ro',
-    vibe: 'Recon • Signal',
-    className: 'cover-ro',
+    accent: '#f59f85',
+    ink: '#fff5ef',
+    overlay: 'linear-gradient(160deg, rgba(0,0,0,0.72) 0%, rgba(18,6,10,0.72) 50%, rgba(18,6,10,0.5) 100%)',
+    glow: 'rgba(245,159,133,0.35)',
   },
   'field-guide': {
-    accent: '#fbbf24',
-    ink: '#fff8ed',
-    overlay: 'linear-gradient(160deg, rgba(0,0,0,0.65) 0%, rgba(9,28,18,0.7) 55%, rgba(9,28,18,0.35) 100%)',
-    masthead: 'masthead-fg',
-    vibe: 'Trail • Lab',
-    className: 'cover-fg',
+    accent: '#71ead5',
+    ink: '#eafffb',
+    overlay: 'linear-gradient(160deg, rgba(0,0,0,0.7) 0%, rgba(10,32,28,0.7) 50%, rgba(10,32,28,0.45) 100%)',
+    glow: 'rgba(113,234,213,0.3)',
   },
 };
 
 const { issue, publication, coverLines, showStatus = false } = Astro.props;
-const badge = `Vol ${issue.data.volume} • No ${issue.data.number}`;
+const badge = `Vol ${issue.data.volume} / No ${issue.data.number}`;
 const date = new Date(issue.data.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 const palette = palettes[publication.id] ?? {
-  accent: publication.data.accent,
+  accent: publication.data.accent ?? 'var(--accent)',
   ink: 'var(--ink)',
-  overlay: 'linear-gradient(160deg, rgba(0,0,0,0.7), rgba(0,0,0,0.4))',
-  masthead: 'tracking-[0.18em] font-semibold',
-  vibe: 'Issue',
+  overlay: 'linear-gradient(160deg, rgba(0,0,0,0.72), rgba(0,0,0,0.5))',
+  glow: 'rgba(246,195,92,0.28)',
 };
-const pubClass = palette.className ?? '';
 const featureLine = coverLines[0] ?? issue.data.theme;
+const insideLines = coverLines.length > 0 ? coverLines.slice(0, 3) : [issue.data.theme, issue.data.notesFromEditor].filter(Boolean);
+const statusLabel = showStatus ? (issue.data.status ?? 'New') : 'Featured';
 const coverArt: Record<string, string> = {
   'red-ops:vol-1-debugging': 'https://images.unsplash.com/photo-1527437934671-61474b530017?auto=format&fit=crop&w=1100&q=80',
   'red-ops:vol-1-incident-patterns': 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1100&q=80',
@@ -52,102 +45,46 @@ const coverArt: Record<string, string> = {
 };
 const artKey = `${publication.id}:${issue.data.issueSlug}`;
 const artUrl = coverArt[artKey] ?? coverArt[publication.id] ?? 'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?auto=format&fit=crop&w=900&q=80';
-const layout = publication.id === 'red-ops' ? 'ro' : 'fg';
 ---
 <a
   href={`/issues/${issue.data.publicationId}/${issue.data.issueSlug}`}
-  class={`cover-card group relative block h-full max-w-[340px] overflow-hidden rounded-[24px] border border-[var(--rule)] shadow-paper transition-transform hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] ${pubClass}`}
-  style={`--accent:${palette.accent};--cover-ink:${palette.ink};--cover-overlay:${palette.overlay};`}
+  class="cover-card group relative block h-full overflow-hidden focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+  style={`--accent:${palette.accent};--cover-ink:${palette.ink};--cover-overlay:${palette.overlay};--cover-glow:${palette.glow};`}
   data-pub={publication.id}
 >
   <div class="texture pointer-events-none absolute inset-0"></div>
   <div class="relative flex h-full flex-col">
-    {layout === 'ro' ? (
-      <>
-        <div class="cover-photo cover-photo-ro" style={`background-image:url(${artUrl});`}>
-          <div class="cover-photo-overlay" style={`background:${palette.overlay}`}></div>
-          <div class="ro-title-badge">
-            <div class="font-mono text-[10px] uppercase tracking-[0.22em] text-white/80">{badge}</div>
-            <div class="mt-1 text-[10px] uppercase tracking-[0.18em] text-white/70">{date}</div>
-          </div>
-          <div class="ro-strap">
-            <div class="caps text-[11px] text-white">{publication.data.name}</div>
-            <div class="font-mono text-[10px] uppercase tracking-[0.2em] text-white/80">{badge}</div>
-            <div class="text-[11px] uppercase tracking-[0.18em] text-white/70">{palette.vibe}</div>
-          </div>
-          <div class="flex h-full flex-col justify-end p-4">
-            <div class="text-right text-[11px] leading-tight text-white mb-2">
-              {showStatus && (
-                <div class="inline-flex items-center gap-2 rounded-sm border border-white/60 bg-black/30 px-2 py-1 text-[10px] uppercase tracking-[0.24em] text-white">
-                  <span class="h-2 w-2 rounded-full bg-[var(--accent)]"></span>
-                  {issue.data.status}
-                </div>
-              )}
-            </div>
-            <div class="font-display text-[20px] font-semibold leading-tight text-white drop-shadow text-right">{issue.data.displayTitle}</div>
-            <div class="mt-2 font-display text-[16px] leading-tight text-white drop-shadow text-right">{featureLine}</div>
-          </div>
-        </div>
-        <div class="inside-band inside-ro">
-          <div class="flex items-center justify-between">
-            <div class="caps text-[10px] font-semibold tracking-[0.18em] text-[var(--accent)]">Inside</div>
-            <div class="text-[11px] uppercase tracking-[0.14em] text-white/80">{issue.data.theme}</div>
-          </div>
-          <ul class="mt-2 space-y-2">
-            {coverLines.slice(0, 3).map((line, idx) => (
-              <li class="flex items-start gap-2">
-                <span class="mt-1 inline-flex h-6 w-6 items-center justify-center rounded-sm bg-[var(--accent)] text-[10px] font-semibold text-black">
-                  {idx + 1}
-                </span>
-                <span class="font-display text-[16px] leading-tight text-[var(--cover-ink)]">{line}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </>
-    ) : (
-      <>
-        <div class="cover-photo cover-photo-fg" style={`background-image:url(${artUrl});`}>
-          <div class="cover-photo-overlay" style={`background:${palette.overlay}`}></div>
-          <div class="fg-masthead">
-            <div class="caps text-[12px] ${palette.masthead} text-white drop-shadow">{publication.data.name}</div>
-            <div class="text-[11px] uppercase tracking-[0.16em] text-white/80">Vol {issue.data.volume} · No {issue.data.number}</div>
-          </div>
-          <div class="flex h-full flex-col justify-center p-4">
-            <div class="max-w-[90%] space-y-2">
-              <div class="font-display text-[26px] font-semibold leading-tight text-white drop-shadow">{issue.data.displayTitle}</div>
-              <div class="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-white/90">
-                <span class="h-[2px] w-10 bg-white/80"></span>
-                {palette.vibe}
-              </div>
-              <div class="mt-2 font-display text-[18px] leading-tight text-white drop-shadow">{featureLine}</div>
-            </div>
-          </div>
-        </div>
-        <div class="inside-band inside-fg">
-          <div class="flex items-center justify-between">
-            <div class="caps text-[10px] font-semibold tracking-[0.18em] text-[var(--accent)]">Also in this issue</div>
-            <div class="text-[11px] uppercase tracking-[0.14em] text-white/80">{date}</div>
-          </div>
-          <ul class="mt-3 space-y-3">
-            {coverLines.slice(0, 3).map((line, idx) => (
-              <li class="flex items-start gap-2">
-                <span class="mt-1 inline-flex h-6 w-6 items-center justify-center rounded-full border border-white/60 text-[10px] font-semibold text-white">
-                  {idx + 1}
-                </span>
-                <span class="font-display text-[17px] leading-tight text-[var(--cover-ink)]">{line}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </>
-    )}
-    <div class="mt-auto flex items-center justify-between bg-black/70 px-4 py-3 text-[10px] uppercase tracking-[0.24em] text-[var(--cover-ink)]">
-      <span class="font-mono">ISSN 2048-{issue.data.number.toString().padStart(2, '0')}</span>
-      <div class="flex items-center gap-2">
-        <div class="barcode h-6 w-10 bg-white/50"></div>
-        <span class="rounded-sm border border-white/40 bg-white/10 px-2 py-1 font-semibold text-[var(--cover-ink)]">Pick up</span>
+    <div class="cover-top">
+      <span class="cover-label">{publication.data.name}</span>
+      <span class="cover-badge">
+        <span class="h-2 w-2 rounded-full bg-[var(--accent)]"></span>
+        {statusLabel}
+      </span>
+    </div>
+    <div class="cover-photo" style={`background-image:url(${artUrl});`}>
+      <div class="cover-content" style={`background:${palette.overlay}`}>
+        <div class="cover-kicker">{badge}</div>
+        <h3 class="cover-title">{issue.data.displayTitle}</h3>
+        <p class="cover-subline">{featureLine}</p>
       </div>
+    </div>
+    <div class="cover-inside">
+      <div class="inside-title">
+        <span>Inside</span>
+        <span>{date}</span>
+      </div>
+      <ul class="inside-list">
+        {insideLines.map((line, idx) => (
+          <li class="inside-item">
+            <span class="inside-number">{idx + 1}</span>
+            <span class="font-display leading-tight text-[var(--cover-ink)]">{line}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+    <div class="cover-meta">
+      <span class="font-mono">{issue.data.theme}</span>
+      <span class="pill">Pick up</span>
     </div>
   </div>
 </a>

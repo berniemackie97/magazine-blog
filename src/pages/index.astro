@@ -1,7 +1,7 @@
 ---
 import Layout from '../components/Layout.astro';
-import PageFrame from '../components/PageFrame.astro';
 import RackShelf from '../components/RackShelf.astro';
+import IssueCoverCard from '../components/IssueCoverCard.astro';
 import { getCollection, getEntry } from 'astro:content';
 import { getIssuesForPublication, getPostsForIssue, getLatestIssues } from '../lib/contentSource';
 import { coverLinesFromPosts } from '../lib/lineup';
@@ -32,37 +32,62 @@ const latestShelfItems = await Promise.all(
   })
 );
 ---
-<Layout title="Stackbound Press — Rack" heroFrame>
-  <div class="space-y-10">
-    <div class="newsstand-hero">
-      <div class="hero-overlay"></div>
-      <div class="hero-grid">
-        <div>
-          <div class="caps text-xs tracking-[0.2em] text-[var(--accent)]">Newsstand Lobby</div>
-          <h1 class="hero-title">Covers first. Then the opener. Then the magazine.</h1>
-          <p class="hero-body">Walk the shelves like a bookstore: pick a masthead, grab a fresh issue, flip the opener, dive in.</p>
-          <div class="hero-actions">
-            <a href="/issues" class="btn-link text-[var(--accent)]">Browse all issues →</a>
-            <a href="/archive" class="btn-link text-[var(--accent)]">Archive →</a>
+<Layout title="Stackbound Press - Rack" heroFrame>
+  <div class="space-y-12">
+    <section class="rack-hero">
+      <div class="rack-hero-inner">
+        <div class="rack-header">
+          <div>
+            <div class="rack-eyebrow">Latest issues</div>
+            <h1 class="rack-title">On the digital newsstand.</h1>
+            <p class="rack-sub">
+              Curated dev magazines, ready to read. Grab a cover, open the issue, dive into the lineup.
+            </p>
+          </div>
+          <div class="flex flex-wrap gap-3">
+            <a href="/issues" class="btn-link">Browse all</a>
+            <a href="/archive" class="btn-link">Archive</a>
           </div>
         </div>
-        <div class="hero-card">
-          <div class="caps text-[11px] tracking-[0.2em] text-[var(--accent)]">Stackbound Press</div>
-          <div class="mt-2 font-display text-2xl">Two publications, four issues on the rack, more brewing.</div>
-          <p class="mt-2 text-sm text-neutral-200">Mastheads, badges, cover lines, rails. Feels like paper, not a feed.</p>
+        <div class="rack-rail"></div>
+        <div class="shelf-grid">
+          {latestShelfItems.map((item) => (
+            <IssueCoverCard issue={item.issue} publication={item.publication} coverLines={item.coverLines} showStatus />
+          ))}
+        </div>
+        <div class="mt-4 flex justify-center">
+          <a href="/issues" class="btn-link">View more</a>
         </div>
       </div>
+    </section>
+
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="caps text-xs text-[var(--accent)]">Features</div>
+        <h3 class="font-display text-2xl">Curated shelves</h3>
+        <p class="text-sm text-[var(--muted)]">Explore detailed guides and opinionated issues from each masthead.</p>
+      </div>
+      <div class="feature-card">
+        <div class="caps text-xs text-[var(--accent)]">Articles</div>
+        <h3 class="font-display text-2xl">Fresh drops</h3>
+        <p class="text-sm text-[var(--muted)]">Read the newest posts, routed straight from the CMS.</p>
+      </div>
+      <div class="feature-card">
+        <div class="caps text-xs text-[var(--accent)]">Guides</div>
+        <h3 class="font-display text-2xl">Hands-on learning</h3>
+        <p class="text-sm text-[var(--muted)]">Step-by-step tutorials for modern frontend and full-stack workflows.</p>
+      </div>
     </div>
-    <div class="space-y-14">
+
+    <div class="space-y-12">
       {shelves.map((shelf) => (
         <RackShelf
-          title={`${shelf.publication.data.name} — Featured`}
+          title={`${shelf.publication.data.name} - Featured`}
           items={shelf.items}
-          ctaLabel="Pick up latest issue"
+          ctaLabel="Latest issue"
           ctaHref={`/issues/${shelf.publication.id}/${shelf.items[0]?.issue.data.issueSlug}`}
         />
       ))}
-      <RackShelf title="Latest Arrivals" items={latestShelfItems} ctaLabel="Browse issues" ctaHref="/issues" scrollOnly />
     </div>
   </div>
 </Layout>

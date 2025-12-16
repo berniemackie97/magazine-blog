@@ -22,32 +22,41 @@ const publications = await getCollection('publications');
 const years = Array.from(new Set(issues.map((i) => new Date(i.data.date).getFullYear()))).sort((a, b) => b - a);
 const months = Array.from(new Set(issues.map((i) => new Date(i.data.date).getMonth()))).sort((a, b) => a - b);
 ---
-<Layout title="Issues — Stackbound">
+<Layout title="Issues - Stackbound">
   <PageFrame>
     <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
       <div>
-        <div class="caps text-xs tracking-[0.18em] text-[var(--accent)]">Issues</div>
-        <h1 class="font-display text-3xl">Browse the rack</h1>
+        <div class="rack-eyebrow">Issues</div>
+        <h1 class="rack-title text-3xl md:text-4xl">Browse the rack</h1>
       </div>
       <div class="flex items-center gap-3 text-sm">
-        <button type="button" id="prev-month" class="btn-link text-[var(--accent)]">Prev month</button>
-        <button type="button" id="next-month" class="btn-link text-[var(--accent)]">Next month</button>
+        <button type="button" id="prev-month" class="btn-link">Prev month</button>
+        <button type="button" id="next-month" class="btn-link">Next month</button>
       </div>
     </div>
-    <form id="issue-filters" class="mb-6 grid gap-3 md:grid-cols-4">
-      <select name="publication" class="border border-[var(--rule)] bg-[var(--paper)] p-2 text-sm">
+    <form id="issue-filters" class="mb-6 grid gap-3 rounded-xl border border-[var(--rule)] bg-[var(--paper-2)]/85 p-4 shadow-paper md:grid-cols-4">
+      <select
+        name="publication"
+        class="w-full rounded-md border border-[var(--rule)] bg-[var(--paper-3)]/80 p-2 text-sm focus:border-[var(--accent)] focus:outline-none"
+      >
         <option value="">Publication</option>
         {publications.map((p) => (
           <option value={p.id}>{p.data.name}</option>
         ))}
       </select>
-      <select name="year" class="border border-[var(--rule)] bg-[var(--paper)] p-2 text-sm">
+      <select
+        name="year"
+        class="w-full rounded-md border border-[var(--rule)] bg-[var(--paper-3)]/80 p-2 text-sm focus:border-[var(--accent)] focus:outline-none"
+      >
         <option value="">Year</option>
         {years.map((y) => (
           <option value={y}>{y}</option>
         ))}
       </select>
-      <select name="month" class="border border-[var(--rule)] bg-[var(--paper)] p-2 text-sm">
+      <select
+        name="month"
+        class="w-full rounded-md border border-[var(--rule)] bg-[var(--paper-3)]/80 p-2 text-sm focus:border-[var(--accent)] focus:outline-none"
+      >
         <option value="">Month</option>
         {months.map((m) => (
           <option value={m}>{new Date(2024, m).toLocaleDateString(undefined, { month: 'long' })}</option>

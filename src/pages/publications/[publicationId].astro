@@ -26,9 +26,7 @@ const openIssue = issues.find((i: any) => i.data.status === 'open');
 const latestLocked = lockedIssues[0];
 const backIssues = lockedIssues.slice(1);
 
-const latestLockedPosts = latestLocked
-  ? await getPostsForIssue(publication.id, latestLocked.data.issueSlug)
-  : [];
+const latestLockedPosts = latestLocked ? await getPostsForIssue(publication.id, latestLocked.data.issueSlug) : [];
 const featuredCoverLines = latestLocked ? coverLinesFromPosts(latestLockedPosts, 5) : [];
 
 const backIssueCards = await Promise.all(
@@ -40,38 +38,28 @@ const backIssueCards = await Promise.all(
 
 const latestArticles = ((await getPostsByPublication(publication.id)) as any).slice(0, 4);
 ---
-<Layout title={`${publication.data.name} — Stand`} publication={publication} accent={publication.data.accent}>
+<Layout title={`${publication.data.name} - Stand`} publication={publication} accent={publication.data.accent}>
   <PageFrame accent={publication.data.accent}>
     <div class="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
       <div>
-        <div class={`caps text-xs tracking-[0.18em] text-[var(--accent)] ${publication.data.displayFont ?? ''}`}>
-          {publication.data.name}
-        </div>
-        <h1 class="font-display text-3xl md:text-4xl">{publication.data.description}</h1>
+        <div class={`rack-eyebrow ${publication.data.displayFont ?? ''}`}>{publication.data.name}</div>
+        <h1 class="rack-title text-3xl md:text-4xl">{publication.data.description}</h1>
       </div>
       {openIssue && (
-        <a
-          href={`/issues/${publication.id}/${openIssue.data.issueSlug}`}
-          class="btn-link text-[var(--accent)]"
-        >
-          Open issue →
+        <a href={`/issues/${publication.id}/${openIssue.data.issueSlug}`} class="btn-link">
+          Open issue
         </a>
       )}
     </div>
     {latestLocked && (
       <div class="mb-10">
-        <div class="caps mb-2 text-xs tracking-[0.18em] text-[var(--accent)]">Latest locked</div>
-        <IssueCoverCard
-          issue={latestLocked}
-          publication={publication}
-          coverLines={featuredCoverLines}
-          showStatus
-        />
+        <div class="rack-eyebrow mb-2">Latest locked</div>
+        <IssueCoverCard issue={latestLocked} publication={publication} coverLines={featuredCoverLines} showStatus />
       </div>
     )}
     {openIssue && (
       <div class="mb-10">
-        <div class="caps mb-2 text-xs tracking-[0.18em] text-[var(--accent)]">Open Issue</div>
+        <div class="rack-eyebrow mb-2">Open issue</div>
         <IssueCoverCard
           issue={openIssue}
           publication={publication}
@@ -82,7 +70,7 @@ const latestArticles = ((await getPostsByPublication(publication.id)) as any).sl
     )}
     {backIssueCards.length > 0 && (
       <div class="mb-10">
-        <div class="caps mb-2 text-xs tracking-[0.18em] text-[var(--accent)]">Back issues</div>
+        <div class="rack-eyebrow mb-2">Back issues</div>
         <div class="cover-grid">
           {backIssueCards.map((card) => (
             <IssueCoverCard issue={card.issue} publication={publication} coverLines={card.coverLines} showStatus />
@@ -92,7 +80,7 @@ const latestArticles = ((await getPostsByPublication(publication.id)) as any).sl
     )}
     {latestArticles.length > 0 && (
       <div>
-        <div class="caps mb-2 text-xs tracking-[0.18em] text-[var(--accent)]">Latest articles</div>
+        <div class="rack-eyebrow mb-2">Latest articles</div>
         <div class="grid gap-4 md:grid-cols-2">
           {latestArticles.map((post: any) => (
             <PostCard post={post} publication={publication} />

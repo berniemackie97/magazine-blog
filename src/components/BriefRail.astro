@@ -8,19 +8,17 @@ interface Props {
 
 const { briefs, publication } = Astro.props;
 ---
-<aside class="rounded-lg border border-[var(--rule)] bg-[var(--paper)] p-4 shadow-paper" style={`--accent:${publication.data.accent}`}>
-  <div class="mb-2 flex items-center justify-between">
-    <div class="caps text-[11px] font-semibold tracking-[0.18em] text-[var(--accent)]">Briefs</div>
+<aside class="feature-card border border-[var(--rule)] bg-[var(--paper-2)]/85 p-4 shadow-paper" style={`--accent:${publication.data.accent}`}>
+  <div class="mb-3 flex items-center justify-between">
+    <div class="rack-eyebrow">Briefs</div>
     <span class="h-[1px] flex-1 bg-[var(--rule)]"></span>
   </div>
   <ul class="space-y-3">
     {briefs.map((brief) => (
       <li class="border-b border-dashed border-[var(--rule)] pb-3 last:border-none last:pb-0">
         <a href={`/posts/${brief.slug}`} class="block">
-          <div class="text-xs uppercase tracking-[0.14em] text-neutral-300">{brief.data.sectionId}</div>
-          <div class={`font-display text-lg leading-tight ${publication.data.displayFont ?? ''}`}>
-            {brief.data.headline}
-          </div>
+          <div class="text-xs uppercase tracking-[0.14em] text-[var(--muted)]">{brief.data.sectionId}</div>
+          <div class={`font-display text-lg leading-tight text-[var(--ink)] ${publication.data.displayFont ?? ''}`}>{brief.data.headline}</div>
         </a>
       </li>
     ))}

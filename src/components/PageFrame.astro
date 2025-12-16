@@ -5,7 +5,8 @@ interface Props {
 }
 
 const { accent, padded = true } = Astro.props;
+const frameStyle = `${accent ? `--accent:${accent};` : ''}${!padded ? 'padding:0;' : ''}`;
 ---
-<div style={accent ? `--accent: ${accent}` : undefined} class={`relative ${padded ? 'p-[var(--page-pad)]' : ''}`}>
+<div style={frameStyle || undefined} class="frame-panel relative">
   <slot />
 </div>
