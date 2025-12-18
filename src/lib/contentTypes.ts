@@ -126,6 +126,8 @@ export type IssueCoverOverrides = {
   secondaryPostSlugs?: string[];
 };
 
+// Content types
+
 export type PublicationData = {
   id: string;
   name: string;

@@ -1,9 +1,9 @@
 ---
-import Layout from '../../components/Layout.astro';
-import PageFrame from '../../components/PageFrame.astro';
-import SectionTag from '../../components/SectionTag.astro';
-import BylineBlock from '../../components/BylineBlock.astro';
-import PostCard from '../../components/PostCard.astro';
+import Layout from '../../components/layout/Layout.astro';
+import PageFrame from '../../components/layout/PageFrame.astro';
+import SectionTag from '../../components/ui/SectionTag.astro';
+import BylineBlock from '../../components/posts/BylineBlock.astro';
+import PostCard from '../../components/posts/PostCard.astro';
 import { getCollection, getEntry } from 'astro:content';
 import {
   getIssue,
@@ -15,7 +15,7 @@ import {
   getPublication as getPublicationCs,
 } from '../../lib/contentSource';
 import readingTime from 'reading-time';
-import PortableTextRenderer from '../../components/PortableTextRenderer';
+import PortableTextRenderer from '../../components/cms/PortableTextRenderer';
 
 export async function getStaticPaths() {
   if (useCms) {

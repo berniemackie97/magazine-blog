@@ -1,171 +1,154 @@
 ---
-import type { CollectionEntry } from 'astro:content';
-
-type CoverTemplateId = 'ops-bulletin' | 'field-notes' | 'neon-pop';
+import type { CollectionEntry } from "astro:content";
+import CoverRenderer from "./CoverRenderer.astro";
+import type { CoverSpec, CoverBlock, CoverFeatureItem } from "../../lib/contentTypes";
 
 interface Props {
-  issue: CollectionEntry<'issues'>;
-  publication: CollectionEntry<'publications'>;
+  issue: CollectionEntry<"issues">;
+  publication: CollectionEntry<"publications">;
   coverLines?: string[];
   showStatus?: boolean;
 }
 
-function hash01(input: string): number {
-  let h = 2166136261;
-  for (let i = 0; i < input.length; i++) {
-    h ^= input.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return (h >>> 0) / 4294967295;
+type IssueData = CollectionEntry<"issues">["data"] & {
+  publicationId: string;
+  issueSlug: string;
+  displayTitle: string;
+  volume: number;
+  number: number;
+  date: string;
+  theme: string;
+  status: "open" | "locked";
+  coverSpec?: CoverSpec;
+};
+
+type PublicationData = CollectionEntry<"publications">["data"] & {
+  name: string;
+  defaultCoverSpec?: CoverSpec;
+};
+
+const { issue, publication, coverLines = [], showStatus = false } = Astro.props as Props;
+
+const issueData = issue.data as IssueData;
+const pubData = publication.data as PublicationData;
+
+function safeText(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
 }
 
-const {
-  issue,
-  publication,
-  coverLines: coverLinesProp = [],
-  showStatus = false,
-} = Astro.props as Props;
+function formatDate(value: string): string {
+  const t = Date.parse(value);
+  if (!Number.isFinite(t)) return value;
+  return new Date(t).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
 
-type PubData = CollectionEntry<'publications'>['data'] & {
-  accent?: string;
-  coverTemplate?: CoverTemplateId;
-  coverPalette?: Partial<{ paper: string; ink: string; accent: string; alt: string }>;
-};
+function buildFeatureItems(lines: string[]): CoverFeatureItem[] {
+  const items: Array<CoverFeatureItem | null> = lines.map((line, idx) => {
+    const text = safeText(line);
+    if (!text) return null;
+    return { no: String(idx + 1).padStart(2, "0"), text };
+  });
 
-type IssueData = CollectionEntry<'issues'>['data'] & {
-  coverImage?: string;
-  price?: string;
-  coverStatusLabel?: string;
-};
+  return items.filter((it): it is CoverFeatureItem => it !== null);
+}
 
-const pubData = publication.data as PubData;
-const issueData = issue.data as IssueData;
+function fallbackSpec(publicationName: string): CoverSpec {
+  return {
+    template: "classic",
+    layout: {
+      cols: "1fr",
+      areas: ["spine", "masthead", "meta", "art", "title", "featureList", "barcode", "cta"],
+      gap: "0.75rem",
+      pad: "12px 12px 12px 42px",
+      minHeight: 520,
+    },
+    blocks: [
+      { id: "spine", type: "spine", area: "spine", text: publicationName },
+      { id: "masthead", type: "masthead", area: "masthead", publicationName },
+      { id: "meta", type: "meta", area: "meta" },
+      { id: "art", type: "art", area: "art" },
+      { id: "title", type: "title", area: "title", title: "Untitled Issue" },
+      { id: "featureList", type: "featureList", area: "featureList", items: [] },
+      { id: "barcode", type: "barcode", area: "barcode" },
+      { id: "cta", type: "cta", area: "cta", text: "Open issue" },
+    ],
+  };
+}
 
-const templateByPublicationId: Record<string, CoverTemplateId> = {
-  'red-ops': 'ops-bulletin',
-  'field-guide': 'field-notes',
-};
+function hydrateCoverSpec(base: CoverSpec): CoverSpec {
+  const badge = `Vol ${issueData.volume} / No ${issueData.number}`;
+  const dateText = formatDate(issueData.date);
 
-const templateId: CoverTemplateId = pubData.coverTemplate ?? templateByPublicationId[publication.id] ?? 'neon-pop';
+  const featureLine = safeText(coverLines[0]) || safeText(issueData.theme);
+  const insideLines =
+    coverLines.length > 1
+      ? coverLines.slice(1, 7)
+      : [
+          "Editor dispatch",
+          "Field notes and tools",
+          "One tiny weird sidebar",
+        ];
 
-const paletteByTemplate: Record<CoverTemplateId, { paper: string; ink: string; accent: string; alt: string }> = {
-  'ops-bulletin': { paper: '#fff6f1', ink: '#1b0b0d', accent: '#ff3b5c', alt: '#ffd166' },
-  'field-notes': { paper: '#f3fff9', ink: '#04211c', accent: '#00d1b2', alt: '#7c3aed' },
-  'neon-pop': { paper: '#fffdf4', ink: '#121212', accent: '#f6c35c', alt: '#66e7ff' },
-};
+  const injectedItems = buildFeatureItems(insideLines);
 
-const basePalette = paletteByTemplate[templateId];
-const palette = {
-  paper: pubData.coverPalette?.paper ?? basePalette.paper,
-  ink: pubData.coverPalette?.ink ?? basePalette.ink,
-  accent: pubData.coverPalette?.accent ?? pubData.accent ?? basePalette.accent,
-  alt: pubData.coverPalette?.alt ?? basePalette.alt,
-};
+  const blocks: CoverBlock[] = base.blocks.map((block) => {
+    if (block.type === "spine") {
+      const text = safeText(block.text) || safeText(pubData.name);
+      return { ...block, text };
+    }
 
-const badge = `Vol ${issueData.volume} / No ${issueData.number}`;
+    if (block.type === "masthead") {
+      const publicationName = safeText(block.publicationName) || safeText(pubData.name);
+      const statusText =
+        showStatus ? (issueData.status === "locked" ? "Locked" : "Open") : block.statusText;
 
-const date = new Date(issueData.date).toLocaleDateString('en-US', {
-  month: 'short',
-  day: 'numeric',
-  year: 'numeric',
-});
+      return { ...block, publicationName, statusText };
+    }
 
-const statusLabel = showStatus ? (issueData.coverStatusLabel ?? (issueData.status === 'locked' ? 'Locked' : 'Open')) : 'Featured';
+    if (block.type === "title") {
+      const title = safeText(block.title) || safeText(issueData.displayTitle) || "Untitled Issue";
+      const dek = safeText(block.dek) || featureLine || undefined;
+      return { ...block, title, dek };
+    }
 
-const featureLine = coverLinesProp[0] ?? issueData.theme ?? 'Issue brewing. Ink still wet.';
+    if (block.type === "meta") {
+      const left = safeText(block.left) || badge;
+      const right = safeText(block.right) || dateText;
+      return { ...block, left, right };
+    }
 
-const insideLines = coverLinesProp.length > 1 ? coverLinesProp.slice(1, 4) : 
-  [
-    'Editor’s letter incoming',
-    'Cover story: still cooking',
-    'Tiny weird sidebar guaranteed',
-  ];
+    if (block.type === "featureList") {
+      // If caller provides coverLines, treat them as the lineup for this card.
+      // Otherwise, only fill if the CMS spec didn’t provide items.
+      const hasCmsItems = Array.isArray(block.items) && block.items.length > 0;
+      const items = coverLines.length > 0 ? injectedItems : hasCmsItems ? block.items : injectedItems;
+      return { ...block, items };
+    }
 
-const artKey = `${publication.id}:${issueData.issueSlug}`;
+    if (block.type === "cta") {
+      const text = safeText(block.text) || "Open issue";
+      return { ...block, text };
+    }
 
-// Only use images you explicitly map. No random fallback.
-const coverArt: Record<string, string> = {
-  'red-ops:vol-1-debugging': 'https://images.unsplash.com/photo-1527437934671-61474b530017?auto=format&fit=crop&w=1100&q=80',
-  'red-ops:vol-1-incident-patterns': 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1100&q=80',
-  'red-ops:vol-0-preflight': 'https://images.unsplash.com/photo-1504384764586-bb4cdc1707b0?auto=format&fit=crop&w=1100&q=80',
-  'field-guide:makers-overland': 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1100&q=80',
-  'field-guide:trail-circuits': 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1100&q=80',
-  'field-guide:night-maps': 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1100&q=80',
-};
+    return block;
+  });
 
-const photoUrl = issueData.coverImage ?? coverArt[artKey] ?? null;
+  return { ...base, blocks };
+}
 
-const tiltSeed = hash01(`${publication.id}:${issueData.issueSlug}`);
-const tiltDeg = ((tiltSeed * 2) - 1) * 1.6;
+const baseSpec =
+  (issueData.coverSpec as CoverSpec | undefined) ??
+  (pubData.defaultCoverSpec as CoverSpec | undefined) ??
+  fallbackSpec(pubData.name);
 
-const price = issueData.price ?? (templateId === 'field-notes' ? '$7.50' : '$9.00');
+const spec = hydrateCoverSpec(baseSpec);
 
 const href = `/issues/${issueData.publicationId}/${issueData.issueSlug}`;
-const aria = `${pubData.name}: ${issueData.displayTitle}`;
-
-const coverStyle = {
-  '--cover-paper': palette.paper,
-  '--cover-ink': palette.ink,
-  '--cover-accent': palette.accent,
-  '--cover-alt': palette.alt,
-  '--cover-tilt': `${tiltDeg}deg`,
-  '--cover-photo': photoUrl ? `url("${photoUrl}")` : 'none',
-} as Record<string, string>;
+const ariaLabel = `${pubData.name}: ${issueData.displayTitle}`;
 ---
 
-<a href={href} aria-label={aria} class={`issue-cover issue-cover--${templateId} block h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--cover-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b0b11]`} style={coverStyle} data-template={templateId}>
-  <div class="issue-cover__spine" aria-hidden="true">
-    <span class="issue-cover__spineText">{pubData.name}</span>
-  </div>
-
-  <div class="issue-cover__paper">
-    <header class="issue-cover__head">
-      <div class="issue-cover__mast">
-        <span class="issue-cover__pub">{pubData.name}</span>
-        <span class="issue-cover__status">
-          <span class="issue-cover__dot"></span>
-          {statusLabel}
-        </span>
-      </div>
-
-      <div class="issue-cover__meta">
-        <span>{badge}</span>
-        <time datetime={issueData.date}>{date}</time>
-        <span class="issue-cover__price">{price}</span>
-      </div>
-    </header>
-
-    <div class="issue-cover__art" aria-hidden="true"></div>
-
-    <div class="issue-cover__body">
-      <h3 class="issue-cover__title">{issueData.displayTitle}</h3>
-      <p class="issue-cover__feature">{featureLine}</p>
-
-      <div class="issue-cover__insideTitle">
-        <span>Inside</span>
-        <span class="issue-cover__insideHint">tear here</span>
-      </div>
-
-      <ul class="issue-cover__lines">
-        {insideLines.map((line, idx) => (
-          <li class="issue-cover__line">
-            <span class="issue-cover__no">{String(idx + 1).padStart(2, '0')}</span>
-            <span class="issue-cover__text">{line}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-
-    <div class="issue-cover__sticker" aria-hidden="true">
-      <div class="issue-cover__stickerBig">HOT</div>
-      <div class="issue-cover__stickerSmall">fresh ink</div>
-    </div>
-
-    <footer class="issue-cover__foot">
-      <span class="issue-cover__barcode" aria-hidden="true"></span>
-      <span class="issue-cover__cta">Open issue</span>
-    </footer>
-
-    <div class="issue-cover__fold" aria-hidden="true"></div>
-  </div>
-</a>
+<CoverRenderer spec={spec} href={href} ariaLabel={ariaLabel} interactive />

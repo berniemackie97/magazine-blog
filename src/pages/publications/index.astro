@@ -1,7 +1,7 @@
 ---
-import Layout from '../../components/Layout.astro';
-import PageFrame from '../../components/PageFrame.astro';
-import IssueCoverCard from '../../components/IssueCoverCard.astro';
+import Layout from '../../components/layout/Layout.astro';
+import PageFrame from '../../components/layout/PageFrame.astro';
+import IssueCoverCard from '../../components/issues/IssueCoverCard.astro';
 import { getCollection } from 'astro:content';
 import { getLatestLockedIssueForPublication, getPostsForIssue } from '../../lib/data';
 import { coverLinesFromPosts } from '../../lib/lineup';

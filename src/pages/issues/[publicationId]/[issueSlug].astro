@@ -1,30 +1,69 @@
 ---
-import Layout from '../../../components/Layout.astro';
-import PageFrame from '../../../components/PageFrame.astro';
-import IssueOpener from '../../../components/IssueOpener.astro';
-import Toc from '../../../components/Toc.astro';
+import Layout from '../../../components/layout/Layout.astro';
+import PageFrame from '../../../components/layout/PageFrame.astro';
+import IssueOpener from '../../../components/issues/IssueOpener.astro';
+import Toc from '../../../components/issues/Toc.astro';
+
 import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
-import { getIssue, getPostsForIssue } from '../../../lib/contentSource';
+import {
+  useCms,
+  getPublications,
+  getIssuesForPublication,
+  getIssue,
+  getPostsForIssue,
+} from '../../../lib/contentSource';
 import { buildIssueLineup } from '../../../lib/lineup';
 
+// Dynamically choose path source (CMS vs local)
 export async function getStaticPaths() {
+  // If CMS mode is active, build from CMS data
+  if (useCms) {
+    const pubs = await getPublications();
+    const paths = [];
+
+    for (const pub of pubs) {
+      const issues = await getIssuesForPublication(pub.id);
+      for (const issue of issues) {
+        paths.push({
+          params: {
+            publicationId: pub.id,
+            issueSlug: issue.data.issueSlug,
+          },
+        });
+      }
+    }
+
+    return paths;
+  }
+
+  // Otherwise, build paths from local Astro content
   const issues = await getCollection('issues');
   const publications = await getCollection('publications');
   const pubIds = new Set(publications.map((p) => p.id));
 
   return issues
-    .filter((issue: CollectionEntry<'issues'>) => pubIds.has(issue.data.publicationId))
+    .filter((issue: CollectionEntry<'issues'>) =>
+      pubIds.has(issue.data.publicationId)
+    )
     .map((issue: CollectionEntry<'issues'>) => ({
-      params: { publicationId: issue.data.publicationId, issueSlug: issue.data.issueSlug },
+      params: {
+        publicationId: issue.data.publicationId,
+        issueSlug: issue.data.issueSlug,
+      },
     }));
 }
+
+// ---------------------------------------------------------------------
 
 const { publicationId, issueSlug } = Astro.params;
 if (!publicationId || !issueSlug) {
   throw new Error('Missing issue params');
 }
 
-const publication = await getEntry('publications', publicationId);
+const publication = useCms
+  ? (await getPublications()).find((p) => p.id === publicationId) ?? null
+  : await getEntry('publications', publicationId);
+
 const issue = await getIssue(publicationId, issueSlug);
 if (!publication || !issue) {
   throw new Error('Issue not found');
@@ -34,41 +73,73 @@ const posts = await getPostsForIssue(publicationId, issueSlug);
 const { lead, secondary, briefs } = buildIssueLineup(posts as any, issue as any);
 const hasLead = !!lead;
 ---
-<Layout title={`${issue.data.displayTitle} - ${publication.data.name}`} publication={publication} accent={publication.data.accent}>
+<Layout
+  title={`${issue.data.displayTitle} - ${publication.data.name}`}
+  publication={publication}
+  accent={publication.data.accent}
+>
   <PageFrame accent={publication.data.accent}>
     <div class="mb-6 border-b border-[var(--rule)] pb-4">
       <div class="rack-eyebrow">{publication.data.name}</div>
-      <h1 class={`rack-title text-3xl leading-tight md:text-4xl ${publication.data.displayFont ?? ''}`}>
+      <h1
+        class={`rack-title text-3xl leading-tight md:text-4xl ${publication.data.displayFont ?? ''}`}
+      >
         {issue.data.displayTitle}
       </h1>
+
       <div class="mt-2 flex flex-wrap items-center gap-3 text-sm uppercase tracking-[0.12em] text-[var(--muted)]">
         <span>Vol {issue.data.volume}</span>
         <span>|</span>
         <span>No {issue.data.number}</span>
         <span>|</span>
-        <span>{new Date(issue.data.date).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}</span>
-        <span class="rounded-sm border border-[var(--rule)] bg-[var(--accent)]/12 px-2 py-1 text-xs uppercase tracking-[0.16em] text-[var(--accent)]">
+        <span>
+          {new Date(issue.data.date).toLocaleDateString(undefined, {
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric',
+          })}
+        </span>
+        <span
+          class="rounded-sm border border-[var(--rule)] bg-[var(--accent)]/12 px-2 py-1 text-xs uppercase tracking-[0.16em] text-[var(--accent)]"
+        >
           {issue.data.status}
         </span>
-        <span class="rounded-sm bg-[var(--accent)]/12 px-2 py-1 text-xs uppercase tracking-[0.16em] text-[var(--accent)]">
+        <span
+          class="rounded-sm bg-[var(--accent)]/12 px-2 py-1 text-xs uppercase tracking-[0.16em] text-[var(--accent)]"
+        >
           {issue.data.theme}
         </span>
       </div>
+
       {issue.data.notesFromEditor && (
-        <p class="mt-3 max-w-3xl text-[var(--muted)]">{issue.data.notesFromEditor}</p>
+        <p class="mt-3 max-w-3xl text-[var(--muted)]">
+          {issue.data.notesFromEditor}
+        </p>
       )}
     </div>
+
     {hasLead ? (
       <>
-        <IssueOpener issue={issue as any} publication={publication as any} lead={lead as any} secondary={secondary as any} briefs={briefs as any} />
+        <IssueOpener
+          issue={issue as any}
+          publication={publication as any}
+          lead={lead as any}
+          secondary={secondary as any}
+          briefs={briefs as any}
+        />
         <div class="mt-8">
           <Toc posts={posts as any} sections={publication.data.sections} />
         </div>
       </>
     ) : (
-      <div class="feature-card border border-[var(--rule)] bg-[var(--paper-2)]/80 p-4 shadow-paper">
+      <div
+        class="feature-card border border-[var(--rule)] bg-[var(--paper-2)]/80 p-4 shadow-paper"
+      >
         <div class="rack-eyebrow mb-2">Lineup pending</div>
-        <p class="text-[var(--muted)]">This issue is missing a lead story. Add a lead post to publish its opener.</p>
+        <p class="text-[var(--muted)]">
+          This issue is missing a lead story. Add a lead post to publish its
+          opener.
+        </p>
       </div>
     )}
   </PageFrame>

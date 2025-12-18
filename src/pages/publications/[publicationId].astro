@@ -1,8 +1,8 @@
 ---
-import Layout from '../../components/Layout.astro';
-import PageFrame from '../../components/PageFrame.astro';
-import IssueCoverCard from '../../components/IssueCoverCard.astro';
-import PostCard from '../../components/PostCard.astro';
+import Layout from '../../components/layout/Layout.astro';
+import PageFrame from '../../components/layout/PageFrame.astro';
+import IssueCoverCard from '../../components/issues/IssueCoverCard.astro';
+import PostCard from '../../components/posts/PostCard.astro';
 import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
 import { getIssuesForPublication, getPostsByPublication, getPostsForIssue } from '../../lib/contentSource';
 import { coverLinesFromPosts } from '../../lib/lineup';
