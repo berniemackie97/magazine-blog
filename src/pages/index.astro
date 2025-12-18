@@ -1,12 +1,12 @@
 ---
-import Layout from '../components/Layout.astro';
-import RackShelf from '../components/RackShelf.astro';
-import IssueCoverCard from '../components/IssueCoverCard.astro';
+import Layout from '../components/layout/Layout.astro';
+import RackShelf from '../components/issues/RackShelf.astro';
+import IssueCoverCard from '../components/issues/IssueCoverCard.astro';
 import { getCollection, getEntry } from 'astro:content';
 import { getIssuesForPublication, getPostsForIssue, getLatestIssues } from '../lib/contentSource';
 import { coverLinesFromPosts } from '../lib/lineup';
 
-const publications = (await getCollection('publications')).filter((p) => p.data.isFeatured);
+const publications = (await getCollection('publications')).filter((publication) => publication.data.isFeatured);
 
 const shelves = await Promise.all(
   publications.map(async (publication) => {

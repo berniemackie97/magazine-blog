@@ -22,8 +22,8 @@ const { publications, sections, formats, difficulties, tags } = Astro.props;
       name="publication"
     >
       <option value="">All</option>
-      {publications.map((p) => (
-        <option value={p.value}>{p.label}</option>
+      {publications.map((publication) => (
+        <option value={publication.value}>{publication.label}</option>
       ))}
     </select>
   </label>
@@ -34,8 +34,8 @@ const { publications, sections, formats, difficulties, tags } = Astro.props;
       name="section"
     >
       <option value="">All</option>
-      {sections.map((s) => (
-        <option value={s.value}>{s.label}</option>
+      {sections.map((section) => (
+        <option value={section.value}>{section.label}</option>
       ))}
     </select>
   </label>
@@ -46,8 +46,8 @@ const { publications, sections, formats, difficulties, tags } = Astro.props;
       name="format"
     >
       <option value="">All</option>
-      {formats.map((f) => (
-        <option value={f.value}>{f.label}</option>
+      {formats.map((format) => (
+        <option value={format.value}>{format.label}</option>
       ))}
     </select>
   </label>
@@ -58,8 +58,8 @@ const { publications, sections, formats, difficulties, tags } = Astro.props;
       name="difficulty"
     >
       <option value="">All</option>
-      {difficulties.map((d) => (
-        <option value={d.value}>{d.label}</option>
+      {difficulties.map((difficulty) => (
+        <option value={difficulty.value}>{difficulty.label}</option>
       ))}
     </select>
   </label>
@@ -70,8 +70,8 @@ const { publications, sections, formats, difficulties, tags } = Astro.props;
       name="tag"
     >
       <option value="">All</option>
-      {tags.map((t) => (
-        <option value={t.value}>{t.label}</option>
+      {tags.map((tag) => (
+        <option value={tag.value}>{tag.label}</option>
       ))}
     </select>
   </label>

@@ -1,0 +1,61 @@
+---
+import MastheadBar from './MastheadBar.astro';
+import type { CollectionEntry } from 'astro:content';
+import PageFrame from './PageFrame.astro';
+
+import '../styles/tailwind.css';
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  accent?: string;
+  publication?: CollectionEntry<'publications'> | null;
+  heroFrame?: boolean;
+  lang?: string;
+}
+
+const {
+  title = 'Magazine Rack',
+  description = 'Curated dev magazines, ready to read.',
+  accent,
+  publication,
+  heroFrame = false,
+  lang = 'en',
+} = Astro.props;
+
+const accentValue = (accent ?? publication?.data.accent)?.trim() || null;
+const rootStyle = accentValue ? `--accent: ${accentValue};` : undefined;
+const publicationKey = publication?.id ?? 'global';
+---
+<!DOCTYPE html>
+<html lang={lang} style={rootStyle} data-publication={publicationKey}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="description" content={description} />
+    {accentValue ? <meta name="theme-color" content={accentValue} /> : null}
+    <title>{title}</title>
+
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3" href="#content">
+      Skip to content
+    </a>
+
+    <div class="site-surface">
+      <MastheadBar publication={publication} />
+      <main id="content" class="page-shell">
+        {heroFrame ? (
+          <PageFrame accent={accentValue ?? undefined}>
+            <slot />
+          </PageFrame>
+        ) : (
+          <slot />
+        )}
+      </main>
+    </div>
+  </body>
+</html>

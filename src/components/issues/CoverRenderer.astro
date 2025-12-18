@@ -1,0 +1,171 @@
+---
+import type { CoverSpec, CoverTheme, CoverBlock, CoverBlockTitle, CoverFeatureItem } from "../../lib/contentTypes";
+
+interface Props {
+  spec: CoverSpec;
+  href?: string;
+  interactive?: boolean;
+  ariaLabel?: string;
+}
+
+const { spec, href, interactive = true, ariaLabel } = Astro.props;
+
+const titleBlock = spec.blocks.find((b: CoverBlock): b is CoverBlockTitle => b.type === "title");
+const computedAriaLabel = ariaLabel ?? (titleBlock ? `Open issue: ${titleBlock.title}` : "Open issue");
+
+function themeToVars(theme?: CoverTheme): string | undefined {
+  if (!theme) return undefined;
+
+  const parts: string[] = [];
+  if (theme.paper) parts.push(`--cover-paper: ${theme.paper};`);
+  if (theme.ink) parts.push(`--cover-ink: ${theme.ink};`);
+  if (theme.accent) parts.push(`--cover-accent: ${theme.accent};`);
+  if (theme.alt) parts.push(`--cover-alt: ${theme.alt};`);
+  if (theme.photo) parts.push(`--cover-photo: ${theme.photo};`);
+  if (theme.tilt) parts.push(`--cover-tilt: ${theme.tilt};`);
+  return parts.length ? parts.join(" ") : undefined;
+}
+
+function areasToCss(areas: string[]): string {
+  return areas.map((row) => `"${row}"`).join(" ");
+}
+
+function blockStyle(block: CoverBlock): string | undefined {
+  const parts: string[] = [];
+
+  const allowRotate = block.type !== "sticker" && block.type !== "spine";
+  if (allowRotate && typeof block.rotate === "number") {
+    parts.push(`transform: rotate(${block.rotate}deg);`);
+  }
+
+  if (block.align === "center") parts.push("justify-self: center;");
+  if (block.align === "end") parts.push("justify-self: end;");
+  if (block.tone === "accent") parts.push("color: var(--cover-accent);");
+  if (block.tone === "muted") parts.push("opacity: 0.85;");
+
+  return parts.length ? parts.join(" ") : undefined;
+}
+
+const coverStyle = themeToVars(spec.theme);
+const gridStyle =
+  `display: grid;` +
+  `grid-template-columns: ${spec.layout.cols};` +
+  (spec.layout.rows ? `grid-template-rows: ${spec.layout.rows};` : "") +
+  `grid-template-areas: ${areasToCss(spec.layout.areas)};` +
+  (spec.layout.gap ? `gap: ${spec.layout.gap};` : "gap: 0.75rem;");
+
+const minHeight = spec.layout.minHeight ?? 520;
+const pad = spec.layout.pad ?? "12px 12px 12px 42px";
+
+const WrapperTag = href ? "a" : "div";
+const isInteractive = Boolean(href) || interactive;
+const coverCursor = isInteractive ? "pointer" : "default";
+
+const wrapperProps = href
+  ? {
+      href,
+      class: "issue-cover",
+      "data-template": spec.template,
+      "data-interactive": isInteractive ? "true" : "false",
+      style: coverStyle,
+      "aria-label": computedAriaLabel,
+    }
+  : {
+      class: "issue-cover",
+      "data-template": spec.template,
+      "data-interactive": isInteractive ? "true" : "false",
+      style: coverStyle,
+    };
+---
+<WrapperTag {...wrapperProps}>
+  <div class="issue-cover__paper" style={`min-height: ${minHeight}px; padding: ${pad};`}>
+    <div class="issue-cover__layout" style={gridStyle}>
+      {spec.blocks
+        .filter((b: CoverBlock) => !b.hidden)
+        .map((block: CoverBlock) => (
+          <div
+            class={`cover-block cover-block--${block.type}`}
+            style={`grid-area: ${block.area}; ${blockStyle(block) ?? ""}`}
+          >
+            {block.type === "masthead" && (
+              <div class="issue-cover__head">
+                <div class="issue-cover__mast">
+                  <div class="issue-cover__pub">{block.publicationName}</div>
+                  {block.statusText ? (
+                    <div class="issue-cover__status">
+                      <span class="issue-cover__dot" />
+                      <span>{block.statusText}</span>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            )}
+
+            {block.type === "title" && (
+              <div class="issue-cover__body">
+                <h3 class="issue-cover__title">{block.title}</h3>
+                {block.dek ? <p class="issue-cover__feature">{block.dek}</p> : null}
+              </div>
+            )}
+
+            {block.type === "meta" && (
+              <div class="issue-cover__meta">
+                <span>{block.left ?? ""}</span>
+                <span class="issue-cover__price">{block.price ?? ""}</span>
+                <span>{block.right ?? ""}</span>
+              </div>
+            )}
+
+            {block.type === "art" && (
+              <div
+                class="issue-cover__art"
+                style={block.background ? `--cover-photo: ${block.background};` : undefined}
+              />
+            )}
+
+            {block.type === "featureList" && (
+              <div>
+                <div class="issue-cover__insideTitle">
+                  <span>{block.heading ?? "Inside"}</span>
+                  <span class="issue-cover__insideHint">{block.hint ?? ""}</span>
+                </div>
+                <ul class="issue-cover__lines">
+                  {block.items.map((it: CoverFeatureItem) => (
+                    <li class="issue-cover__line">
+                      <span class="issue-cover__no">{it.no ?? "•"}</span>
+                      <span class="issue-cover__text">{it.text}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {block.type === "sticker" && (
+              <div class="issue-cover__sticker">
+                <div class="issue-cover__stickerBig">{block.big}</div>
+                {block.small ? <div class="issue-cover__stickerSmall">{block.small}</div> : null}
+              </div>
+            )}
+
+            {block.type === "barcode" && <div class="issue-cover__barcode" />}
+
+            {block.type === "cta" && <div class="issue-cover__cta">{block.text}</div>}
+
+            {block.type === "spine" && (
+              <div class="issue-cover__spine">
+                <div class="issue-cover__spineText">{block.text}</div>
+              </div>
+            )}
+          </div>
+        ))}
+    </div>
+  </div>
+
+  <div class="issue-cover__fold" aria-hidden="true" />
+</WrapperTag>
+
+<style define:vars={{ coverCursor }}>
+  .issue-cover {
+    cursor: var(--coverCursor);
+  }
+</style>

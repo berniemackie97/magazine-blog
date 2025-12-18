@@ -1,80 +1,166 @@
-import type { CollectionEntry } from 'astro:content';
+import type { IssueRecord, PostRecord } from "./contentTypes";
 
-type PostEntry = CollectionEntry<'posts'> & { readingTimeMinutes?: number };
+export type PostWithExtras = PostRecord;
 
-export function buildIssueLineup(posts: PostEntry[], issue: CollectionEntry<'issues'>) {
-  const sortedByDate = [...posts].sort(
-    (a, b) => new Date(b.data.publishedAt).getTime() - new Date(a.data.publishedAt).getTime()
-  );
+export type Lineup = {
+  lead: PostWithExtras | null;
+  secondary: PostWithExtras[];
+  briefs: PostWithExtras[];
+};
 
-  const bySlug = Object.fromEntries(posts.map((p) => [p.slug, p]));
+function toTime(value: string): number {
+  const t = Date.parse(value);
+  return Number.isFinite(t) ? t : 0;
+}
 
-  let lead: PostEntry | undefined;
-  let secondary: PostEntry[] = [];
-  let briefs: PostEntry[] = posts.filter((p) => p.data.format === 'brief');
+function byDesc<T>(getKey: (item: T) => number) {
+  return (a: T, b: T) => getKey(b) - getKey(a);
+}
 
-  if (issue.data.coverOverrides) {
-    const { leadPostSlug, secondaryPostSlugs } = issue.data.coverOverrides;
-    if (leadPostSlug && bySlug[leadPostSlug]) {
-      lead = bySlug[leadPostSlug];
-    }
-    if (secondaryPostSlugs) {
-      secondary = secondaryPostSlugs.map((slug) => bySlug[slug]).filter(Boolean) as PostEntry[];
+function coverPriority(post: PostWithExtras): number {
+  return post.data.coverPriority ?? 0;
+}
+
+function isBrief(post: PostWithExtras): boolean {
+  return post.data.format === "brief" || post.data.coverSlot === "brief";
+}
+
+function isFeatureLike(post: PostWithExtras): boolean {
+  return post.data.format === "feature";
+}
+
+function uniqBySlug(posts: PostWithExtras[]): PostWithExtras[] {
+  const seen = new Set<string>();
+  const out: PostWithExtras[] = [];
+  for (const p of posts) {
+    if (seen.has(p.slug)) continue;
+    seen.add(p.slug);
+    out.push(p);
+  }
+  return out;
+}
+
+export function buildIssueLineup(
+  posts: PostWithExtras[],
+  issue: IssueRecord,
+): Lineup {
+  const uniquePosts = uniqBySlug(posts);
+  const timeFor = (p: PostWithExtras) => toTime(p.data.publishedAt);
+  const sortedByDate = [...uniquePosts].sort(byDesc(timeFor));
+
+  const bySlug = new Map<string, PostWithExtras>();
+  for (const p of uniquePosts) bySlug.set(p.slug, p);
+
+  const overrides = issue.data.coverOverrides;
+  const overrideLeadSlug = overrides?.leadPostSlug;
+  const overrideSecondarySlugs = overrides?.secondaryPostSlugs ?? [];
+
+  const pickBySlug = (slug: string | undefined): PostWithExtras | null => {
+    if (!slug) return null;
+    return bySlug.get(slug) ?? null;
+  };
+
+  let lead: PostWithExtras | null = pickBySlug(overrideLeadSlug);
+
+  if (!lead) {
+    const leadSlotCandidates = uniquePosts
+      .filter((p) => p.data.coverSlot === "lead")
+      .sort(
+        (a, b) =>
+          coverPriority(b) - coverPriority(a) || timeFor(b) - timeFor(a),
+      );
+
+    if (leadSlotCandidates.length > 0) {
+      lead = leadSlotCandidates[0];
+    } else {
+      const featureCandidates = uniquePosts
+        .filter(isFeatureLike)
+        .sort(byDesc(timeFor));
+      if (featureCandidates.length > 0) {
+        lead = featureCandidates[0];
+      } else {
+        lead = sortedByDate.find((p) => !isBrief(p)) ?? sortedByDate[0] ?? null;
+      }
     }
   }
 
-  if (!lead) {
-    const leadCandidates = posts.filter((p) => p.data.coverSlot === 'lead');
-    if (leadCandidates.length > 0) {
-      lead = leadCandidates.sort((a, b) => (b.data.coverPriority ?? 0) - (a.data.coverPriority ?? 0))[0];
-    } else {
-      const features = posts.filter((p) => p.data.format === 'feature');
-      lead = features.length > 0 ? features.sort((a, b) => new Date(b.data.publishedAt).getTime() - new Date(a.data.publishedAt).getTime())[0] : sortedByDate[0];
-    }
+  const leadSlug = lead?.slug ?? null;
+
+  let secondary: PostWithExtras[] = [];
+
+  if (overrideSecondarySlugs.length > 0) {
+    secondary = overrideSecondarySlugs
+      .map((slug) => bySlug.get(slug))
+      .filter((p): p is PostWithExtras => Boolean(p))
+      .filter((p) => p.slug !== leadSlug);
+
+    secondary = uniqBySlug(secondary).slice(0, 4);
   }
 
   if (secondary.length === 0) {
-    const slotSecondary = posts
-      .filter((p) => p.data.coverSlot === 'secondary' && p.slug !== lead?.slug)
+    const slotSecondary = uniquePosts
+      .filter((p) => p.data.coverSlot === "secondary" && p.slug !== leadSlug)
       .sort(
         (a, b) =>
-          (b.data.coverPriority ?? 0) - (a.data.coverPriority ?? 0) ||
-          new Date(b.data.publishedAt).getTime() - new Date(a.data.publishedAt).getTime()
+          coverPriority(b) - coverPriority(a) || timeFor(b) - timeFor(a),
       );
+
     if (slotSecondary.length > 0) {
       secondary = slotSecondary.slice(0, 4);
     } else {
-      secondary = sortedByDate.filter((p) => p.data.format !== 'brief' && p.slug !== lead?.slug).slice(0, 4);
+      secondary = sortedByDate
+        .filter((p) => !isBrief(p) && p.slug !== leadSlug)
+        .slice(0, 4);
     }
   }
 
-  briefs = briefs
-    .filter((p) => p.slug !== lead?.slug && !secondary.find((s) => s.slug === p.slug))
-    .sort((a, b) => new Date(b.data.publishedAt).getTime() - new Date(a.data.publishedAt).getTime());
+  const secondarySlugs = new Set(secondary.map((p) => p.slug));
+
+  const briefs = sortedByDate
+    .filter(isBrief)
+    .filter((p) => p.slug !== leadSlug && !secondarySlugs.has(p.slug));
 
   return { lead, secondary, briefs };
 }
 
-export function coverLinesFromPosts(posts: PostEntry[], max = 6) {
-  const primaries = posts
-    .filter((p) => p.data.format !== 'brief')
+export function coverLinesFromPosts(
+  posts: PostWithExtras[],
+  max = 6,
+): string[] {
+  const uniquePosts = uniqBySlug(posts);
+  const timeFor = (p: PostWithExtras) => toTime(p.data.publishedAt);
+
+  const primaryCandidates = uniquePosts
+    .filter((p) => !isBrief(p))
     .sort(
-      (a, b) =>
-        (b.data.coverPriority ?? 0) - (a.data.coverPriority ?? 0) ||
-        new Date(b.data.publishedAt).getTime() - new Date(a.data.publishedAt).getTime()
+      (a, b) => coverPriority(b) - coverPriority(a) || timeFor(b) - timeFor(a),
     )
     .map((p) => p.data.headline);
 
-  const lines = [...primaries];
+  const briefCandidates = uniquePosts
+    .filter(isBrief)
+    .sort(byDesc(timeFor))
+    .map((p) => p.data.headline);
+
+  const lines: string[] = [];
+  const seen = new Set<string>();
+
+  const push = (text: string | undefined) => {
+    const t = (text ?? "").trim();
+    if (!t) return;
+    if (seen.has(t)) return;
+    seen.add(t);
+    lines.push(t);
+  };
+
+  for (const h of primaryCandidates) push(h);
+
   if (lines.length < 3) {
-    const briefs = posts.filter((p) => p.data.format === 'brief').map((p) => p.data.headline);
-    lines.push(...briefs);
+    for (const h of briefCandidates) push(h);
   }
-  if (lines.length < 3) {
-    lines.push('Inside: field notes and tools');
-  }
-  if (lines.length < 4) {
-    lines.push('Plus: editor dispatch');
-  }
+
+  if (lines.length < 3) push("Inside: field notes and tools");
+  if (lines.length < 4) push("Plus: editor dispatch");
+
   return lines.slice(0, max);
 }

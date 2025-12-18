@@ -1,22 +1,34 @@
-import { client } from './cmsClient';
-import * as cms from './cmsData';
-import * as local from './data';
+import { client } from "./cmsClient";
+import * as cms from "./cmsData";
+import * as local from "./data";
 
-const useCms = !!client;
+export const useCms = Boolean(client);
 
-export { useCms };
+type ContentSource = {
+  getPublications: typeof local.getPublications;
+  getFeaturedPublications: typeof local.getFeaturedPublications;
+  getPublication: typeof local.getPublication;
+  getIssue: typeof local.getIssue;
+  getIssuesForPublication: typeof local.getIssuesForPublication;
+  getPostsForIssue: typeof local.getPostsForIssue;
+  getLatestLockedIssueForPublication: typeof local.getLatestLockedIssueForPublication;
+  getLatestIssues: typeof local.getLatestIssues;
+  getLatestPosts: typeof local.getLatestPosts;
+  getPostsByPublication: typeof local.getPostsByPublication;
+  getPostBySlug: typeof local.getPostBySlug;
+};
 
-export const getPublication = (id: string): any => (useCms ? cms.getPublication(id) : local.getPublication(id));
-export const getIssue = (publicationId: string, issueSlug: string): any =>
-  useCms ? cms.getIssue(publicationId, issueSlug) : local.getIssue(publicationId, issueSlug);
-export const getIssuesForPublication = (publicationId: string): any =>
-  useCms ? cms.getIssuesForPublication(publicationId) : local.getIssuesForPublication(publicationId);
-export const getPostsForIssue = (publicationId: string, issueSlug: string): any =>
-  useCms ? cms.getPostsForIssue(publicationId, issueSlug) : local.getPostsForIssue(publicationId, issueSlug);
-export const getLatestLockedIssueForPublication = (publicationId: string): any =>
-  useCms ? cms.getLatestLockedIssueForPublication(publicationId) : local.getLatestLockedIssueForPublication(publicationId);
-export const getLatestIssues = (limit?: number): any => (useCms ? cms.getLatestIssues(limit) : local.getLatestIssues(limit));
-export const getLatestPosts = (limit?: number): any => (useCms ? cms.getLatestPosts(limit) : local.getLatestPosts(limit));
-export const getPostsByPublication = (publicationId: string): any =>
-  useCms ? cms.getPostsByPublication(publicationId) : local.getPostsByPublication(publicationId);
-export const getPostBySlug = (slug: string): any => (useCms ? cms.getPostBySlug(slug) : local.getPostBySlug(slug));
+const source: ContentSource = useCms ? cms : local;
+
+export const getPublications = source.getPublications;
+export const getFeaturedPublications = source.getFeaturedPublications;
+export const getPublication = source.getPublication;
+export const getIssue = source.getIssue;
+export const getIssuesForPublication = source.getIssuesForPublication;
+export const getPostsForIssue = source.getPostsForIssue;
+export const getLatestLockedIssueForPublication =
+  source.getLatestLockedIssueForPublication;
+export const getLatestIssues = source.getLatestIssues;
+export const getLatestPosts = source.getLatestPosts;
+export const getPostsByPublication = source.getPostsByPublication;
+export const getPostBySlug = source.getPostBySlug;

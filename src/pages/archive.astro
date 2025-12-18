@@ -1,8 +1,8 @@
 ---
-import Layout from '../components/Layout.astro';
-import PageFrame from '../components/PageFrame.astro';
-import Filters from '../components/Filters.astro';
-import PostCard from '../components/PostCard.astro';
+import Layout from '../components/layout/Layout.astro';
+import PageFrame from '../components/layout/PageFrame.astro';
+import Filters from '../components/archive/Filters.astro';
+import PostCard from '../components/posts/PostCard.astro';
 import { getCollection } from 'astro:content';
 import readingTime from 'reading-time';
 import { useCms, getLatestPosts } from '../lib/contentSource';

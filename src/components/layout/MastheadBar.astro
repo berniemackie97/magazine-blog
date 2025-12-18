@@ -1,0 +1,55 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  publication?: CollectionEntry<'publications'> | null;
+  siteTitle?: string;
+  siteSubtitle?: string;
+}
+
+const {
+  publication = null,
+  siteTitle = 'Magazine Rack',
+  siteSubtitle = 'Latest issues for developers',
+} = Astro.props;
+
+// Current path for active-link state
+const pathname = Astro.url.pathname;
+
+function isActive(href: string): boolean {
+  if (href === '/') return pathname === '/';
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+// Only set --accent here as a fallback if a publication is present.
+// (Layout.astro already sets it on <html> when you pass `publication`.)
+const accentStyle = publication?.data?.accent ? `--accent: ${publication.data.accent};` : undefined;
+---
+<header class="masthead" style={accentStyle} data-publication={publication?.id ?? 'global'}>
+  <div class="masthead-bar">
+    <a href="/" class="flex items-center gap-3" aria-label={`${siteTitle} home`}>
+      <div class="brand-mark" aria-hidden="true">MR</div>
+      <div>
+        <div class="brand-title">{siteTitle}</div>
+        <div class="brand-sub">{siteSubtitle}</div>
+      </div>
+    </a>
+
+    <nav class="nav-links" aria-label="Primary navigation">
+      <a href="/issues" aria-current={isActive('/issues') ? 'page' : undefined}>Issues</a>
+      <a href="/archive" aria-current={isActive('/archive') ? 'page' : undefined}>Archive</a>
+      <a href="/publications" aria-current={isActive('/publications') ? 'page' : undefined}>Stands</a>
+    </nav>
+  </div>
+
+  {publication ? (
+    <div class="border-t border-[var(--rule)] bg-[var(--paper-2)]/90 px-[var(--page-pad)] py-2">
+      <div class="mx-auto flex max-w-[1240px] items-center justify-between text-xs uppercase tracking-[0.18em]">
+        <span class={publication.data.displayFont ?? ''}>{publication.data.name}</span>
+        <span class="rounded-sm border border-[var(--rule)] bg-[var(--accent)]/15 px-2 py-1 text-[var(--accent)]">
+          Accent live
+        </span>
+      </div>
+    </div>
+  ) : null}
+</header>
