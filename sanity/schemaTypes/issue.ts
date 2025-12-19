@@ -47,6 +47,12 @@ export default defineType({
         },
       ],
     }),
+    defineField({
+      name: 'coverSpec',
+      title: 'Cover Specification',
+      type: 'coverSpec',
+      description: 'Override the publication default cover for this specific issue',
+    }),
   ],
   preview: {
     select: {
