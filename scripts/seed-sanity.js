@@ -114,6 +114,23 @@ function parseContentToPortableText(rawContent) {
   return blocks;
 }
 
+function addKeysToBlocks(blocks) {
+  if (!Array.isArray(blocks)) return blocks;
+  return blocks.map((block) => ({
+    ...block,
+    _key: block._key || crypto.randomUUID(),
+    items: block.items ? block.items.map((item) => ({ ...item, _key: item._key || crypto.randomUUID() })) : undefined,
+  }));
+}
+
+function processCoverSpec(coverSpec) {
+  if (!coverSpec) return undefined;
+  return {
+    ...coverSpec,
+    blocks: addKeysToBlocks(coverSpec.blocks),
+  };
+}
+
 async function loadPublications() {
   const files = fs.readdirSync(publicationsDir).filter((f) => f.endsWith('.json'));
   return files.map((file) => {
@@ -123,6 +140,8 @@ async function loadPublications() {
       _type: 'publication',
       ...data,
       sections: (data.sections || []).map((s) => ({ _key: crypto.randomUUID(), ...s })),
+      defaultCoverSpec: processCoverSpec(data.defaultCoverSpec),
+      pageTheme: data.pageTheme,
     };
   });
 }
@@ -150,6 +169,7 @@ async function loadIssues() {
         : undefined,
       publication: { _type: 'reference', _ref: `publication.${data.publicationId}` },
       coverImageUrl: data.coverImageUrl,
+      coverSpec: processCoverSpec(data.coverSpec),
     };
   });
 }
