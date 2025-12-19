@@ -45,80 +45,230 @@ const wrapperProps = href
 ---
 
 <WrapperTag {...wrapperProps}>
-  <!-- Spine -->
-  {spine && (
-    <div class="cover__spine">
-      <span class="cover__spine-text">{spine.text}</span>
-    </div>
+  {/* TECH-MONO: Terminal/code aesthetic - title at top, big feature image */}
+  {spec.template === "tech-mono" && (
+    <>
+      <div class="cover__spine cover__spine--tech">
+        <span class="cover__spine-text">{spine?.text || "TECH"}</span>
+      </div>
+      <div class="cover__face cover__face--tech">
+        <header class="cover__header--tech">
+          <span class="cover__pub--tech">{masthead?.publicationName}</span>
+          {masthead?.statusText && <span class="cover__status--tech">{masthead.statusText}</span>}
+        </header>
+        <h3 class="cover__title--tech">{title?.title}</h3>
+        {title?.dek && <p class="cover__dek--tech">{title.dek}</p>}
+        <div class="cover__art--tech" />
+        <div class="cover__meta--tech">
+          <span>{meta?.left}</span>
+          <span>{meta?.right}</span>
+        </div>
+        {featureList?.items && featureList.items.length > 0 && (
+          <ul class="cover__list--tech">
+            {featureList.items.slice(0, 3).map((item: CoverFeatureItem) => (
+              <li><span class="cover__bullet--tech">▸</span> {item.text}</li>
+            ))}
+          </ul>
+        )}
+        <footer class="cover__footer--tech">
+          <div class="cover__barcode--tech" />
+          <span class="cover__cta--tech">{cta?.text || "READ"}</span>
+        </footer>
+      </div>
+    </>
   )}
 
-  <!-- Main cover content -->
-  <div class="cover__face">
-    <!-- Header: Masthead + Status -->
-    {masthead && (
-      <header class="cover__header">
-        <div class="cover__pub-name">{masthead.publicationName}</div>
-        {masthead.statusText && (
-          <span class="cover__status">{masthead.statusText}</span>
-        )}
-      </header>
-    )}
-
-    <!-- Meta line: Vol/No/Date/Price -->
-    {meta && (
-      <div class="cover__meta">
-        <span>{meta.left}</span>
-        {meta.price && <span class="cover__price">{meta.price}</span>}
-        <span>{meta.right}</span>
+  {/* FIELD-NOTES: Notebook/journal style - handwritten feel, lined paper */}
+  {spec.template === "field-notes" && (
+    <>
+      <div class="cover__spine cover__spine--field">
+        <span class="cover__spine-text">{spine?.text || "FIELD"}</span>
       </div>
-    )}
-
-    <!-- Feature image / art area -->
-    {art && (
-      <div
-        class="cover__art"
-        style={art.background ? `background-image: url(${art.background});` : undefined}
-      />
-    )}
-
-    <!-- Main title block -->
-    {title && (
-      <div class="cover__title-block">
-        <h3 class="cover__title">{title.title}</h3>
-        {title.dek && <p class="cover__dek">{title.dek}</p>}
-      </div>
-    )}
-
-    <!-- Feature list (inside this issue) -->
-    {featureList && featureList.items && featureList.items.length > 0 && (
-      <div class="cover__features">
-        <div class="cover__features-header">
-          <span>{featureList.heading ?? "Inside"}</span>
+      <div class="cover__face cover__face--field">
+        <div class="cover__brand--field">{masthead?.publicationName}</div>
+        <div class="cover__rule--field" />
+        <div class="cover__vol--field">{meta?.left}</div>
+        <h3 class="cover__title--field">{title?.title}</h3>
+        {title?.dek && <p class="cover__dek--field">"{title.dek}"</p>}
+        <div class="cover__sketch--field">
+          <svg viewBox="0 0 100 60" class="cover__sketch-svg">
+            <path d="M10,50 Q30,10 50,30 T90,20" fill="none" stroke="currentColor" stroke-width="1.5"/>
+            <circle cx="25" cy="35" r="8" fill="none" stroke="currentColor" stroke-width="1"/>
+            <circle cx="70" cy="40" r="5" fill="none" stroke="currentColor" stroke-width="1"/>
+          </svg>
         </div>
-        <ul class="cover__features-list">
-          {featureList.items.map((item: CoverFeatureItem) => (
-            <li>
-              <span class="cover__feature-no">{item.no}</span>
-              <span class="cover__feature-text">{item.text}</span>
-            </li>
-          ))}
-        </ul>
+        {featureList?.items && featureList.items.length > 0 && (
+          <ul class="cover__list--field">
+            {featureList.items.slice(0, 4).map((item: CoverFeatureItem) => (
+              <li>□ {item.text}</li>
+            ))}
+          </ul>
+        )}
+        <footer class="cover__footer--field">
+          <span class="cover__date--field">{meta?.right}</span>
+          {masthead?.statusText && <span class="cover__status--field">{masthead.statusText}</span>}
+        </footer>
       </div>
-    )}
+    </>
+  )}
 
-    <!-- Footer: Barcode + CTA -->
-    <footer class="cover__footer">
-      {barcode && <div class="cover__barcode" />}
-      {cta && <span class="cover__cta">{cta.text}</span>}
-    </footer>
-  </div>
+  {/* ZINE-PUNK: DIY cut-and-paste collage style */}
+  {spec.template === "zine-punk" && (
+    <>
+      <div class="cover__spine cover__spine--zine">
+        <span class="cover__spine-text">{spine?.text || "ZINE"}</span>
+      </div>
+      <div class="cover__face cover__face--zine">
+        <div class="cover__scribble--zine">{masthead?.publicationName}</div>
+        <h3 class="cover__title--zine">{title?.title}</h3>
+        <div class="cover__cutout--zine">
+          {title?.dek && <span class="cover__dek--zine">{title.dek}</span>}
+        </div>
+        <div class="cover__collage--zine">
+          <div class="cover__shape--zine cover__shape--zine-1" />
+          <div class="cover__shape--zine cover__shape--zine-2" />
+          <div class="cover__shape--zine cover__shape--zine-3" />
+        </div>
+        {featureList?.items && featureList.items.length > 0 && (
+          <div class="cover__list--zine">
+            {featureList.items.slice(0, 3).map((item: CoverFeatureItem, i: number) => (
+              <span class="cover__item--zine" style={`--rot: ${(i - 1) * 5}deg`}>{item.text}</span>
+            ))}
+          </div>
+        )}
+        <footer class="cover__footer--zine">
+          <span class="cover__meta--zine">{meta?.left} • {meta?.right}</span>
+        </footer>
+      </div>
+      {sticker && (
+        <div class="cover__sticker--zine">
+          <span>{sticker.big}</span>
+        </div>
+      )}
+    </>
+  )}
 
-  <!-- Sticker overlay -->
-  {sticker && (
-    <div class="cover__sticker">
-      <span class="cover__sticker-big">{sticker.big}</span>
-      {sticker.small && <span class="cover__sticker-small">{sticker.small}</span>}
-    </div>
+  {/* BOLD-POP: Classic magazine - big image, bold headlines */}
+  {spec.template === "bold-pop" && (
+    <>
+      <div class="cover__spine">
+        <span class="cover__spine-text">{spine?.text}</span>
+      </div>
+      <div class="cover__face">
+        <header class="cover__header">
+          <div class="cover__pub-name">{masthead?.publicationName}</div>
+          {masthead?.statusText && <span class="cover__status">{masthead.statusText}</span>}
+        </header>
+        <div class="cover__meta">
+          <span>{meta?.left}</span>
+          {meta?.price && <span class="cover__price">{meta.price}</span>}
+          <span>{meta?.right}</span>
+        </div>
+        <div class="cover__art" />
+        <div class="cover__title-block">
+          <h3 class="cover__title">{title?.title}</h3>
+          {title?.dek && <p class="cover__dek">{title.dek}</p>}
+        </div>
+        {featureList?.items && featureList.items.length > 0 && (
+          <div class="cover__features">
+            <div class="cover__features-header"><span>Inside</span></div>
+            <ul class="cover__features-list">
+              {featureList.items.map((item: CoverFeatureItem) => (
+                <li>
+                  <span class="cover__feature-no">{item.no}</span>
+                  <span class="cover__feature-text">{item.text}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        <footer class="cover__footer">
+          {barcode && <div class="cover__barcode" />}
+          {cta && <span class="cover__cta">{cta.text}</span>}
+        </footer>
+      </div>
+    </>
+  )}
+
+  {/* MINIMAL-INK: Clean, editorial, sophisticated */}
+  {spec.template === "minimal-ink" && (
+    <>
+      <div class="cover__spine cover__spine--minimal">
+        <span class="cover__spine-text">{spine?.text}</span>
+      </div>
+      <div class="cover__face cover__face--minimal">
+        <header class="cover__header--minimal">
+          <span class="cover__pub--minimal">{masthead?.publicationName}</span>
+          <span class="cover__meta--minimal">{meta?.left}</span>
+        </header>
+        <div class="cover__center--minimal">
+          <h3 class="cover__title--minimal">{title?.title}</h3>
+          {title?.dek && <p class="cover__dek--minimal">{title.dek}</p>}
+        </div>
+        <footer class="cover__footer--minimal">
+          <span>{meta?.right}</span>
+          {masthead?.statusText && <span class="cover__status--minimal">{masthead.statusText}</span>}
+        </footer>
+      </div>
+    </>
+  )}
+
+  {/* RETRO-PRINT: Vintage magazine feel */}
+  {spec.template === "retro-print" && (
+    <>
+      <div class="cover__spine cover__spine--retro">
+        <span class="cover__spine-text">{spine?.text}</span>
+      </div>
+      <div class="cover__face cover__face--retro">
+        <div class="cover__banner--retro">{masthead?.publicationName}</div>
+        <div class="cover__art--retro" />
+        <h3 class="cover__title--retro">{title?.title}</h3>
+        {title?.dek && <p class="cover__dek--retro">{title.dek}</p>}
+        <div class="cover__meta--retro">
+          <span>{meta?.left}</span>
+          <span class="cover__dot--retro">●</span>
+          <span>{meta?.right}</span>
+        </div>
+        {featureList?.items && featureList.items.length > 0 && (
+          <ul class="cover__list--retro">
+            {featureList.items.slice(0, 3).map((item: CoverFeatureItem) => (
+              <li>★ {item.text}</li>
+            ))}
+          </ul>
+        )}
+        {masthead?.statusText && (
+          <div class="cover__badge--retro">{masthead.statusText}</div>
+        )}
+      </div>
+    </>
+  )}
+
+  {/* CLASSIC: Fallback default */}
+  {(spec.template === "classic" || !["tech-mono", "field-notes", "zine-punk", "bold-pop", "minimal-ink", "retro-print"].includes(spec.template || "")) && spec.template !== "bold-pop" && (
+    <>
+      <div class="cover__spine">
+        <span class="cover__spine-text">{spine?.text}</span>
+      </div>
+      <div class="cover__face">
+        <header class="cover__header">
+          <div class="cover__pub-name">{masthead?.publicationName}</div>
+          {masthead?.statusText && <span class="cover__status">{masthead.statusText}</span>}
+        </header>
+        <div class="cover__meta">
+          <span>{meta?.left}</span>
+          <span>{meta?.right}</span>
+        </div>
+        <div class="cover__art" />
+        <div class="cover__title-block">
+          <h3 class="cover__title">{title?.title}</h3>
+          {title?.dek && <p class="cover__dek">{title.dek}</p>}
+        </div>
+        <footer class="cover__footer">
+          {barcode && <div class="cover__barcode" />}
+          {cta && <span class="cover__cta">{cta.text}</span>}
+        </footer>
+      </div>
+    </>
   )}
 
   <!-- Corner fold effect -->
