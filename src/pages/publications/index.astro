@@ -1,55 +1,113 @@
 ---
 import Layout from '../../components/layout/Layout.astro';
-import PageFrame from '../../components/layout/PageFrame.astro';
 import IssueCoverCard from '../../components/issues/IssueCoverCard.astro';
 import { getCollection } from 'astro:content';
-import { getLatestLockedIssueForPublication, getPostsForIssue } from '../../lib/data';
+import { getLatestLockedIssueForPublication, getPostsForIssue } from '../../lib/contentSource';
 import { coverLinesFromPosts } from '../../lib/lineup';
 
 const publications = await getCollection('publications');
-const standThemes: Record<string, { backdrop: string; ornament?: string }> = {
-  'red-ops': { backdrop: 'linear-gradient(135deg, rgba(255,107,107,0.12), rgba(40,10,16,0.82))' },
-  'field-guide': { backdrop: 'linear-gradient(135deg, rgba(58,224,194,0.12), rgba(12,40,40,0.82))' },
-};
 
 const cards = await Promise.all(
   publications.map(async (publication) => {
     const issue = await getLatestLockedIssueForPublication(publication.id);
     const posts = issue ? await getPostsForIssue(publication.id, issue.data.issueSlug) : [];
-    return { publication, issue, coverLines: coverLinesFromPosts(posts, 4) };
+    return { publication, issue, coverLines: coverLinesFromPosts(posts as any, 4) };
   })
 );
 ---
-<Layout title="Publications - Stackbound">
-  <PageFrame>
-    <div class="mb-6">
-      <div class="rack-eyebrow">Stands</div>
-      <h1 class="rack-title text-3xl md:text-4xl">Choose a publication.</h1>
-      <p class="max-w-2xl text-[var(--muted)]">Each stand keeps its own accent color, typography, and section taxonomy.</p>
-    </div>
-    <div class="grid gap-6 md:grid-cols-2">
-      {cards.map((card) => {
-        const theme = standThemes[card.publication.id] ?? { backdrop: 'linear-gradient(135deg, rgba(255,255,255,0.04), rgba(0,0,0,0.4))' };
-        return (
-          <div class="rack-shell" style={`--accent:${card.publication.data.accent};background:${theme.backdrop};`}>
-            <div class="flex items-center justify-between gap-3 mb-3">
-              <div>
-                <div class="rack-eyebrow">{card.publication.data.name}</div>
-                <p class="mt-1 max-w-xl text-sm text-[var(--muted)]">{card.publication.data.description}</p>
-              </div>
-              <a href={`/publications/${card.publication.id}`} class="btn-link">Enter stand</a>
-            </div>
+<Layout title="Publications - The Rack">
+  <div class="page-shell page-content">
+    <header class="page-header">
+      <h1>Publications</h1>
+      <p class="page-header__sub">Different magazines for different vibes</p>
+    </header>
+
+    <div class="publications-grid">
+      {cards.map((card) => (
+        <article class="publication-card" style={`--pub-accent: ${card.publication.data.accent}`}>
+          <div class="publication-card__header">
+            <h2 class="publication-card__name">{card.publication.data.name}</h2>
+            <p class="publication-card__desc">{card.publication.data.description}</p>
+            <a href={`/publications/${card.publication.id}`} class="btn">
+              View All Issues
+            </a>
+          </div>
+          <div class="publication-card__preview">
             {card.issue ? (
-              <IssueCoverCard issue={card.issue} publication={card.publication} coverLines={card.coverLines} showStatus />
+              <IssueCoverCard issue={card.issue} publication={card.publication} coverLines={card.coverLines} />
             ) : (
-              <div class="feature-card border border-[var(--rule)] bg-[var(--paper-2)]/80 p-4 shadow-paper">
-                <div class="font-display text-xl">{card.publication.data.name}</div>
-                <p class="text-[var(--muted)]">{card.publication.data.description}</p>
+              <div class="no-issues">
+                <p>No published issues yet</p>
               </div>
             )}
           </div>
-        );
-      })}
+        </article>
+      ))}
     </div>
-  </PageFrame>
+  </div>
 </Layout>
+
+<style>
+  .page-header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .page-header__sub {
+    font-family: var(--font-hand);
+    font-size: 1.5rem;
+    color: var(--ink-muted);
+  }
+
+  .publications-grid {
+    display: grid;
+    gap: 3rem;
+  }
+
+  .publication-card {
+    display: grid;
+    gap: 2rem;
+    padding: 2rem;
+    background: var(--surface-raised);
+    border: 2px solid var(--ink-rich);
+    border-radius: 12px;
+    box-shadow: 6px 6px 0 var(--ink-rich);
+  }
+
+  @media (min-width: 768px) {
+    .publication-card {
+      grid-template-columns: 1fr auto;
+      align-items: center;
+    }
+  }
+
+  .publication-card__header {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .publication-card__name {
+    font-size: 2rem;
+    color: var(--pub-accent);
+  }
+
+  .publication-card__desc {
+    color: var(--ink-muted);
+    max-width: 400px;
+  }
+
+  .publication-card__preview {
+    display: flex;
+    justify-content: center;
+  }
+
+  .no-issues {
+    padding: 3rem;
+    background: var(--surface-sunken);
+    border: 2px dashed var(--ink-faint);
+    border-radius: 8px;
+    color: var(--ink-muted);
+    text-align: center;
+  }
+</style>

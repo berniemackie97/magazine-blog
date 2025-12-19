@@ -32,6 +32,12 @@ export default defineType({
       options: {hotspot: true},
       fields: [{name: 'alt', type: 'string', title: 'Alt text'}],
     }),
+    defineField({
+      name: 'defaultCoverSpec',
+      title: 'Default Cover Specification',
+      type: 'coverSpec',
+      description: 'Brand template applied to all issues unless overridden at the issue level',
+    }),
   ],
   preview: {
     select: {title: 'name', subtitle: 'id', media: 'coverImage'},

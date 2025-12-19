@@ -10,5 +10,14 @@
     { "id": "lab", "label": "Lab" },
     { "id": "dispatch", "label": "Dispatch" }
   ],
-  "isFeatured": true
+  "isFeatured": true,
+  "defaultCoverSpec": {
+    "template": "field-notes",
+    "theme": {
+      "paper": "#f4efe4",
+      "ink": "#2d3a3a",
+      "accent": "#1f7a8c",
+      "alt": "#bfae9f"
+    }
+  }
 }
