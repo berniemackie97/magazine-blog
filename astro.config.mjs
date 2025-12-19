@@ -7,7 +7,8 @@ import vercel from '@astrojs/vercel';
 
 export default defineConfig({
   site: 'https://magazine-blog-chi.vercel.app/',
-  adapter: vercel({ mode: 'serverless' }),
+  output: 'server',
+  adapter: vercel(),
   integrations: [react(), mdx(), tailwind(), sitemap()],
   markdown: {
     shikiConfig: {
