@@ -24,8 +24,8 @@ if (sanityEnabled && projectId && dataset) {
     projectId,
     dataset,
     apiVersion: "2024-01-01",
-    useCdn: true,
-    token, // Include token for private datasets
+    useCdn: false, // Disable CDN when using token for private datasets
+    token,
   });
 
   if (token) {
