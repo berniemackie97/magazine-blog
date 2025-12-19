@@ -19,5 +19,17 @@
       "accent": "#ff6b6b",
       "alt": "#ffa94d"
     }
+  },
+  "pageTheme": {
+    "template": "tech-mono",
+    "background": "#0d1117",
+    "surface": "#161b22",
+    "text": "#c9d1d9",
+    "textMuted": "#8b949e",
+    "accent": "#58a6ff",
+    "accentAlt": "#39d353",
+    "border": "#30363d",
+    "headingFont": "mono",
+    "bodyFont": "mono"
   }
 }
