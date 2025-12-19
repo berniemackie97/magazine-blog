@@ -1,11 +1,12 @@
 import { createClient } from "@sanity/client";
 import type { SanityClient } from "@sanity/client";
 
-const projectId = import.meta.env.SANITY_PROJECT_ID;
-const dataset = import.meta.env.SANITY_DATASET;
-const token = import.meta.env.SANITY_READ_TOKEN;
+// Use process.env for runtime vars (SSR on Vercel), fallback to import.meta.env for dev
+const projectId = process.env.SANITY_PROJECT_ID ?? import.meta.env.SANITY_PROJECT_ID;
+const dataset = process.env.SANITY_DATASET ?? import.meta.env.SANITY_DATASET;
+const token = process.env.SANITY_READ_TOKEN ?? import.meta.env.SANITY_READ_TOKEN;
 
-const enabledRaw = String(import.meta.env.SET_SANITY_ENABLED ?? "")
+const enabledRaw = String(process.env.SET_SANITY_ENABLED ?? import.meta.env.SET_SANITY_ENABLED ?? "")
   .trim()
   .toLowerCase();
 
