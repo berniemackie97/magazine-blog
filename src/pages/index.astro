@@ -2,19 +2,24 @@
 import Layout from '../components/layout/Layout.astro';
 import IssueCoverCard from '../components/issues/IssueCoverCard.astro';
 import { getCollection, getEntry } from 'astro:content';
-import { getIssuesForPublication, getPostsForIssue, getLatestIssues } from '../lib/contentSource';
+import { getPostsForIssue } from '../lib/contentSource';
 import { coverLinesFromPosts } from '../lib/lineup';
 
 // Get featured publications
 const publications = (await getCollection('publications')).filter((p) => p.data.isFeatured);
 
-// Get latest issues across all publications
-const latestIssues = await getLatestIssues(8);
+// Get latest locked issues across all publications (use getCollection directly like issues page)
+const allIssues = await getCollection('issues');
+const latestIssues = allIssues
+  .filter((i) => i.data.status === 'locked')
+  .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime())
+  .slice(0, 8);
+
 const latestItems = await Promise.all(
-  latestIssues.map(async (issue: any) => {
+  latestIssues.map(async (issue) => {
     const publication = await getEntry('publications', issue.data.publicationId);
     const posts = await getPostsForIssue(issue.data.publicationId, issue.data.issueSlug);
-    const tilt = (Math.random() - 0.5) * 6; // Random tilt between -3 and 3 degrees
+    const tilt = (Math.random() - 0.5) * 6;
     return {
       issue,
       publication: publication!,
@@ -27,11 +32,13 @@ const latestItems = await Promise.all(
 // Get per-publication shelves
 const shelves = await Promise.all(
   publications.map(async (publication) => {
-    const issues = (await getIssuesForPublication(publication.id))
-      .filter((issue: any) => issue.data.status === 'locked')
+    const pubIssues = allIssues
+      .filter((i) => i.data.publicationId === publication.id && i.data.status === 'locked')
+      .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime())
       .slice(0, 4);
+
     const items = await Promise.all(
-      issues.map(async (issue: any) => {
+      pubIssues.map(async (issue) => {
         const posts = await getPostsForIssue(publication.id, issue.data.issueSlug);
         const tilt = (Math.random() - 0.5) * 5;
         return {
@@ -56,21 +63,23 @@ const shelves = await Promise.all(
     </section>
 
     <!-- Latest Issues Shelf -->
-    <section class="rack__shelf">
-      <h2 class="shelf__label">Latest Issues</h2>
-      <div class="shelf__row">
-        {latestItems.map((item, idx) => (
-          <div class="shelf__item" style={`--tilt: ${item.tilt}deg; --idx: ${idx}`}>
-            <IssueCoverCard
-              issue={item.issue}
-              publication={item.publication}
-              coverLines={item.coverLines}
-              showStatus
-            />
-          </div>
-        ))}
-      </div>
-    </section>
+    {latestItems.length > 0 && (
+      <section class="rack__shelf">
+        <h2 class="shelf__label">Latest Issues</h2>
+        <div class="shelf__row">
+          {latestItems.map((item, idx) => (
+            <div class="shelf__item" style={`--tilt: ${item.tilt}deg; --idx: ${idx}`}>
+              <IssueCoverCard
+                issue={item.issue}
+                publication={item.publication}
+                coverLines={item.coverLines}
+                showStatus
+              />
+            </div>
+          ))}
+        </div>
+      </section>
+    )}
 
     <!-- Quick Actions -->
     <section class="actions-row">
@@ -155,10 +164,6 @@ const shelves = await Promise.all(
   }
 
   /* Stagger covers for visual interest */
-  .shelf__item {
-    /* Even items get a slight offset */
-  }
-
   .shelf__item:nth-child(even) {
     margin-top: 1.5rem;
   }
