@@ -853,6 +853,14 @@ h3 { font-size: clamp(1.25rem, 3vw, 1.75rem); }
    These style the unique HTML structures per template
    ===================================================== */
 
+/* Shared base for all template face layouts */
+[class^="cover__face--"],
+[class*=" cover__face--"] {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
 /* --- TECH-MONO TEMPLATE --- */
 .cover__spine--tech {
   background: linear-gradient(180deg, #58a6ff, #39d353);
@@ -862,8 +870,6 @@ h3 { font-size: clamp(1.25rem, 3vw, 1.75rem); }
 .cover__face--tech {
   background: #0d1117;
   padding: 10px 12px 10px 28px;
-  display: flex;
-  flex-direction: column;
   font-family: var(--font-mono);
 }
 
@@ -936,10 +942,10 @@ h3 { font-size: clamp(1.25rem, 3vw, 1.75rem); }
   left: 8px;
   font-size: 0.7rem;
   color: #39d353;
-  animation: blink 1s step-end infinite;
+  animation: blink-tech-caret 1s step-end infinite;
 }
 
-@keyframes blink {
+@keyframes blink-tech-caret {
   50% { opacity: 0; }
 }
 
@@ -1009,9 +1015,6 @@ h3 { font-size: clamp(1.25rem, 3vw, 1.75rem); }
 .cover__face--field {
   background: #f4efe4;
   padding: 14px 12px 12px 28px;
-  display: flex;
-  flex-direction: column;
-  position: relative;
 }
 
 /* Lined paper effect */
@@ -1160,9 +1163,6 @@ h3 { font-size: clamp(1.25rem, 3vw, 1.75rem); }
 .cover__face--zine {
   background: #f5f0e8;
   padding: 12px 10px 10px 28px;
-  display: flex;
-  flex-direction: column;
-  position: relative;
   overflow: hidden;
 }
 
@@ -1250,18 +1250,12 @@ h3 { font-size: clamp(1.25rem, 3vw, 1.75rem); }
 }
 
 .cover__shape--zine-3 {
-  width: 0;
-  height: 0;
-  border-left: 20px solid transparent;
-  border-right: 20px solid transparent;
-  border-bottom: 35px solid var(--pop-bubblegum);
+  width: 35px;
+  height: 35px;
+  background: var(--pop-sky);
   bottom: 5px;
   left: 40%;
   transform: rotate(5deg);
-  border-width: 0;
-  background: var(--pop-sky);
-  width: 35px;
-  height: 35px;
   clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
 }
 
@@ -1329,8 +1323,6 @@ h3 { font-size: clamp(1.25rem, 3vw, 1.75rem); }
 .cover__face--minimal {
   background: #ffffff;
   padding: 20px 16px 16px 22px;
-  display: flex;
-  flex-direction: column;
   text-align: center;
 }
 
@@ -1415,9 +1407,6 @@ h3 { font-size: clamp(1.25rem, 3vw, 1.75rem); }
 .cover__face--retro {
   background: #f7f3e9;
   padding: 0 12px 12px 28px;
-  display: flex;
-  flex-direction: column;
-  position: relative;
 }
 
 /* Halftone dot pattern */
@@ -1555,22 +1544,24 @@ h3 { font-size: clamp(1.25rem, 3vw, 1.75rem); }
 /* === FEATURE CARDS === */
 .feature-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--gutter);
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+@media (max-width: 900px) {
+  .feature-grid {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
 }
 
 .feature-card {
   padding: 1.5rem;
   background: var(--surface-raised);
-  border: 2px solid var(--ink-rich);
+  border: 2px solid var(--ink-faint);
   border-radius: 8px;
-  box-shadow: 4px 4px 0 var(--ink-rich);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.feature-card:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0 var(--ink-rich);
+  text-align: center;
 }
 
 .feature-card__label {
