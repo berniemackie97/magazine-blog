@@ -50,6 +50,226 @@
   --cover-photo: linear-gradient(135deg, var(--pop-lemon) 0%, var(--pop-coral) 100%);
 }
 
+/* =====================================================
+   PUBLICATION PAGE THEMES
+   Each publication has its own distinct visual style
+   ===================================================== */
+
+/* RED OPS - Dark terminal/tech aesthetic */
+[data-publication="red-ops"] {
+  --surface-base: #0d1117;
+  --surface-raised: #161b22;
+  --surface-sunken: #0a0c10;
+  --surface-accent: #21262d;
+  --ink-rich: #e6edf3;
+  --ink-body: #c9d1d9;
+  --ink-muted: #8b949e;
+  --ink-faint: #484f58;
+  --pop-coral: #58a6ff;
+  --accent-main: #58a6ff;
+  --accent-alt: #39d353;
+}
+
+[data-publication="red-ops"] body {
+  background: #0d1117;
+  color: #c9d1d9;
+}
+
+[data-publication="red-ops"] .masthead {
+  background: #161b22;
+  border-bottom-color: #30363d;
+}
+
+[data-publication="red-ops"] .brand-mark {
+  background: linear-gradient(135deg, #58a6ff, #39d353);
+}
+
+[data-publication="red-ops"] h1,
+[data-publication="red-ops"] h2,
+[data-publication="red-ops"] h3 {
+  font-family: var(--font-mono);
+  color: #e6edf3;
+}
+
+[data-publication="red-ops"] .article-body {
+  font-family: var(--font-mono);
+}
+
+[data-publication="red-ops"] .article-body pre {
+  background: #161b22;
+  border: 1px solid #30363d;
+}
+
+[data-publication="red-ops"] .article-body code {
+  background: #21262d;
+  color: #58a6ff;
+}
+
+[data-publication="red-ops"] .article-body blockquote {
+  background: #161b22;
+  border-left-color: #58a6ff;
+  color: #8b949e;
+}
+
+[data-publication="red-ops"] .badge {
+  background: #39d353 !important;
+  color: #0d1117 !important;
+  border-color: #39d353 !important;
+}
+
+[data-publication="red-ops"] .btn {
+  background: #58a6ff;
+  border-color: #58a6ff;
+  color: #0d1117;
+}
+
+[data-publication="red-ops"] .btn:hover {
+  background: #79b8ff;
+  color: #0d1117;
+}
+
+[data-publication="red-ops"] .btn--secondary {
+  background: #21262d;
+  border-color: #30363d;
+  color: #c9d1d9;
+}
+
+[data-publication="red-ops"] .site-footer {
+  background: #010409;
+}
+
+[data-publication="red-ops"] .issue-nav,
+[data-publication="red-ops"] .sidebar__section {
+  background: #161b22;
+  border-color: #30363d;
+}
+
+[data-publication="red-ops"] .post-card,
+[data-publication="red-ops"] .feature-card {
+  background: #161b22;
+  border-color: #30363d;
+}
+
+/* FIELD GUIDE - Warm notebook/journal aesthetic */
+[data-publication="field-guide"] {
+  --surface-base: #f4efe4;
+  --surface-raised: #fffdf8;
+  --surface-sunken: #ebe5d8;
+  --surface-accent: #e8e0d4;
+  --ink-rich: #2d3a3a;
+  --ink-body: #3d4a4a;
+  --ink-muted: #5a6363;
+  --ink-faint: #a8b0a8;
+  --pop-coral: #1f7a8c;
+  --accent-main: #1f7a8c;
+  --accent-alt: #bfae9f;
+}
+
+[data-publication="field-guide"] body {
+  background: #f4efe4;
+  color: #2d3a3a;
+}
+
+/* Lined paper texture for field guide */
+[data-publication="field-guide"] body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 28px,
+    rgba(0, 0, 0, 0.03) 28px,
+    rgba(0, 0, 0, 0.03) 29px
+  );
+  z-index: 9998;
+}
+
+[data-publication="field-guide"] .masthead {
+  background: #fffdf8;
+  border-bottom: 2px dashed #bfae9f;
+}
+
+[data-publication="field-guide"] .brand-mark {
+  background: linear-gradient(135deg, #1f7a8c, #bfae9f);
+}
+
+[data-publication="field-guide"] h1,
+[data-publication="field-guide"] h2,
+[data-publication="field-guide"] h3 {
+  font-family: var(--font-hand);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+[data-publication="field-guide"] .article-title {
+  font-size: clamp(2.5rem, 6vw, 4rem);
+}
+
+[data-publication="field-guide"] .article-body {
+  font-family: var(--font-body);
+}
+
+[data-publication="field-guide"] .article-body pre {
+  background: #ebe5d8;
+  border: 2px dashed #bfae9f;
+  border-radius: 2px;
+}
+
+[data-publication="field-guide"] .article-body code {
+  background: #e8e0d4;
+  color: #1f7a8c;
+}
+
+[data-publication="field-guide"] .article-body blockquote {
+  background: #fffdf8;
+  border-left: 4px solid #1f7a8c;
+  font-family: var(--font-hand);
+  font-size: 1.1rem;
+}
+
+[data-publication="field-guide"] .badge {
+  background: #1f7a8c !important;
+  color: #f4efe4 !important;
+  border-color: #1f7a8c !important;
+}
+
+[data-publication="field-guide"] .btn {
+  background: #1f7a8c;
+  border-color: #2d3a3a;
+  color: #f4efe4;
+}
+
+[data-publication="field-guide"] .btn:hover {
+  background: #2a8fa3;
+  color: #f4efe4;
+}
+
+[data-publication="field-guide"] .btn--secondary {
+  background: #fffdf8;
+  border-color: #bfae9f;
+  color: #2d3a3a;
+}
+
+[data-publication="field-guide"] .site-footer {
+  background: #2d3a3a;
+}
+
+[data-publication="field-guide"] .issue-nav,
+[data-publication="field-guide"] .sidebar__section {
+  background: #fffdf8;
+  border: 2px dashed #bfae9f;
+  box-shadow: none;
+}
+
+[data-publication="field-guide"] .post-card,
+[data-publication="field-guide"] .feature-card {
+  background: #fffdf8;
+  border: 2px dashed #bfae9f;
+  box-shadow: none;
+}
+
 /* === BASE RESET === */
 *, *::before, *::after {
   box-sizing: border-box;

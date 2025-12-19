@@ -19,5 +19,17 @@
       "accent": "#1f7a8c",
       "alt": "#bfae9f"
     }
+  },
+  "pageTheme": {
+    "template": "field-notes",
+    "background": "#f4efe4",
+    "surface": "#fffdf8",
+    "text": "#2d3a3a",
+    "textMuted": "#5a6363",
+    "accent": "#1f7a8c",
+    "accentAlt": "#bfae9f",
+    "border": "#d4cfc5",
+    "headingFont": "hand",
+    "bodyFont": "body"
   }
 }
