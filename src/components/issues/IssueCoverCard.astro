@@ -56,26 +56,43 @@ function buildFeatureItems(lines: string[]): CoverFeatureItem[] {
   return items.filter((it): it is CoverFeatureItem => it !== null);
 }
 
+function defaultBlocks(publicationName: string): CoverBlock[] {
+  return [
+    { id: "spine", type: "spine", area: "spine", text: publicationName },
+    { id: "masthead", type: "masthead", area: "masthead", publicationName },
+    { id: "meta", type: "meta", area: "meta" },
+    { id: "art", type: "art", area: "art" },
+    { id: "title", type: "title", area: "title", title: "Untitled Issue" },
+    { id: "featureList", type: "featureList", area: "featureList", items: [] },
+    { id: "barcode", type: "barcode", area: "barcode" },
+    { id: "cta", type: "cta", area: "cta", text: "Open issue" },
+  ];
+}
+
+function defaultLayout() {
+  return {
+    cols: "1fr",
+    areas: ["spine", "masthead", "meta", "art", "title", "featureList", "barcode", "cta"],
+    gap: "0.75rem",
+    pad: "12px 12px 12px 42px",
+    minHeight: 400,
+  };
+}
+
 function fallbackSpec(publicationName: string): CoverSpec {
   return {
-    template: "classic",
-    layout: {
-      cols: "1fr",
-      areas: ["spine", "masthead", "meta", "art", "title", "featureList", "barcode", "cta"],
-      gap: "0.75rem",
-      pad: "12px 12px 12px 42px",
-      minHeight: 520,
-    },
-    blocks: [
-      { id: "spine", type: "spine", area: "spine", text: publicationName },
-      { id: "masthead", type: "masthead", area: "masthead", publicationName },
-      { id: "meta", type: "meta", area: "meta" },
-      { id: "art", type: "art", area: "art" },
-      { id: "title", type: "title", area: "title", title: "Untitled Issue" },
-      { id: "featureList", type: "featureList", area: "featureList", items: [] },
-      { id: "barcode", type: "barcode", area: "barcode" },
-      { id: "cta", type: "cta", area: "cta", text: "Open issue" },
-    ],
+    template: "bold-pop",
+    layout: defaultLayout(),
+    blocks: defaultBlocks(publicationName),
+  };
+}
+
+function mergeWithDefaults(spec: Partial<CoverSpec>, publicationName: string): CoverSpec {
+  return {
+    template: spec.template ?? "bold-pop",
+    theme: spec.theme,
+    layout: spec.layout ?? defaultLayout(),
+    blocks: spec.blocks && spec.blocks.length > 0 ? spec.blocks : defaultBlocks(publicationName),
   };
 }
 
@@ -140,10 +157,16 @@ function hydrateCoverSpec(base: CoverSpec): CoverSpec {
   return { ...base, blocks };
 }
 
-const baseSpec =
-  (issueData.coverSpec as CoverSpec | undefined) ??
-  (pubData.defaultCoverSpec as CoverSpec | undefined) ??
-  fallbackSpec(pubData.name);
+// Get base spec: issue override > publication default > fallback
+// Then merge with defaults to fill in missing blocks/layout
+const rawSpec =
+  (issueData.coverSpec as Partial<CoverSpec> | undefined) ??
+  (pubData.defaultCoverSpec as Partial<CoverSpec> | undefined) ??
+  null;
+
+const baseSpec = rawSpec
+  ? mergeWithDefaults(rawSpec, pubData.name)
+  : fallbackSpec(pubData.name);
 
 const spec = hydrateCoverSpec(baseSpec);
 

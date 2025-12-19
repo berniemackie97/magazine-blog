@@ -1,7 +1,5 @@
 ---
 import Layout from '../components/layout/Layout.astro';
-import PageFrame from '../components/layout/PageFrame.astro';
-import Filters from '../components/archive/Filters.astro';
 import PostCard from '../components/posts/PostCard.astro';
 import { getCollection } from 'astro:content';
 import readingTime from 'reading-time';
@@ -24,46 +22,94 @@ const normalizedPosts = posts.map((post: any) => ({
   },
 }));
 
-const filters = {
-  publications: publications.map((p) => ({ label: p.data.name, value: p.id })),
-  sections: Array.from(
-    new Map(
-      normalizedPosts.map((p: any) => {
-        const section = publicationMap[p.data.publicationId]?.data.sections.find((s: any) => s.id === p.data.sectionId);
-        return [p.data.sectionId, section?.label ?? p.data.sectionId];
-      })
-    ).entries()
-  ).map(([value, label]) => ({ value: value as string, label: label as string })),
-  formats: Array.from(new Set(normalizedPosts.map((p: any) => p.data.format))).map((v) => ({ value: v as string, label: v as string })),
-  difficulties: Array.from(new Set(normalizedPosts.map((p: any) => p.data.difficulty))).map((v) => ({ value: v as string, label: v as string })),
-  tags: Array.from(new Set(normalizedPosts.flatMap((p: any) => p.data.tags ?? []).filter(Boolean))).map((v) => ({ value: v as string, label: v as string })),
-};
-
 const sortedPosts = normalizedPosts.sort(
   (a: any, b: any) => new Date(b.data.publishedAt).getTime() - new Date(a.data.publishedAt).getTime()
 );
 ---
-<Layout title="Archive - Stackbound">
-  <PageFrame>
-    <div class="mb-6">
-      <div class="rack-eyebrow">Archive</div>
-      <h1 class="rack-title text-3xl md:text-4xl">Every article, filtered without reload.</h1>
-      <p class="max-w-2xl text-[var(--muted)]">Each stand keeps its own accent color, typography, and section taxonomy.</p>
+<Layout title="Archive - The Rack">
+  <div class="page-shell page-content">
+    <header class="page-header">
+      <h1>Archive</h1>
+      <p class="page-header__sub">Every article we've ever published</p>
+    </header>
+
+    <div class="filter-bar">
+      <select id="pub-filter" class="filter-select">
+        <option value="">All Publications</option>
+        {publications.map((p) => (
+          <option value={p.id}>{p.data.name}</option>
+        ))}
+      </select>
     </div>
-    <Filters {...filters} />
-    <div class="grid gap-4 md:grid-cols-3">
+
+    <div class="posts-grid">
       {sortedPosts.map((post: any) => (
         <div
           data-filter-item
           data-publication={post.data.publicationId}
-          data-section={post.data.sectionId}
-          data-format={post.data.format}
-          data-difficulty={post.data.difficulty}
-          data-tags={post.data.tags.join(',')}
         >
           <PostCard post={post} publication={publicationMap[post.data.publicationId]} />
         </div>
       ))}
     </div>
-  </PageFrame>
+  </div>
+
+  <script is:inline>
+    const select = document.getElementById('pub-filter');
+    const items = document.querySelectorAll('[data-filter-item]');
+
+    if (select) {
+      select.addEventListener('change', (e) => {
+        const value = e.target.value;
+        items.forEach((item) => {
+          if (!value || item.dataset.publication === value) {
+            item.style.display = '';
+          } else {
+            item.style.display = 'none';
+          }
+        });
+      });
+    }
+  </script>
 </Layout>
+
+<style>
+  .page-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .page-header__sub {
+    font-family: var(--font-hand);
+    font-size: 1.25rem;
+    color: var(--ink-muted);
+  }
+
+  .filter-bar {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .filter-select {
+    padding: 0.5rem 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    background: var(--surface-raised);
+    border: 2px solid var(--ink-rich);
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  .filter-select:focus {
+    outline: 3px solid var(--pop-coral);
+    outline-offset: 2px;
+  }
+
+  .posts-grid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+</style>

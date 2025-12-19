@@ -1,6 +1,5 @@
 ---
 import Layout from '../../components/layout/Layout.astro';
-import PageFrame from '../../components/layout/PageFrame.astro';
 import IssueCoverCard from '../../components/issues/IssueCoverCard.astro';
 import PostCard from '../../components/posts/PostCard.astro';
 import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
@@ -32,61 +31,164 @@ const featuredCoverLines = latestLocked ? coverLinesFromPosts(latestLockedPosts,
 const backIssueCards = await Promise.all(
   backIssues.map(async (issue: any) => {
     const posts = (await getPostsForIssue(publication.id, issue.data.issueSlug)) as any;
-    return { issue, coverLines: coverLinesFromPosts(posts as any, 4) };
+    const tilt = (Math.random() - 0.5) * 3;
+    return { issue, coverLines: coverLinesFromPosts(posts as any, 4), tilt };
   })
 );
 
 const latestArticles = ((await getPostsByPublication(publication.id)) as any).slice(0, 4);
 ---
-<Layout title={`${publication.data.name} - Stand`} publication={publication} accent={publication.data.accent}>
-  <PageFrame accent={publication.data.accent}>
-    <div class="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-      <div>
-        <div class={`rack-eyebrow ${publication.data.displayFont ?? ''}`}>{publication.data.name}</div>
-        <h1 class="rack-title text-3xl md:text-4xl">{publication.data.description}</h1>
-      </div>
+<Layout title={`${publication.data.name} - The Rack`} publication={publication} accent={publication.data.accent}>
+  <div class="publication-page page-shell page-content">
+    <header class="publication-header">
+      <span class="publication-label">{publication.data.name}</span>
+      <h1 class="publication-title">{publication.data.description}</h1>
       {openIssue && (
-        <a href={`/issues/${publication.id}/${openIssue.data.issueSlug}`} class="btn-link">
-          Open issue
+        <a href={`/issues/${publication.id}/${openIssue.data.issueSlug}`} class="btn-primary">
+          View Open Issue
         </a>
       )}
-    </div>
+    </header>
+
     {latestLocked && (
-      <div class="mb-10">
-        <div class="rack-eyebrow mb-2">Latest locked</div>
-        <IssueCoverCard issue={latestLocked} publication={publication} coverLines={featuredCoverLines} showStatus />
-      </div>
+      <section class="publication-section">
+        <h2 class="section-label">Latest Issue</h2>
+        <div class="featured-issue">
+          <IssueCoverCard issue={latestLocked} publication={publication} coverLines={featuredCoverLines} showStatus />
+        </div>
+      </section>
     )}
+
     {openIssue && (
-      <div class="mb-10">
-        <div class="rack-eyebrow mb-2">Open issue</div>
-        <IssueCoverCard
-          issue={openIssue}
-          publication={publication}
-          coverLines={coverLinesFromPosts(await getPostsForIssue(publication.id, openIssue.data.issueSlug), 3)}
-          showStatus
-        />
-      </div>
+      <section class="publication-section">
+        <h2 class="section-label">Open Issue</h2>
+        <div class="featured-issue">
+          <IssueCoverCard
+            issue={openIssue}
+            publication={publication}
+            coverLines={coverLinesFromPosts(await getPostsForIssue(publication.id, openIssue.data.issueSlug), 3)}
+            showStatus
+          />
+        </div>
+      </section>
     )}
+
     {backIssueCards.length > 0 && (
-      <div class="mb-10">
-        <div class="rack-eyebrow mb-2">Back issues</div>
-        <div class="cover-grid">
+      <section class="publication-section">
+        <h2 class="section-label">Back Issues</h2>
+        <div class="back-issues-grid">
           {backIssueCards.map((card) => (
-            <IssueCoverCard issue={card.issue} publication={publication} coverLines={card.coverLines} showStatus />
+            <div class="back-issue-item" style={`--tilt: ${card.tilt}deg`}>
+              <IssueCoverCard issue={card.issue} publication={publication} coverLines={card.coverLines} showStatus />
+            </div>
           ))}
         </div>
-      </div>
+      </section>
     )}
+
     {latestArticles.length > 0 && (
-      <div>
-        <div class="rack-eyebrow mb-2">Latest articles</div>
-        <div class="grid gap-4 md:grid-cols-2">
+      <section class="publication-section">
+        <h2 class="section-label">Latest Articles</h2>
+        <div class="articles-grid">
           {latestArticles.map((post: any) => (
             <PostCard post={post} publication={publication} />
           ))}
         </div>
-      </div>
+      </section>
     )}
-  </PageFrame>
+  </div>
 </Layout>
+
+<style>
+  .publication-page {
+    padding: 2rem 0;
+  }
+
+  .publication-header {
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 3px solid var(--ink-rich);
+  }
+
+  .publication-label {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 0.5rem;
+  }
+
+  .publication-title {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+  }
+
+  .btn-primary {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    background: var(--ink-rich);
+    color: var(--surface-base);
+    border: 2px solid var(--ink-rich);
+    border-radius: 6px;
+    box-shadow: 4px 4px 0 var(--ink-faint);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .btn-primary:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 var(--ink-faint);
+  }
+
+  .publication-section {
+    margin-bottom: 3rem;
+  }
+
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px dashed var(--ink-faint);
+  }
+
+  .featured-issue {
+    max-width: 400px;
+  }
+
+  .back-issues-grid {
+    display: grid;
+    gap: 2rem;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+
+  .back-issue-item {
+    transform: rotate(var(--tilt, 0deg));
+    transition: transform 0.2s ease;
+  }
+
+  .back-issue-item:hover {
+    transform: rotate(0deg) scale(1.02);
+  }
+
+  .articles-grid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+
+  @media (min-width: 768px) {
+    .articles-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>

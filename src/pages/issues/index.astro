@@ -1,6 +1,5 @@
 ---
 import Layout from '../../components/layout/Layout.astro';
-import PageFrame from '../../components/layout/PageFrame.astro';
 import IssueCoverCard from '../../components/issues/IssueCoverCard.astro';
 import { getCollection, getEntry } from 'astro:content';
 import { getPostsForIssue } from '../../lib/contentSource';
@@ -14,114 +13,92 @@ const issueCards = await Promise.all(
   issues.map(async (issue: any) => {
     const publication = await getEntry('publications', issue.data.publicationId);
     const posts = (await getPostsForIssue(issue.data.publicationId, issue.data.issueSlug)) as any;
-    return { issue, publication: publication!, coverLines: coverLinesFromPosts(posts as any, 5) };
+    const tilt = (Math.random() - 0.5) * 3;
+    return { issue, publication: publication!, coverLines: coverLinesFromPosts(posts as any, 5), tilt };
   })
 );
 
 const publications = await getCollection('publications');
-const years = Array.from(new Set(issues.map((i) => new Date(i.data.date).getFullYear()))).sort((a, b) => b - a);
-const months = Array.from(new Set(issues.map((i) => new Date(i.data.date).getMonth()))).sort((a, b) => a - b);
 ---
-<Layout title="Issues - Stackbound">
-  <PageFrame>
-    <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
-      <div>
-        <div class="rack-eyebrow">Issues</div>
-        <h1 class="rack-title text-3xl md:text-4xl">Browse the rack</h1>
-      </div>
-      <div class="flex items-center gap-3 text-sm">
-        <button type="button" id="prev-month" class="btn-link">Prev month</button>
-        <button type="button" id="next-month" class="btn-link">Next month</button>
-      </div>
-    </div>
-    <form id="issue-filters" class="mb-6 grid gap-3 rounded-xl border border-[var(--rule)] bg-[var(--paper-2)]/85 p-4 shadow-paper md:grid-cols-4">
-      <select
-        name="publication"
-        class="w-full rounded-md border border-[var(--rule)] bg-[var(--paper-3)]/80 p-2 text-sm focus:border-[var(--accent)] focus:outline-none"
-      >
-        <option value="">Publication</option>
+<Layout title="All Issues - The Rack">
+  <div class="page-shell page-content">
+    <header class="page-header">
+      <h1>Browse All Issues</h1>
+      <p class="page-header__sub">Every issue we've published, ready to read.</p>
+    </header>
+
+    <div class="filter-bar">
+      <select id="pub-filter" class="filter-select">
+        <option value="">All Publications</option>
         {publications.map((p) => (
           <option value={p.id}>{p.data.name}</option>
         ))}
       </select>
-      <select
-        name="year"
-        class="w-full rounded-md border border-[var(--rule)] bg-[var(--paper-3)]/80 p-2 text-sm focus:border-[var(--accent)] focus:outline-none"
-      >
-        <option value="">Year</option>
-        {years.map((y) => (
-          <option value={y}>{y}</option>
-        ))}
-      </select>
-      <select
-        name="month"
-        class="w-full rounded-md border border-[var(--rule)] bg-[var(--paper-3)]/80 p-2 text-sm focus:border-[var(--accent)] focus:outline-none"
-      >
-        <option value="">Month</option>
-        {months.map((m) => (
-          <option value={m}>{new Date(2024, m).toLocaleDateString(undefined, { month: 'long' })}</option>
-        ))}
-      </select>
-      <div class="flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-neutral-300">
-        <span class="h-[1px] flex-1 bg-[var(--rule)]"></span>
-        Covers only
-      </div>
-    </form>
-    <div class="cover-grid" id="issue-grid">
+    </div>
+
+    <div class="shelf-grid" id="issue-grid">
       {issueCards.map((card) => (
         <div
           data-filter-item
           data-publication={card.publication.id}
-          data-year={new Date(card.issue.data.date).getFullYear()}
-          data-month={new Date(card.issue.data.date).getMonth()}
+          style={`--tilt: ${card.tilt}deg`}
         >
           <IssueCoverCard issue={card.issue} publication={card.publication} coverLines={card.coverLines} showStatus />
         </div>
       ))}
     </div>
-  </PageFrame>
+  </div>
+
   <script is:inline>
-    const form = document.querySelector('#issue-filters');
-    const items = Array.from(document.querySelectorAll('[data-filter-item]'));
-    const months = [
-      ...new Set(items.map((i) => (i instanceof HTMLElement ? parseInt(i.dataset.month ?? '0', 10) : 0))),
-    ];
-    const sortedMonths = months.sort((a, b) => a - b);
-    let currentMonthIndex = sortedMonths.indexOf(new Date().getMonth());
+    const select = document.getElementById('pub-filter');
+    const items = document.querySelectorAll('[data-filter-item]');
 
-    function applyFilters() {
-      if (!(form instanceof HTMLFormElement)) return;
-      const data = new FormData(form);
-      const pub = data.get('publication')?.toString() ?? '';
-      const year = data.get('year')?.toString() ?? '';
-      const month = data.get('month')?.toString() ?? '';
-
-      items.forEach((item) => {
-        if (!(item instanceof HTMLElement)) return;
-        const match =
-          (!pub || item.dataset.publication === pub) &&
-          (!year || item.dataset.year === year) &&
-          (!month || item.dataset.month === month);
-        item.toggleAttribute('hidden', !match);
+    if (select) {
+      select.addEventListener('change', (e) => {
+        const value = e.target.value;
+        items.forEach((item) => {
+          if (!value || item.dataset.publication === value) {
+            item.style.display = '';
+          } else {
+            item.style.display = 'none';
+          }
+        });
       });
     }
-
-    if (form instanceof HTMLFormElement) {
-      form.addEventListener('input', applyFilters);
-    }
-
-    function changeMonth(delta) {
-      if (sortedMonths.length === 0) return;
-      currentMonthIndex = (currentMonthIndex + delta + sortedMonths.length) % sortedMonths.length;
-      const monthValue = sortedMonths[currentMonthIndex].toString();
-      const monthSelect = form?.elements.namedItem('month');
-      if (monthSelect instanceof HTMLSelectElement) {
-        monthSelect.value = monthValue;
-        applyFilters();
-      }
-    }
-
-    document.querySelector('#prev-month')?.addEventListener('click', () => changeMonth(-1));
-    document.querySelector('#next-month')?.addEventListener('click', () => changeMonth(1));
   </script>
 </Layout>
+
+<style>
+  .page-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .page-header__sub {
+    font-family: var(--font-hand);
+    font-size: 1.25rem;
+    color: var(--ink-muted);
+  }
+
+  .filter-bar {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .filter-select {
+    padding: 0.5rem 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    background: var(--surface-raised);
+    border: 2px solid var(--ink-rich);
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  .filter-select:focus {
+    outline: 3px solid var(--pop-coral);
+    outline-offset: 2px;
+  }
+</style>

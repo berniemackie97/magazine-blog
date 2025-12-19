@@ -1,93 +1,169 @@
 ---
 import Layout from '../components/layout/Layout.astro';
-import RackShelf from '../components/issues/RackShelf.astro';
 import IssueCoverCard from '../components/issues/IssueCoverCard.astro';
 import { getCollection, getEntry } from 'astro:content';
 import { getIssuesForPublication, getPostsForIssue, getLatestIssues } from '../lib/contentSource';
 import { coverLinesFromPosts } from '../lib/lineup';
 
-const publications = (await getCollection('publications')).filter((publication) => publication.data.isFeatured);
+// Get featured publications
+const publications = (await getCollection('publications')).filter((p) => p.data.isFeatured);
 
+// Get latest issues across all publications
+const latestIssues = await getLatestIssues(8);
+const latestItems = await Promise.all(
+  latestIssues.map(async (issue: any) => {
+    const publication = await getEntry('publications', issue.data.publicationId);
+    const posts = await getPostsForIssue(issue.data.publicationId, issue.data.issueSlug);
+    const tilt = (Math.random() - 0.5) * 6; // Random tilt between -3 and 3 degrees
+    return {
+      issue,
+      publication: publication!,
+      coverLines: coverLinesFromPosts(posts as any, 4),
+      tilt
+    };
+  })
+);
+
+// Get per-publication shelves
 const shelves = await Promise.all(
   publications.map(async (publication) => {
     const issues = (await getIssuesForPublication(publication.id))
       .filter((issue: any) => issue.data.status === 'locked')
-      .slice(0, 6);
+      .slice(0, 4);
     const items = await Promise.all(
       issues.map(async (issue: any) => {
-        const posts = (await getPostsForIssue(publication.id, issue.data.issueSlug)) as any;
-        return { issue, publication, coverLines: coverLinesFromPosts(posts as any, 6) };
+        const posts = await getPostsForIssue(publication.id, issue.data.issueSlug);
+        const tilt = (Math.random() - 0.5) * 5;
+        return {
+          issue,
+          publication,
+          coverLines: coverLinesFromPosts(posts as any, 4),
+          tilt
+        };
       })
     );
     return { publication, items };
   })
 );
-
-const latestArrivals = await getLatestIssues(6);
-const latestShelfItems = await Promise.all(
-  latestArrivals.map(async (issue: any) => {
-    const publication = await getEntry('publications', issue.data.publicationId);
-    const posts = (await getPostsForIssue(issue.data.publicationId, issue.data.issueSlug)) as any;
-    return { issue, publication: publication!, coverLines: coverLinesFromPosts(posts as any, 4) };
-  })
-);
 ---
-<Layout title="Stackbound Press - Rack" heroFrame>
-  <div class="space-y-12">
-    <section class="rack-hero">
-      <div class="rack-hero-inner">
-        <div class="rack-header">
-          <div>
-            <div class="rack-eyebrow">Latest issues</div>
-            <h1 class="rack-title">On the digital newsstand.</h1>
-            <p class="rack-sub">
-              Curated dev magazines, ready to read. Grab a cover, open the issue, dive into the lineup.
-            </p>
+
+<Layout title="The Rack">
+  <div class="rack page-shell">
+    <!-- Hero Section -->
+    <section class="rack__hero">
+      <h1 class="rack__title">Fresh Off The Press</h1>
+      <p class="rack__subtitle">Grab a cover, crack it open, start reading</p>
+    </section>
+
+    <!-- Latest Issues Shelf -->
+    <section class="rack__shelf">
+      <h2 class="shelf__label">Latest Issues</h2>
+      <div class="shelf__row">
+        {latestItems.map((item, idx) => (
+          <div class="shelf__item" style={`--tilt: ${item.tilt}deg; --idx: ${idx}`}>
+            <IssueCoverCard
+              issue={item.issue}
+              publication={item.publication}
+              coverLines={item.coverLines}
+              showStatus
+            />
           </div>
-          <div class="flex flex-wrap gap-3">
-            <a href="/issues" class="btn-link">Browse all</a>
-            <a href="/archive" class="btn-link">Archive</a>
-          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- Quick Actions -->
+    <section class="actions-row">
+      <a href="/issues" class="btn">Browse All Issues</a>
+      <a href="/publications" class="btn btn--secondary">Publications</a>
+      <a href="/archive" class="btn btn--secondary">Archive</a>
+    </section>
+
+    <!-- Feature Cards -->
+    <section class="feature-section">
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-card__label">Curated</div>
+          <h3 class="feature-card__title">Themed Issues</h3>
+          <p class="feature-card__body">Each issue is carefully curated around a theme, with articles that build on each other.</p>
         </div>
-        <div class="rack-rail"></div>
-        <div class="shelf-grid">
-          {latestShelfItems.map((item) => (
-            <IssueCoverCard issue={item.issue} publication={item.publication} coverLines={item.coverLines} showStatus />
-          ))}
+        <div class="feature-card">
+          <div class="feature-card__label">Practical</div>
+          <h3 class="feature-card__title">Real Code</h3>
+          <p class="feature-card__body">No fluff. Every tutorial includes working examples you can actually use.</p>
         </div>
-        <div class="mt-4 flex justify-center">
-          <a href="/issues" class="btn-link">View more</a>
+        <div class="feature-card">
+          <div class="feature-card__label">Fresh</div>
+          <h3 class="feature-card__title">Regular Drops</h3>
+          <p class="feature-card__body">New issues drop regularly. Subscribe to never miss a release.</p>
         </div>
       </div>
     </section>
 
-    <div class="feature-grid">
-      <div class="feature-card">
-        <div class="caps text-xs text-[var(--accent)]">Features</div>
-        <h3 class="font-display text-2xl">Curated shelves</h3>
-        <p class="text-sm text-[var(--muted)]">Explore detailed guides and opinionated issues from each masthead.</p>
-      </div>
-      <div class="feature-card">
-        <div class="caps text-xs text-[var(--accent)]">Articles</div>
-        <h3 class="font-display text-2xl">Fresh drops</h3>
-        <p class="text-sm text-[var(--muted)]">Read the newest posts, routed straight from the CMS.</p>
-      </div>
-      <div class="feature-card">
-        <div class="caps text-xs text-[var(--accent)]">Guides</div>
-        <h3 class="font-display text-2xl">Hands-on learning</h3>
-        <p class="text-sm text-[var(--muted)]">Step-by-step tutorials for modern frontend and full-stack workflows.</p>
-      </div>
-    </div>
-
-    <div class="space-y-12">
-      {shelves.map((shelf) => (
-        <RackShelf
-          title={`${shelf.publication.data.name} - Featured`}
-          items={shelf.items}
-          ctaLabel="Latest issue"
-          ctaHref={`/issues/${shelf.publication.id}/${shelf.items[0]?.issue.data.issueSlug}`}
-        />
-      ))}
-    </div>
+    <!-- Per-Publication Shelves -->
+    {shelves.filter(s => s.items.length > 0).map((shelf) => (
+      <section class="rack__shelf">
+        <h2 class="shelf__label">{shelf.publication.data.name}</h2>
+        <div class="shelf__row">
+          {shelf.items.map((item, idx) => (
+            <div class="shelf__item" style={`--tilt: ${item.tilt}deg; --idx: ${idx}`}>
+              <IssueCoverCard
+                issue={item.issue}
+                publication={item.publication}
+                coverLines={item.coverLines}
+              />
+            </div>
+          ))}
+        </div>
+        {shelf.items.length > 0 && (
+          <div class="shelf__cta">
+            <a href={`/publications/${shelf.publication.id}`} class="btn-link">
+              See all from {shelf.publication.data.name}
+            </a>
+          </div>
+        )}
+      </section>
+    ))}
   </div>
 </Layout>
+
+<style>
+  .rack {
+    padding: 2rem 0 4rem;
+  }
+
+  .rack__hero {
+    text-align: center;
+    padding: 2rem 0 3rem;
+  }
+
+  .actions-row {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin: 2rem 0 3rem;
+  }
+
+  .feature-section {
+    margin: 3rem 0;
+  }
+
+  .shelf__cta {
+    margin-top: 1rem;
+    padding-left: 0.5rem;
+  }
+
+  /* Stagger covers for visual interest */
+  .shelf__item {
+    /* Even items get a slight offset */
+  }
+
+  .shelf__item:nth-child(even) {
+    margin-top: 1.5rem;
+  }
+
+  .shelf__item:nth-child(3n) {
+    margin-top: 0.75rem;
+  }
+</style>

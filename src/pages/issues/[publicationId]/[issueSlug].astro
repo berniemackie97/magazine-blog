@@ -1,6 +1,5 @@
 ---
 import Layout from '../../../components/layout/Layout.astro';
-import PageFrame from '../../../components/layout/PageFrame.astro';
 import IssueOpener from '../../../components/issues/IssueOpener.astro';
 import Toc from '../../../components/issues/Toc.astro';
 
@@ -72,51 +71,43 @@ if (!publication || !issue) {
 const posts = await getPostsForIssue(publicationId, issueSlug);
 const { lead, secondary, briefs } = buildIssueLineup(posts as any, issue as any);
 const hasLead = !!lead;
+
+const formattedDate = new Date(issue.data.date).toLocaleDateString('en-US', {
+  month: 'long',
+  day: 'numeric',
+  year: 'numeric',
+});
 ---
 <Layout
   title={`${issue.data.displayTitle} - ${publication.data.name}`}
   publication={publication}
   accent={publication.data.accent}
 >
-  <PageFrame accent={publication.data.accent}>
-    <div class="mb-6 border-b border-[var(--rule)] pb-4">
-      <div class="rack-eyebrow">{publication.data.name}</div>
-      <h1
-        class={`rack-title text-3xl leading-tight md:text-4xl ${publication.data.displayFont ?? ''}`}
-      >
-        {issue.data.displayTitle}
-      </h1>
+  <div class="issue-page page-shell page-content">
+    <header class="issue-header">
+      <span class="issue-label">{publication.data.name}</span>
+      <h1 class="issue-title">{issue.data.displayTitle}</h1>
 
-      <div class="mt-2 flex flex-wrap items-center gap-3 text-sm uppercase tracking-[0.12em] text-[var(--muted)]">
+      <div class="issue-meta">
         <span>Vol {issue.data.volume}</span>
-        <span>|</span>
+        <span class="meta-sep">|</span>
         <span>No {issue.data.number}</span>
-        <span>|</span>
-        <span>
-          {new Date(issue.data.date).toLocaleDateString(undefined, {
-            month: 'long',
-            day: 'numeric',
-            year: 'numeric',
-          })}
-        </span>
-        <span
-          class="rounded-sm border border-[var(--rule)] bg-[var(--accent)]/12 px-2 py-1 text-xs uppercase tracking-[0.16em] text-[var(--accent)]"
-        >
+        <span class="meta-sep">|</span>
+        <span>{formattedDate}</span>
+        <span class="badge" style={`background: ${publication.data.accent}; color: white; border-color: ${publication.data.accent}`}>
           {issue.data.status}
         </span>
-        <span
-          class="rounded-sm bg-[var(--accent)]/12 px-2 py-1 text-xs uppercase tracking-[0.16em] text-[var(--accent)]"
-        >
+        <span class="theme-tag">
           {issue.data.theme}
         </span>
       </div>
 
       {issue.data.notesFromEditor && (
-        <p class="mt-3 max-w-3xl text-[var(--muted)]">
+        <p class="editor-notes">
           {issue.data.notesFromEditor}
         </p>
       )}
-    </div>
+    </header>
 
     {hasLead ? (
       <>
@@ -127,20 +118,105 @@ const hasLead = !!lead;
           secondary={secondary as any}
           briefs={briefs as any}
         />
-        <div class="mt-8">
+        <div class="toc-section">
           <Toc posts={posts as any} sections={publication.data.sections} />
         </div>
       </>
     ) : (
-      <div
-        class="feature-card border border-[var(--rule)] bg-[var(--paper-2)]/80 p-4 shadow-paper"
-      >
-        <div class="rack-eyebrow mb-2">Lineup pending</div>
-        <p class="text-[var(--muted)]">
-          This issue is missing a lead story. Add a lead post to publish its
-          opener.
+      <div class="pending-card">
+        <span class="pending-label">Lineup pending</span>
+        <p class="pending-text">
+          This issue is missing a lead story. Add a lead post to publish its opener.
         </p>
       </div>
     )}
-  </PageFrame>
+  </div>
 </Layout>
+
+<style>
+  .issue-page {
+    padding: 2rem 0;
+  }
+
+  .issue-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 3px solid var(--ink-rich);
+  }
+
+  .issue-label {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 0.5rem;
+  }
+
+  .issue-title {
+    font-size: clamp(2rem, 5vw, 3rem);
+    line-height: 1.1;
+    margin-bottom: 1rem;
+  }
+
+  .issue-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+
+  .meta-sep {
+    color: var(--ink-faint);
+  }
+
+  .theme-tag {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.7rem;
+    background: var(--surface-sunken);
+    border: 1px solid var(--ink-faint);
+    border-radius: 4px;
+  }
+
+  .editor-notes {
+    margin-top: 1rem;
+    max-width: 700px;
+    color: var(--ink-muted);
+    font-style: italic;
+    line-height: 1.6;
+  }
+
+  .toc-section {
+    margin-top: 3rem;
+  }
+
+  .pending-card {
+    background: var(--surface-raised);
+    border: 2px solid var(--ink-rich);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 6px 6px 0 var(--ink-rich);
+  }
+
+  .pending-label {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 0.5rem;
+  }
+
+  .pending-text {
+    color: var(--ink-muted);
+    line-height: 1.6;
+  }
+</style>

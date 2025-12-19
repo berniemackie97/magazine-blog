@@ -1,9 +1,7 @@
 ---
 import MastheadBar from './MastheadBar.astro';
 import type { CollectionEntry } from 'astro:content';
-import PageFrame from './PageFrame.astro';
 
-import '../../styles/tailwind.css';
 import '../../styles/global.css';
 
 interface Props {
@@ -11,16 +9,14 @@ interface Props {
   description?: string;
   accent?: string;
   publication?: CollectionEntry<'publications'> | null;
-  heroFrame?: boolean;
   lang?: string;
 }
 
 const {
-  title = 'Magazine Rack',
-  description = 'Curated dev magazines, ready to read.',
+  title = 'The Rack',
+  description = 'Programming tutorials and stories, organized like magazines on a newsstand.',
   accent,
   publication,
-  heroFrame = false,
   lang = 'en',
 } = Astro.props;
 
@@ -33,29 +29,80 @@ const publicationKey = publication?.id ?? 'global';
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="color-scheme" content="dark" />
+    <meta name="color-scheme" content="light" />
     <meta name="description" content={description} />
-    {accentValue ? <meta name="theme-color" content={accentValue} /> : null}
+    {accentValue ? <meta name="theme-color" content={accentValue} /> : <meta name="theme-color" content="#faf7f2" />}
     <title>{title}</title>
 
     <slot name="head" />
   </head>
   <body>
-    <a class="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3" href="#content">
+    <a class="visually-hidden" href="#content" style="position: absolute; top: 0.5rem; left: 0.5rem; z-index: 1000; background: var(--pop-coral); color: white; padding: 0.5rem 1rem; border-radius: 4px;">
       Skip to content
     </a>
 
-    <div class="site-surface">
-      <MastheadBar publication={publication} />
-      <main id="content" class="page-shell">
-        {heroFrame ? (
-          <PageFrame accent={accentValue ?? undefined}>
-            <slot />
-          </PageFrame>
-        ) : (
-          <slot />
-        )}
-      </main>
-    </div>
+    <MastheadBar publication={publication} />
+
+    <main id="content">
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="page-shell">
+        <div class="footer-content">
+          <p class="footer-brand">The Rack</p>
+          <p class="footer-tagline">Programming tutorials and stories, organized like magazines.</p>
+          <nav class="footer-links">
+            <a href="/issues">Issues</a>
+            <a href="/publications">Publications</a>
+            <a href="/archive">Archive</a>
+          </nav>
+        </div>
+      </div>
+    </footer>
   </body>
 </html>
+
+<style>
+  .site-footer {
+    margin-top: 4rem;
+    padding: 3rem 0;
+    background: var(--ink-rich);
+    color: var(--surface-base);
+  }
+
+  .footer-content {
+    text-align: center;
+  }
+
+  .footer-brand {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.5rem;
+  }
+
+  .footer-tagline {
+    color: var(--ink-faint);
+    margin-bottom: 1.5rem;
+  }
+
+  .footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .footer-links a {
+    color: var(--ink-faint);
+    transition: color 0.15s ease;
+  }
+
+  .footer-links a:hover {
+    color: var(--surface-base);
+  }
+</style>

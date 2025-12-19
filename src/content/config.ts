@@ -1,15 +1,60 @@
 import { defineCollection, z } from "astro:content";
 
-const coverTemplateId = z.enum(["ops-bulletin", "field-notes", "neon-pop"]);
+// Cover specification schemas - matching Sanity structure
+const coverThemeSchema = z.object({
+  paper: z.string().optional(),
+  ink: z.string().optional(),
+  accent: z.string().optional(),
+  alt: z.string().optional(),
+  photo: z.string().optional(),
+  tilt: z.string().optional(),
+}).optional();
 
-const coverPalette = z
-  .object({
-    paper: z.string().optional(),
-    ink: z.string().optional(),
-    accent: z.string().optional(),
-    alt: z.string().optional(),
-  })
-  .optional();
+const coverLayoutSchema = z.object({
+  cols: z.string(),
+  rows: z.string().optional(),
+  areas: z.array(z.string()).optional(),
+  gap: z.string().optional(),
+  pad: z.string().optional(),
+  minHeight: z.number().optional(),
+}).optional();
+
+const coverFeatureItemSchema = z.object({
+  no: z.string().optional(),
+  text: z.string(),
+});
+
+const coverBlockSchema = z.object({
+  id: z.string(),
+  type: z.enum(['masthead', 'title', 'meta', 'art', 'featureList', 'sticker', 'barcode', 'cta', 'spine']),
+  area: z.string(),
+  tone: z.enum(['paper', 'ink', 'muted', 'accent']).optional(),
+  rotate: z.number().optional(),
+  align: z.enum(['start', 'center', 'end']).optional(),
+  hidden: z.boolean().optional(),
+  // Type-specific fields
+  publicationName: z.string().optional(),
+  statusText: z.string().optional(),
+  title: z.string().optional(),
+  dek: z.string().optional(),
+  left: z.string().optional(),
+  right: z.string().optional(),
+  price: z.string().optional(),
+  background: z.string().optional(),
+  heading: z.string().optional(),
+  hint: z.string().optional(),
+  items: z.array(coverFeatureItemSchema).optional(),
+  big: z.string().optional(),
+  small: z.string().optional(),
+  text: z.string().optional(),
+});
+
+const coverSpecSchema = z.object({
+  template: z.string().default('bold-pop'),
+  theme: coverThemeSchema,
+  layout: coverLayoutSchema,
+  blocks: z.array(coverBlockSchema).optional(),
+}).optional();
 
 const publications = defineCollection({
   type: "data",
@@ -19,9 +64,6 @@ const publications = defineCollection({
     description: z.string(),
     accent: z.string(),
     displayFont: z.string(),
-    coverTemplate: coverTemplateId.optional(),
-    coverPalette,
-
     sections: z.array(
       z.object({
         id: z.string(),
@@ -29,6 +71,7 @@ const publications = defineCollection({
       }),
     ),
     isFeatured: z.boolean().default(false),
+    defaultCoverSpec: coverSpecSchema,
   }),
 });
 
@@ -54,6 +97,7 @@ const issues = defineCollection({
         secondaryPostSlugs: z.array(z.string()).max(4).optional(),
       })
       .optional(),
+    coverSpec: coverSpecSchema,
   }),
 });
 

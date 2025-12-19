@@ -4,13 +4,11 @@ import type { CollectionEntry } from 'astro:content';
 interface Props {
   publication?: CollectionEntry<'publications'> | null;
   siteTitle?: string;
-  siteSubtitle?: string;
 }
 
 const {
   publication = null,
-  siteTitle = 'Magazine Rack',
-  siteSubtitle = 'Latest issues for developers',
+  siteTitle = 'The Rack',
 } = Astro.props;
 
 // Current path for active-link state
@@ -20,36 +18,56 @@ function isActive(href: string): boolean {
   if (href === '/') return pathname === '/';
   return pathname === href || pathname.startsWith(`${href}/`);
 }
-
-// Only set --accent here as a fallback if a publication is present.
-// (Layout.astro already sets it on <html> when you pass `publication`.)
-const accentStyle = publication?.data?.accent ? `--accent: ${publication.data.accent};` : undefined;
 ---
-<header class="masthead" style={accentStyle} data-publication={publication?.id ?? 'global'}>
+<header class="masthead">
   <div class="masthead-bar">
-    <a href="/" class="flex items-center gap-3" aria-label={`${siteTitle} home`}>
-      <div class="brand-mark" aria-hidden="true">MR</div>
-      <div>
-        <div class="brand-title">{siteTitle}</div>
-        <div class="brand-sub">{siteSubtitle}</div>
-      </div>
+    <a href="/" class="brand" aria-label={`${siteTitle} home`}>
+      <div class="brand-mark" aria-hidden="true">TR</div>
+      <div class="brand-title">{siteTitle}</div>
     </a>
 
     <nav class="nav-links" aria-label="Primary navigation">
-      <a href="/issues" aria-current={isActive('/issues') ? 'page' : undefined}>Issues</a>
-      <a href="/archive" aria-current={isActive('/archive') ? 'page' : undefined}>Archive</a>
-      <a href="/publications" aria-current={isActive('/publications') ? 'page' : undefined}>Stands</a>
+      <a href="/issues" class={isActive('/issues') ? 'active' : ''}>Issues</a>
+      <a href="/publications" class={isActive('/publications') ? 'active' : ''}>Publications</a>
+      <a href="/archive" class={isActive('/archive') ? 'active' : ''}>Archive</a>
     </nav>
   </div>
 
-  {publication ? (
-    <div class="border-t border-[var(--rule)] bg-[var(--paper-2)]/90 px-[var(--page-pad)] py-2">
-      <div class="mx-auto flex max-w-[1240px] items-center justify-between text-xs uppercase tracking-[0.18em]">
-        <span class={publication.data.displayFont ?? ''}>{publication.data.name}</span>
-        <span class="rounded-sm border border-[var(--rule)] bg-[var(--accent)]/15 px-2 py-1 text-[var(--accent)]">
-          Accent live
+  {publication && (
+    <div class="publication-bar">
+      <div class="publication-bar__inner">
+        <span class="publication-bar__name" style={`--pub-accent: ${publication.data.accent}`}>
+          {publication.data.name}
         </span>
       </div>
     </div>
-  ) : null}
+  )}
 </header>
+
+<style>
+  .publication-bar {
+    background: var(--surface-sunken);
+    border-top: 2px solid var(--ink-faint);
+    padding: 0.5rem var(--page-pad);
+  }
+
+  .publication-bar__inner {
+    max-width: var(--page-max);
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .publication-bar__name {
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--pub-accent, var(--ink-body));
+  }
+
+  .nav-links a.active::after {
+    transform: scaleX(1);
+  }
+</style>
