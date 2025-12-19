@@ -62,7 +62,7 @@ function defaultBlocks(publicationName: string): CoverBlock[] {
     { id: "masthead", type: "masthead", area: "masthead", publicationName },
     { id: "meta", type: "meta", area: "meta" },
     { id: "art", type: "art", area: "art" },
-    { id: "title", type: "title", area: "title", title: "Untitled Issue" },
+    { id: "title", type: "title", area: "title", title: "" }, // Empty so hydrateCoverSpec fills from issue data
     { id: "featureList", type: "featureList", area: "featureList", items: [] },
     { id: "barcode", type: "barcode", area: "barcode" },
     { id: "cta", type: "cta", area: "cta", text: "Open issue" },
