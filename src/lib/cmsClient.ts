@@ -25,6 +25,7 @@ if (sanityEnabled && projectId && dataset) {
     dataset,
     apiVersion: "2024-01-01",
     useCdn: true,
+    token, // Include token for private datasets
   });
 
   if (token) {
