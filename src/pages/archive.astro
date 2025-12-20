@@ -4,6 +4,8 @@ import PostCard from '../components/posts/PostCard.astro';
 import { getCollection } from 'astro:content';
 import readingTime from 'reading-time';
 
+import '../styles/pages/archive.css';
+
 const publications = await getCollection('publications');
 const publicationMap = Object.fromEntries(publications.map((p) => [p.id, p]));
 const posts = (await getCollection('posts', ({ data }) => !data.draft)).map((post) => ({
@@ -24,7 +26,7 @@ const sortedPosts = normalizedPosts.sort(
 );
 ---
 <Layout title="Archive - The Rack">
-  <div class="page-shell page-content">
+  <div class="page-shell page-content archive-page">
     <header class="page-header">
       <h1>Archive</h1>
       <p class="page-header__sub">Every article we've ever published</p>
@@ -69,44 +71,3 @@ const sortedPosts = normalizedPosts.sort(
     }
   </script>
 </Layout>
-
-<style>
-  .page-header {
-    text-align: center;
-    margin-bottom: 2rem;
-  }
-
-  .page-header__sub {
-    font-family: var(--font-hand);
-    font-size: 1.25rem;
-    color: var(--ink-muted);
-  }
-
-  .filter-bar {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
-
-  .filter-select {
-    padding: 0.5rem 1rem;
-    font-family: var(--font-mono);
-    font-size: 0.85rem;
-    background: var(--surface-raised);
-    border: 2px solid var(--ink-rich);
-    border-radius: 6px;
-    cursor: pointer;
-  }
-
-  .filter-select:focus {
-    outline: 3px solid var(--pop-coral);
-    outline-offset: 2px;
-  }
-
-  .posts-grid {
-    display: grid;
-    gap: 1.5rem;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  }
-</style>

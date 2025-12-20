@@ -1,0 +1,32 @@
+.issues-index-page .page-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.issues-index-page .page-header__sub {
+  font-family: var(--font-hand);
+  font-size: 1.25rem;
+  color: var(--ink-muted);
+}
+
+.issues-index-page .filter-bar {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.issues-index-page .filter-select {
+  padding: 0.5rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  background: var(--surface-raised);
+  border: 2px solid var(--ink-rich);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.issues-index-page .filter-select:focus {
+  outline: 3px solid var(--pop-coral);
+  outline-offset: 2px;
+}
