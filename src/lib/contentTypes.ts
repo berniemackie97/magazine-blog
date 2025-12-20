@@ -105,23 +105,6 @@ export type CoverBlock =
   | CoverBlockCta
   | CoverBlockSpine;
 
-export type CoverBlockInput = CoverBlockBase & {
-  publicationName?: string;
-  statusText?: string;
-  title?: string;
-  dek?: string;
-  left?: string;
-  right?: string;
-  price?: string;
-  background?: string;
-  heading?: string;
-  hint?: string;
-  items?: CoverFeatureItem[];
-  big?: string;
-  small?: string;
-  text?: string;
-};
-
 export type CoverLayout = {
   cols: string;
   rows?: string;
@@ -140,6 +123,23 @@ export type CoverSpec = {
   theme?: CoverTheme;
   layout: CoverLayout;
   blocks: CoverBlock[];
+};
+
+export type CoverBlockInput = CoverBlockBase & {
+  publicationName?: string;
+  statusText?: string;
+  title?: string;
+  dek?: string;
+  left?: string;
+  right?: string;
+  price?: string;
+  background?: string;
+  heading?: string;
+  hint?: string;
+  items?: CoverFeatureItem[];
+  big?: string;
+  small?: string;
+  text?: string;
 };
 
 export type CoverSpecInput = {
