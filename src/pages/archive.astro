@@ -3,27 +3,24 @@ import Layout from '../components/layout/Layout.astro';
 import PostCard from '../components/posts/PostCard.astro';
 import { getCollection } from 'astro:content';
 import readingTime from 'reading-time';
-import { useCms, getLatestPosts } from '../lib/contentSource';
 
 const publications = await getCollection('publications');
 const publicationMap = Object.fromEntries(publications.map((p) => [p.id, p]));
-const posts = useCms
-  ? await getLatestPosts(200)
-  : (await getCollection('posts', ({ data }) => !data.draft)).map((post) => ({
-      ...post,
-      readingTimeMinutes: Math.max(1, Math.round(readingTime(post.body).minutes)),
-    }));
-const normalizedPosts = posts.map((post: any) => ({
+const posts = (await getCollection('posts', ({ data }) => !data.draft)).map((post) => ({
+  ...post,
+  readingTimeMinutes: Math.max(1, Math.round(readingTime(post.body).minutes)),
+}));
+const normalizedPosts = posts.map((post) => ({
   ...post,
   data: {
     ...post.data,
-    publicationId: post.data.publicationId ?? post.data.publication?.id ?? '',
+    publicationId: post.data.publicationId ?? '',
     tags: post.data.tags ?? [],
   },
 }));
 
 const sortedPosts = normalizedPosts.sort(
-  (a: any, b: any) => new Date(b.data.publishedAt).getTime() - new Date(a.data.publishedAt).getTime()
+  (a, b) => new Date(b.data.publishedAt).getTime() - new Date(a.data.publishedAt).getTime()
 );
 ---
 <Layout title="Archive - The Rack">
@@ -43,7 +40,7 @@ const sortedPosts = normalizedPosts.sort(
     </div>
 
     <div class="posts-grid">
-      {sortedPosts.map((post: any) => (
+      {sortedPosts.map((post) => (
         <div
           data-filter-item
           data-publication={post.data.publicationId}
