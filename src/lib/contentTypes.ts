@@ -114,11 +114,39 @@ export type CoverLayout = {
   minHeight?: number;
 };
 
+export type CoverLayoutInput = Omit<CoverLayout, "areas"> & {
+  areas?: string[];
+};
+
 export type CoverSpec = {
   template: CoverTemplateId;
   theme?: CoverTheme;
   layout: CoverLayout;
   blocks: CoverBlock[];
+};
+
+export type CoverBlockInput = CoverBlockBase & {
+  publicationName?: string;
+  statusText?: string;
+  title?: string;
+  dek?: string;
+  left?: string;
+  right?: string;
+  price?: string;
+  background?: string;
+  heading?: string;
+  hint?: string;
+  items?: CoverFeatureItem[];
+  big?: string;
+  small?: string;
+  text?: string;
+};
+
+export type CoverSpecInput = {
+  template: CoverTemplateId;
+  theme?: CoverTheme;
+  layout?: CoverLayoutInput;
+  blocks?: CoverBlockInput[];
 };
 
 export type IssueCoverOverrides = {
@@ -136,7 +164,7 @@ export type PublicationData = {
   displayFont: string;
   sections: { id: string; label: string }[];
   isFeatured: boolean;
-  defaultCoverSpec?: CoverSpec;
+  defaultCoverSpec?: CoverSpecInput;
 };
 
 export type IssueData = {

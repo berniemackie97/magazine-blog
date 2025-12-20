@@ -1,5 +1,5 @@
 ---
-import type { CoverSpec, CoverTheme, CoverBlock, CoverBlockTitle, CoverFeatureItem } from "../../lib/contentTypes";
+import type { CoverSpec, CoverTheme, CoverBlockTitle, CoverFeatureItem } from "../../lib/contentTypes";
 
 interface Props {
   spec: CoverSpec;
@@ -8,12 +8,11 @@ interface Props {
   ariaLabel?: string;
 }
 
-const { spec, href, interactive = true, ariaLabel } = Astro.props;
+const { spec, href, ariaLabel } = Astro.props;
 
 // Extract blocks by type for easier templating
 const masthead = spec.blocks.find((b) => b.type === "masthead");
 const meta = spec.blocks.find((b) => b.type === "meta");
-const art = spec.blocks.find((b) => b.type === "art");
 const title = spec.blocks.find((b) => b.type === "title") as CoverBlockTitle | undefined;
 const featureList = spec.blocks.find((b) => b.type === "featureList");
 const sticker = spec.blocks.find((b) => b.type === "sticker");
