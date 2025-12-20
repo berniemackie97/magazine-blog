@@ -186,4 +186,28 @@ const formattedDate = new Date(issue.data.date).toLocaleDateString('en-US', {
     color: var(--ink-muted);
     line-height: 1.6;
   }
+
+  @media (max-width: 720px) {
+    .issue-page {
+      padding: 1.5rem 0;
+    }
+
+    .issue-title {
+      font-size: clamp(1.75rem, 7vw, 2.4rem);
+    }
+
+    .issue-meta {
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      gap: 0.5rem;
+    }
+
+    .theme-tag {
+      font-size: 0.65rem;
+    }
+
+    .editor-notes {
+      font-size: 0.95rem;
+    }
+  }
 </style>

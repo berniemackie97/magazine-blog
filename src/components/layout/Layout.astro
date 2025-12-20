@@ -31,6 +31,12 @@ const publicationKey = publication?.id ?? 'global';
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="light" />
     <meta name="description" content={description} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Caveat:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    />
     {accentValue ? <meta name="theme-color" content={accentValue} /> : <meta name="theme-color" content="#faf7f2" />}
     <title>{title}</title>
 

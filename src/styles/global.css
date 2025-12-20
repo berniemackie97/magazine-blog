@@ -1,6 +1,5 @@
 
-/* === FONTS === */
-@import url("https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Caveat:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap");
+/* === FONTS (loaded in Layout head) === */
 
 /* === DESIGN TOKENS === */
 :root {
@@ -2081,27 +2080,132 @@ h3 { font-size: clamp(1.25rem, 3vw, 1.75rem); }
 }
 
 /* === RESPONSIVE === */
+@media (max-width: 900px) {
+  .shelf-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+}
+
 @media (max-width: 768px) {
   .masthead-bar {
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .brand {
+    justify-content: center;
   }
 
   .nav-links {
-    gap: 1rem;
+    justify-content: space-between;
+    gap: 0.5rem;
     font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    padding: 0.5rem 0.75rem;
+    border-radius: 999px;
+    border: 2px solid var(--ink-rich);
+    background: var(--surface-sunken);
   }
 
-  .cover {
-    width: 240px;
-    height: 320px;
-  }
-
-  .cover__title {
-    font-size: 1.15rem;
+  .nav-links a {
+    flex: 1;
+    text-align: center;
   }
 
   .shelf__row {
     gap: 1rem;
+    padding: 1.5rem 0.25rem 2.5rem;
+    scroll-padding-inline: 1rem;
+    align-items: center;
+  }
+
+  .shelf__row > * {
+    scroll-snap-align: center;
+  }
+
+  .shelf__row::-webkit-scrollbar {
+    display: none;
+  }
+
+  .shelf__row {
+    scrollbar-width: none;
+  }
+
+  .shelf-grid {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .shelf-grid > * {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+
+  .cover {
+    width: min(82vw, 320px);
+    height: auto;
+    aspect-ratio: 7 / 9;
+    transform: none;
+    border-width: 2px;
+    box-shadow:
+      6px 6px 0 var(--ink-rich),
+      10px 12px 18px rgba(0, 0, 0, 0.15);
+  }
+
+  .cover:hover {
+    transform: none;
+    box-shadow:
+      6px 6px 0 var(--ink-rich),
+      10px 12px 18px rgba(0, 0, 0, 0.15);
+  }
+
+  .cover__spine {
+    width: 16px;
+  }
+
+  .cover__spine-text {
+    font-size: 0.5rem;
+    letter-spacing: 0.15em;
+  }
+
+  .cover__title {
+    font-size: 1.1rem;
+  }
+
+  .cover__title--tech {
+    font-size: 1.05rem;
+  }
+
+  .cover__title--field {
+    font-size: 1.4rem;
+  }
+
+  .cover__title--zine {
+    font-size: 1.5rem;
+  }
+
+  .cover__title--retro {
+    font-size: 1.1rem;
+  }
+
+  .cover__features,
+  .cover__list--tech,
+  .cover__list--field,
+  .cover__list--zine,
+  .cover__list--retro {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .feature-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .feature-card {
+    text-align: left;
   }
 }
 
@@ -2111,22 +2215,27 @@ h3 { font-size: clamp(1.25rem, 3vw, 1.75rem); }
   }
 
   .nav-links {
-    width: 100%;
-    justify-content: center;
-    padding-top: 0.5rem;
+    padding: 0.45rem 0.6rem;
+  }
+
+  .nav-links a {
+    letter-spacing: 0.06em;
   }
 
   .cover {
-    width: 200px;
-    height: 280px;
+    width: min(90vw, 300px);
   }
 
   .cover__title {
     font-size: 1rem;
   }
 
-  .cover__features-list {
-    display: none;
+  .cover__title--field {
+    font-size: 1.25rem;
+  }
+
+  .cover__title--zine {
+    font-size: 1.3rem;
   }
 }
 

@@ -512,4 +512,54 @@ const pubMap = Object.fromEntries(allPublications.map((p) => [p.id, p]));
   .recent-post:hover .recent-post__title {
     color: var(--ink-rich);
   }
+
+  @media (max-width: 900px) {
+    .shelf__item:nth-child(even),
+    .shelf__item:nth-child(3n) {
+      margin-top: 0;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .rack__hero {
+      padding: 1.5rem 0 2rem;
+    }
+
+    .shelf__container::before {
+      left: -0.5rem;
+      right: -0.5rem;
+      border-width: 2px;
+      border-radius: 10px 10px 0 0;
+    }
+
+    .shelf__ledge {
+      height: 18px;
+      margin-left: -0.5rem;
+      margin-right: -0.5rem;
+      border-width: 2px;
+    }
+
+    .shelf__ledge::before {
+      top: 1px;
+      height: 3px;
+    }
+
+    .shelf__ledge::after {
+      height: 4px;
+    }
+
+    .actions-row {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .actions-row .btn {
+      justify-content: center;
+      width: 100%;
+    }
+
+    .shelf__cta {
+      padding-left: 0;
+    }
+  }
 </style>

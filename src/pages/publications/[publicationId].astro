@@ -172,7 +172,8 @@ const latestArticles = allPosts
   }
 
   .featured-issue {
-    max-width: 400px;
+    max-width: min(100%, 420px);
+    margin: 0 auto;
   }
 
   .back-issues-grid {
@@ -199,6 +200,43 @@ const latestArticles = allPosts
   @media (min-width: 768px) {
     .articles-grid {
       grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 720px) {
+    .publication-page {
+      padding: 1.5rem 0;
+    }
+
+    .publication-header {
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+    }
+
+    .publication-title {
+      font-size: clamp(1.5rem, 6vw, 2.2rem);
+    }
+
+    .btn-primary {
+      width: 100%;
+      text-align: center;
+    }
+
+    .featured-issue {
+      max-width: none;
+    }
+
+    .back-issues-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .back-issue-item,
+    .back-issue-item:hover {
+      transform: none;
+    }
+
+    .articles-grid {
+      grid-template-columns: 1fr;
     }
   }
 </style>

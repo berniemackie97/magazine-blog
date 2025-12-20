@@ -101,4 +101,22 @@ const publications = await getCollection('publications');
     outline: 3px solid var(--pop-coral);
     outline-offset: 2px;
   }
+
+  @media (max-width: 640px) {
+    .page-header {
+      text-align: left;
+    }
+
+    .page-header__sub {
+      font-size: 1.1rem;
+    }
+
+    .filter-bar {
+      justify-content: stretch;
+    }
+
+    .filter-select {
+      width: 100%;
+    }
+  }
 </style>
