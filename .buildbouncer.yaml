@@ -1,0 +1,13 @@
+version: 1
+checks:
+    - name: check
+      run: npm run check
+    - name: build
+      run: npm run build
+insults:
+    mode: snarky
+    file: assets/insults/default.json
+    locale: en
+banter:
+    file: assets/banter/default.json
+    locale: en
