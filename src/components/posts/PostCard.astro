@@ -1,9 +1,12 @@
 ---
 import type { CollectionEntry } from 'astro:content';
+import type { PostRecord } from '../../lib/contentTypes';
 import SectionTag from '../ui/SectionTag.astro';
 
+type PostCardPost = PostRecord | (CollectionEntry<'posts'> & { readingTimeMinutes?: number });
+
 interface Props {
-  post: CollectionEntry<'posts'> & { readingTimeMinutes?: number };
+  post: PostCardPost;
   publication?: CollectionEntry<'publications'>;
   showSummary?: boolean;
 }
