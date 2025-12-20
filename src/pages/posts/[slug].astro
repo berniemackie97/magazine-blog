@@ -8,58 +8,38 @@ import {
   getPostsByPublication,
   getPostsForIssue,
   getPostBySlug,
-  getLatestPosts,
-  useCms,
-  getPublication as getPublicationCs,
-} from '../../lib/contentSource';
+} from '../../lib/data';
 import readingTime from 'reading-time';
-import PortableTextRenderer from '../../components/cms/PortableTextRenderer';
 
 export async function getStaticPaths() {
-  if (useCms) {
-    const posts = await getLatestPosts(200);
-    return posts.map((post: any) => ({ params: { slug: post.data.slug } }));
-  }
   const posts = await getCollection('posts', ({ data }) => !data.draft);
   return posts.map((post) => ({ params: { slug: post.slug } }));
 }
 
 const { slug } = Astro.params;
-const post = useCms
-  ? await getPostBySlug(slug!)
-  : (await getCollection('posts', ({ data }) => !data.draft)).find((p) => p.slug === slug);
+const post = (await getCollection('posts', ({ data }) => !data.draft)).find((p) => p.slug === slug);
 if (!post) {
   throw new Error('Post not found');
 }
 
-const publicationId = (post as any).data.publicationId ?? (post as any).data.publication?.id;
-const postSlug = (post as any).slug ?? (post as any).data.slug;
-const publication = useCms ? await getPublicationCs(publicationId) : await getEntry('publications', publicationId);
+const publicationId = post.data.publicationId;
+const postSlug = post.slug;
+const publication = await getEntry('publications', publicationId);
 if (!publication) {
   throw new Error('Publication missing');
 }
 
-const cmsBody = useCms ? (post as any).data.body ?? [] : null;
-const { Content } = useCms ? { Content: null } : await post.render();
-const bodyText = useCms
-  ? (cmsBody ?? [])
-      .map((block: any) => {
-        if (block._type === 'block' && block.children) {
-          return block.children.map((c: any) => c.text).join(' ');
-        }
-        return '';
-      })
-      .join(' ')
-  : (post as any).body ?? '';
+const { Content } = await post.render();
+const bodyText = post.body ?? '';
 const readingTimeMinutes = Math.max(1, Math.round(readingTime(bodyText).minutes));
-const issue = (post as any).data.issueSlug ? await getIssue(publicationId, (post as any).data.issueSlug) : null;
+const issue = post.data.issueSlug ? await getIssue(publicationId, post.data.issueSlug) : null;
 const issuePosts = issue ? await getPostsForIssue(publicationId, issue.data.issueSlug) : [];
-const index = issuePosts.findIndex((p: any) => (p.slug ?? p.data.slug) === postSlug);
+const index = issuePosts.findIndex((p) => p.slug === postSlug);
 const prevInIssue = index > 0 ? issuePosts[index - 1] : null;
 const nextInIssue = index >= 0 && index + 1 < issuePosts.length ? issuePosts[index + 1] : null;
 
-const moreFromPub = ((await getPostsByPublication(publicationId)) as any)
-  .filter((p: any) => (p.slug ?? p.data.slug) !== postSlug)
+const moreFromPub = (await getPostsByPublication(publicationId))
+  .filter((p) => p.slug !== postSlug)
   .slice(0, 3);
 
 const formattedDate = new Date(post.data.publishedAt).toLocaleDateString('en-US', {
@@ -86,7 +66,7 @@ const formattedDate = new Date(post.data.publishedAt).toLocaleDateString('en-US'
       <div class="article-main">
         <div class="article-content">
           <div class="article-body">
-            {useCms ? <PortableTextRenderer value={cmsBody} /> : <Content />}
+            <Content />
           </div>
         </div>
 
@@ -100,13 +80,13 @@ const formattedDate = new Date(post.data.publishedAt).toLocaleDateString('en-US'
             </div>
             <div class="issue-nav__links">
               {prevInIssue && (
-                <a href={`/posts/${prevInIssue.slug ?? prevInIssue.data.slug}`} class="issue-nav__link">
+                <a href={`/posts/${prevInIssue.slug}`} class="issue-nav__link">
                   <span class="issue-nav__dir">Previous</span>
                   <span class="issue-nav__text">{prevInIssue.data.headline}</span>
                 </a>
               )}
               {nextInIssue && (
-                <a href={`/posts/${nextInIssue.slug ?? nextInIssue.data.slug}`} class="issue-nav__link">
+                <a href={`/posts/${nextInIssue.slug}`} class="issue-nav__link">
                   <span class="issue-nav__dir">Next</span>
                   <span class="issue-nav__text">{nextInIssue.data.headline}</span>
                 </a>
@@ -129,7 +109,7 @@ const formattedDate = new Date(post.data.publishedAt).toLocaleDateString('en-US'
       <section class="more-posts page-shell">
         <h2 class="more-posts__title">More from {publication.data.name}</h2>
         <div class="more-posts__grid">
-          {moreFromPub.map((p: any) => (
+          {moreFromPub.map((p) => (
             <PostCard post={p} publication={publication} />
           ))}
         </div>
