@@ -2,14 +2,20 @@
 import Layout from '../../components/layout/Layout.astro';
 import IssueCoverCard from '../../components/issues/IssueCoverCard.astro';
 import { getCollection } from 'astro:content';
-import { getLatestLockedIssueForPublication, getPostsForIssue } from '../../lib/data';
+import { getPostsForIssue } from '../../lib/data';
 import { coverLinesFromPosts } from '../../lib/lineup';
 
 const publications = await getCollection('publications');
+const allIssues = await getCollection('issues');
 
 const cards = await Promise.all(
   publications.map(async (publication) => {
-    const issue = await getLatestLockedIssueForPublication(publication.id);
+    // Get latest locked issue for this publication using raw collection entries
+    const pubIssues = allIssues
+      .filter((i) => i.data.publicationId === publication.id && i.data.status === 'locked')
+      .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
+
+    const issue = pubIssues[0] ?? null;
     const posts = issue ? await getPostsForIssue(publication.id, issue.data.issueSlug) : [];
     return { publication, issue, coverLines: coverLinesFromPosts(posts, 4) };
   })
