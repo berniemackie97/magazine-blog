@@ -5,6 +5,8 @@ import { getCollection } from 'astro:content';
 import { getPostsForIssue } from '../../lib/data';
 import { coverLinesFromPosts } from '../../lib/lineup';
 
+import '../../styles/pages/publications-index.css';
+
 const publications = await getCollection('publications');
 const allIssues = await getCollection('issues');
 
@@ -22,7 +24,7 @@ const cards = await Promise.all(
 );
 ---
 <Layout title="Publications - The Rack">
-  <div class="page-shell page-content">
+  <div class="page-shell page-content publications-index-page">
     <header class="page-header">
       <h1>Publications</h1>
       <p class="page-header__sub">Different magazines for different vibes</p>
@@ -52,68 +54,3 @@ const cards = await Promise.all(
     </div>
   </div>
 </Layout>
-
-<style>
-  .page-header {
-    text-align: center;
-    margin-bottom: 3rem;
-  }
-
-  .page-header__sub {
-    font-family: var(--font-hand);
-    font-size: 1.5rem;
-    color: var(--ink-muted);
-  }
-
-  .publications-grid {
-    display: grid;
-    gap: 3rem;
-  }
-
-  .publication-card {
-    display: grid;
-    gap: 2rem;
-    padding: 2rem;
-    background: var(--surface-raised);
-    border: 2px solid var(--ink-rich);
-    border-radius: 12px;
-    box-shadow: 6px 6px 0 var(--ink-rich);
-  }
-
-  @media (min-width: 768px) {
-    .publication-card {
-      grid-template-columns: 1fr auto;
-      align-items: center;
-    }
-  }
-
-  .publication-card__header {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .publication-card__name {
-    font-size: 2rem;
-    color: var(--pub-accent);
-  }
-
-  .publication-card__desc {
-    color: var(--ink-muted);
-    max-width: 400px;
-  }
-
-  .publication-card__preview {
-    display: flex;
-    justify-content: center;
-  }
-
-  .no-issues {
-    padding: 3rem;
-    background: var(--surface-sunken);
-    border: 2px dashed var(--ink-faint);
-    border-radius: 8px;
-    color: var(--ink-muted);
-    text-align: center;
-  }
-</style>
