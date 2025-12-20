@@ -1905,6 +1905,10 @@ h3 { font-size: clamp(1.25rem, 3vw, 1.75rem); }
   box-shadow: var(--shadow-medium);
 }
 
+.frame-panel[data-padded="false"] {
+  padding: 0;
+}
+
 .page-frame {
   background: var(--surface-raised);
   border: 2px solid var(--ink-rich);
@@ -2032,6 +2036,12 @@ h3 { font-size: clamp(1.25rem, 3vw, 1.75rem); }
   background: var(--pop-coral);
   color: white;
   border-color: var(--ink-rich);
+}
+
+.badge--accented {
+  background: var(--badge-accent, var(--pop-coral));
+  color: white;
+  border-color: var(--badge-accent, var(--pop-coral));
 }
 
 /* === SECTION TAG === */
