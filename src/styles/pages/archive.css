@@ -1,0 +1,38 @@
+.archive-page .page-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.archive-page .page-header__sub {
+  font-family: var(--font-hand);
+  font-size: 1.25rem;
+  color: var(--ink-muted);
+}
+
+.archive-page .filter-bar {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.archive-page .filter-select {
+  padding: 0.5rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  background: var(--surface-raised);
+  border: 2px solid var(--ink-rich);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.archive-page .filter-select:focus {
+  outline: 3px solid var(--pop-coral);
+  outline-offset: 2px;
+}
+
+.archive-page .posts-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}

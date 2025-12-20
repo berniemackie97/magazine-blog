@@ -9,7 +9,6 @@ const { accent, padded = true } = Astro.props;
 const styleParts: string[] = [];
 
 if (accent) styleParts.push(`--accent: ${accent};`);
-if (!padded) styleParts.push('padding: 0;');
 
 const style = styleParts.length > 0 ? styleParts.join(' ') : undefined;
 ---

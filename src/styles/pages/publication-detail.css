@@ -1,0 +1,91 @@
+.publication-page {
+  padding: 2rem 0;
+}
+
+.publication-page .publication-header {
+  margin-bottom: 3rem;
+  padding-bottom: 2rem;
+  border-bottom: 3px solid var(--ink-rich);
+}
+
+.publication-page .publication-label {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: 0.5rem;
+}
+
+.publication-page .publication-title {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  line-height: 1.2;
+  margin-bottom: 1.5rem;
+}
+
+.publication-page .btn-primary {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: var(--ink-rich);
+  color: var(--surface-base);
+  border: 2px solid var(--ink-rich);
+  border-radius: 6px;
+  box-shadow: 4px 4px 0 var(--ink-faint);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.publication-page .btn-primary:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--ink-faint);
+}
+
+.publication-page .publication-section {
+  margin-bottom: 3rem;
+}
+
+.publication-page .section-label {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px dashed var(--ink-faint);
+}
+
+.publication-page .featured-issue {
+  max-width: 400px;
+}
+
+.publication-page .back-issues-grid {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+.publication-page .back-issue-item {
+  transform: rotate(var(--tilt, 0deg));
+  transition: transform 0.2s ease;
+}
+
+.publication-page .back-issue-item:hover {
+  transform: rotate(0deg) scale(1.02);
+}
+
+.publication-page .articles-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+@media (min-width: 768px) {
+  .publication-page .articles-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
