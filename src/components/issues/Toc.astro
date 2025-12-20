@@ -15,22 +15,22 @@ const grouped = sections
   }))
   .filter((group) => group.items.length > 0);
 ---
-<div class="feature-card border border-[var(--rule)] bg-[var(--paper-2)]/85 p-4 shadow-paper">
-  <div class="rack-eyebrow mb-3">Table of Contents</div>
-  <div class="grid gap-4 md:grid-cols-2">
+<div class="toc-card">
+  <div class="toc-card__label">Table of Contents</div>
+  <div class="toc-card__grid">
     {grouped.map((group) => (
-      <div>
-        <div class="mb-2">
+      <div class="toc-card__section">
+        <div class="toc-card__section-header">
           <SectionTag label={group.section.label} />
         </div>
-        <ul class="space-y-2">
+        <ul class="toc-card__list">
           {group.items.map((post) => (
             <li>
-              <a href={`/posts/${post.slug}`} class="group flex items-start justify-between gap-3">
-                <span class="font-display text-base leading-tight text-[var(--ink)] group-hover:text-[var(--accent)]">
+              <a href={`/posts/${post.slug}`} class="toc-card__link">
+                <span class="toc-card__link-title">
                   {post.data.headline}
                 </span>
-                <span class="text-[11px] uppercase tracking-[0.14em] text-[var(--muted)]">
+                <span class="toc-card__link-time">
                   {post.readingTimeMinutes ? `${post.readingTimeMinutes}m` : ''}
                 </span>
               </a>
