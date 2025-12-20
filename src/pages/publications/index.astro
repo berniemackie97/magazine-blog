@@ -116,4 +116,41 @@ const cards = await Promise.all(
     color: var(--ink-muted);
     text-align: center;
   }
+
+  @media (max-width: 720px) {
+    .page-header {
+      text-align: left;
+      margin-bottom: 2rem;
+    }
+
+    .page-header__sub {
+      font-size: 1.2rem;
+    }
+
+    .publication-card {
+      padding: 1.5rem;
+      gap: 1.5rem;
+    }
+
+    .publication-card__name {
+      font-size: 1.6rem;
+    }
+
+    .publication-card__desc {
+      max-width: none;
+    }
+
+    .publication-card__preview {
+      justify-content: flex-start;
+    }
+
+    .publication-card .btn {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .no-issues {
+      padding: 2rem;
+    }
+  }
 </style>
