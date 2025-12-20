@@ -3,7 +3,7 @@ import Layout from '../../components/layout/Layout.astro';
 import IssueCoverCard from '../../components/issues/IssueCoverCard.astro';
 import PostCard from '../../components/posts/PostCard.astro';
 import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
-import { getIssuesForPublication, getPostsByPublication, getPostsForIssue } from '../../lib/data';
+import { getPostsForIssue } from '../../lib/data';
 import { coverLinesFromPosts } from '../../lib/lineup';
 
 export async function getStaticPaths() {
@@ -19,10 +19,15 @@ if (!publication) {
   throw new Error('Publication not found');
 }
 
-const issues = await getIssuesForPublication(publication.id);
-const lockedIssues = issues.filter((i) => i.data.status === 'locked');
-const openIssue = issues.find((i) => i.data.status === 'open');
-const latestLocked = lockedIssues[0];
+// Use raw collection entries to preserve coverSpec inheritance
+const allIssues = await getCollection('issues');
+const pubIssues = allIssues
+  .filter((i) => i.data.publicationId === publication.id)
+  .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
+
+const lockedIssues = pubIssues.filter((i) => i.data.status === 'locked');
+const openIssue = pubIssues.find((i) => i.data.status === 'open') ?? null;
+const latestLocked = lockedIssues[0] ?? null;
 const backIssues = lockedIssues.slice(1);
 
 const latestLockedPosts = latestLocked ? await getPostsForIssue(publication.id, latestLocked.data.issueSlug) : [];
@@ -36,7 +41,12 @@ const backIssueCards = await Promise.all(
   })
 );
 
-const latestArticles = (await getPostsByPublication(publication.id)).slice(0, 4);
+// Get latest articles using raw collection
+const allPosts = await getCollection('posts', ({ data }) => !data.draft);
+const latestArticles = allPosts
+  .filter((p) => p.data.publicationId === publication.id)
+  .sort((a, b) => new Date(b.data.publishedAt).getTime() - new Date(a.data.publishedAt).getTime())
+  .slice(0, 4);
 ---
 <Layout title={`${publication.data.name} - The Rack`} publication={publication} accent={publication.data.accent}>
   <div class="publication-page page-shell page-content">
