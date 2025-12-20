@@ -4,38 +4,10 @@ import IssueOpener from '../../../components/issues/IssueOpener.astro';
 import Toc from '../../../components/issues/Toc.astro';
 
 import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
-import {
-  useCms,
-  getPublications,
-  getIssuesForPublication,
-  getIssue,
-  getPostsForIssue,
-} from '../../../lib/contentSource';
+import { getIssue, getPostsForIssue } from '../../../lib/data';
 import { buildIssueLineup } from '../../../lib/lineup';
 
-// Dynamically choose path source (CMS vs local)
 export async function getStaticPaths() {
-  // If CMS mode is active, build from CMS data
-  if (useCms) {
-    const pubs = await getPublications();
-    const paths = [];
-
-    for (const pub of pubs) {
-      const issues = await getIssuesForPublication(pub.id);
-      for (const issue of issues) {
-        paths.push({
-          params: {
-            publicationId: pub.id,
-            issueSlug: issue.data.issueSlug,
-          },
-        });
-      }
-    }
-
-    return paths;
-  }
-
-  // Otherwise, build paths from local Astro content
   const issues = await getCollection('issues');
   const publications = await getCollection('publications');
   const pubIds = new Set(publications.map((p) => p.id));
@@ -52,17 +24,12 @@ export async function getStaticPaths() {
     }));
 }
 
-// ---------------------------------------------------------------------
-
 const { publicationId, issueSlug } = Astro.params;
 if (!publicationId || !issueSlug) {
   throw new Error('Missing issue params');
 }
 
-const publication = useCms
-  ? (await getPublications()).find((p) => p.id === publicationId) ?? null
-  : await getEntry('publications', publicationId);
-
+const publication = await getEntry('publications', publicationId);
 const issue = await getIssue(publicationId, issueSlug);
 if (!publication || !issue) {
   throw new Error('Issue not found');

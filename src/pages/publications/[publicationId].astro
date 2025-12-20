@@ -3,7 +3,7 @@ import Layout from '../../components/layout/Layout.astro';
 import IssueCoverCard from '../../components/issues/IssueCoverCard.astro';
 import PostCard from '../../components/posts/PostCard.astro';
 import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
-import { getIssuesForPublication, getPostsByPublication, getPostsForIssue } from '../../lib/contentSource';
+import { getIssuesForPublication, getPostsByPublication, getPostsForIssue } from '../../lib/data';
 import { coverLinesFromPosts } from '../../lib/lineup';
 
 export async function getStaticPaths() {
@@ -19,9 +19,9 @@ if (!publication) {
   throw new Error('Publication not found');
 }
 
-const issues: any[] = await getIssuesForPublication(publication.id);
-const lockedIssues = issues.filter((i: any) => i.data.status === 'locked');
-const openIssue = issues.find((i: any) => i.data.status === 'open');
+const issues = await getIssuesForPublication(publication.id);
+const lockedIssues = issues.filter((i) => i.data.status === 'locked');
+const openIssue = issues.find((i) => i.data.status === 'open');
 const latestLocked = lockedIssues[0];
 const backIssues = lockedIssues.slice(1);
 
@@ -29,14 +29,14 @@ const latestLockedPosts = latestLocked ? await getPostsForIssue(publication.id, 
 const featuredCoverLines = latestLocked ? coverLinesFromPosts(latestLockedPosts, 5) : [];
 
 const backIssueCards = await Promise.all(
-  backIssues.map(async (issue: any) => {
-    const posts = (await getPostsForIssue(publication.id, issue.data.issueSlug)) as any;
+  backIssues.map(async (issue) => {
+    const posts = await getPostsForIssue(publication.id, issue.data.issueSlug);
     const tilt = (Math.random() - 0.5) * 3;
-    return { issue, coverLines: coverLinesFromPosts(posts as any, 4), tilt };
+    return { issue, coverLines: coverLinesFromPosts(posts, 4), tilt };
   })
 );
 
-const latestArticles = ((await getPostsByPublication(publication.id)) as any).slice(0, 4);
+const latestArticles = (await getPostsByPublication(publication.id)).slice(0, 4);
 ---
 <Layout title={`${publication.data.name} - The Rack`} publication={publication} accent={publication.data.accent}>
   <div class="publication-page page-shell page-content">
@@ -90,7 +90,7 @@ const latestArticles = ((await getPostsByPublication(publication.id)) as any).sl
       <section class="publication-section">
         <h2 class="section-label">Latest Articles</h2>
         <div class="articles-grid">
-          {latestArticles.map((post: any) => (
+          {latestArticles.map((post) => (
             <PostCard post={post} publication={publication} />
           ))}
         </div>
