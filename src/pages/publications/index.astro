@@ -2,7 +2,7 @@
 import Layout from '../../components/layout/Layout.astro';
 import IssueCoverCard from '../../components/issues/IssueCoverCard.astro';
 import { getCollection } from 'astro:content';
-import { getLatestLockedIssueForPublication, getPostsForIssue } from '../../lib/contentSource';
+import { getLatestLockedIssueForPublication, getPostsForIssue } from '../../lib/data';
 import { coverLinesFromPosts } from '../../lib/lineup';
 
 const publications = await getCollection('publications');
@@ -11,7 +11,7 @@ const cards = await Promise.all(
   publications.map(async (publication) => {
     const issue = await getLatestLockedIssueForPublication(publication.id);
     const posts = issue ? await getPostsForIssue(publication.id, issue.data.issueSlug) : [];
-    return { publication, issue, coverLines: coverLinesFromPosts(posts as any, 4) };
+    return { publication, issue, coverLines: coverLinesFromPosts(posts, 4) };
   })
 );
 ---

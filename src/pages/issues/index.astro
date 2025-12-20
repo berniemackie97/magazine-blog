@@ -2,7 +2,7 @@
 import Layout from '../../components/layout/Layout.astro';
 import IssueCoverCard from '../../components/issues/IssueCoverCard.astro';
 import { getCollection, getEntry } from 'astro:content';
-import { getPostsForIssue } from '../../lib/contentSource';
+import { getPostsForIssue } from '../../lib/data';
 import { coverLinesFromPosts } from '../../lib/lineup';
 
 const issues = (await getCollection('issues'))
@@ -10,11 +10,11 @@ const issues = (await getCollection('issues'))
   .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
 
 const issueCards = await Promise.all(
-  issues.map(async (issue: any) => {
+  issues.map(async (issue) => {
     const publication = await getEntry('publications', issue.data.publicationId);
-    const posts = (await getPostsForIssue(issue.data.publicationId, issue.data.issueSlug)) as any;
+    const posts = await getPostsForIssue(issue.data.publicationId, issue.data.issueSlug);
     const tilt = (Math.random() - 0.5) * 3;
-    return { issue, publication: publication!, coverLines: coverLinesFromPosts(posts as any, 5), tilt };
+    return { issue, publication: publication!, coverLines: coverLinesFromPosts(posts, 5), tilt };
   })
 );
 
