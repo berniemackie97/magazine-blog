@@ -1,15 +1,5 @@
 ---
-const isProd = import.meta.env.PROD;
-let AnalyticsComponent = null;
-
-if (isProd) {
-  try {
-    const mod = await import(/* @vite-ignore */ '@vercel/analytics/astro');
-    AnalyticsComponent = mod.Analytics ?? mod.default ?? null;
-  } catch {
-    AnalyticsComponent = null;
-  }
-}
+import VercelAnalytics from '@vercel/analytics/astro';
 ---
 
-{AnalyticsComponent ? <AnalyticsComponent /> : null}
+<VercelAnalytics />
