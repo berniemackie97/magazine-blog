@@ -1,6 +1,8 @@
 ---
 import type { CollectionEntry } from 'astro:content';
 
+import '../../styles/components/masthead-bar.css';
+
 interface Props {
   publication?: CollectionEntry<'publications'> | null;
   siteTitle?: string;
@@ -43,31 +45,3 @@ function isActive(href: string): boolean {
     </div>
   )}
 </header>
-
-<style>
-  .publication-bar {
-    background: var(--surface-sunken);
-    border-top: 2px solid var(--ink-faint);
-    padding: 0.5rem var(--page-pad);
-  }
-
-  .publication-bar__inner {
-    max-width: var(--page-max);
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .publication-bar__name {
-    font-family: var(--font-display);
-    font-size: 0.85rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--pub-accent, var(--ink-body));
-  }
-
-  .nav-links a.active::after {
-    transform: scaleX(1);
-  }
-</style>
