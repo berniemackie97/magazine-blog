@@ -7,6 +7,8 @@ import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
 import { getIssue, getPostsForIssue } from '../../../lib/data';
 import { buildIssueLineup } from '../../../lib/lineup';
 
+import '../../../styles/pages/issue-detail.css';
+
 export async function getStaticPaths() {
   const issues = await getCollection('issues');
   const publications = await getCollection('publications');
@@ -61,7 +63,7 @@ const formattedDate = new Date(issue.data.date).toLocaleDateString('en-US', {
         <span>No {issue.data.number}</span>
         <span class="meta-sep">|</span>
         <span>{formattedDate}</span>
-        <span class="badge" style={`background: ${publication.data.accent}; color: white; border-color: ${publication.data.accent}`}>
+        <span class="badge badge--accented" style={`--badge-accent: ${publication.data.accent}`}>
           {issue.data.status}
         </span>
         <span class="theme-tag">
@@ -99,115 +101,3 @@ const formattedDate = new Date(issue.data.date).toLocaleDateString('en-US', {
     )}
   </div>
 </Layout>
-
-<style>
-  .issue-page {
-    padding: 2rem 0;
-  }
-
-  .issue-header {
-    margin-bottom: 2rem;
-    padding-bottom: 1.5rem;
-    border-bottom: 3px solid var(--ink-rich);
-  }
-
-  .issue-label {
-    display: block;
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--ink-muted);
-    margin-bottom: 0.5rem;
-  }
-
-  .issue-title {
-    font-size: clamp(2rem, 5vw, 3rem);
-    line-height: 1.1;
-    margin-bottom: 1rem;
-  }
-
-  .issue-meta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.75rem;
-    font-family: var(--font-mono);
-    font-size: 0.8rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink-muted);
-  }
-
-  .meta-sep {
-    color: var(--ink-faint);
-  }
-
-  .theme-tag {
-    display: inline-block;
-    padding: 0.25rem 0.5rem;
-    font-size: 0.7rem;
-    background: var(--surface-sunken);
-    border: 1px solid var(--ink-faint);
-    border-radius: 4px;
-  }
-
-  .editor-notes {
-    margin-top: 1rem;
-    max-width: 700px;
-    color: var(--ink-muted);
-    font-style: italic;
-    line-height: 1.6;
-  }
-
-  .toc-section {
-    margin-top: 3rem;
-  }
-
-  .pending-card {
-    background: var(--surface-raised);
-    border: 2px solid var(--ink-rich);
-    border-radius: 12px;
-    padding: 2rem;
-    box-shadow: 6px 6px 0 var(--ink-rich);
-  }
-
-  .pending-label {
-    display: block;
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--ink-muted);
-    margin-bottom: 0.5rem;
-  }
-
-  .pending-text {
-    color: var(--ink-muted);
-    line-height: 1.6;
-  }
-
-  @media (max-width: 720px) {
-    .issue-page {
-      padding: 1.5rem 0;
-    }
-
-    .issue-title {
-      font-size: clamp(1.75rem, 7vw, 2.4rem);
-    }
-
-    .issue-meta {
-      font-size: 0.7rem;
-      letter-spacing: 0.08em;
-      gap: 0.5rem;
-    }
-
-    .theme-tag {
-      font-size: 0.65rem;
-    }
-
-    .editor-notes {
-      font-size: 0.95rem;
-    }
-  }
-</style>
