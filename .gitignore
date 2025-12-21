@@ -1,4 +1,5 @@
 node_modules
+.buildbouncer
 .claude
 .astro
 .DS_Store
