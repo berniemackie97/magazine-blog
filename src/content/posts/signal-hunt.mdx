@@ -1,17 +1,17 @@
 ---
 publicationId: "red-ops"
-issueSlug: "vol-0-preflight"
-sectionId: "sec"
+issueSlug: "preflight"
+sectionId: "tools"
 format: "feature"
-difficulty: "intermediate"
+difficulty: "all"
 publishedAt: "2024-08-10"
-headline: "Signal Hunt in a Broken Chain"
-dek: "Tracing a ghost packet through firmware bounces and noisy radios."
-summary: "We tore down a field-deployed sensor stack to track a ghost packet that only appeared in storm conditions."
+headline: "Resources to Help You Get Started"
+dek: "Collection of external resources for learning about Red Team operations, tactics, and tools."
+summary: ""
 tags:
   - reverse-engineering
-  - rf
-  - firmware
+  - red-team
+  - tools
 draft: false
 coverSlot: "lead"
 coverPriority: 10
@@ -21,11 +21,10 @@ import PullQuote from "../../components/mdx/PullQuote.astro";
 import Sidebar from "../../components/layout/Sidebar.astro";
 import CaptionedFigure from "../../components/mdx/CaptionedFigure.astro";
 
-The alert only fired when the ridge was wrapped in rainclouds. A narrowband radio hopped off frequency and pushed a malformed packet that poisoned the mesh.
-
 <PullQuote>
-  We learned that a ghost packet is rarely a ghost—it is a breadcrumb left by a
-  rushed patch and a tired engineer.
+  Some resources are from unethical sources. (pirate sites, cracked software,
+  etc) Everything here will have a legitimate source, as well as a "alternative"
+  source for you to explore at your own discretion.
 </PullQuote>
 
 We began at the tower: a hand-soldered board with a firmware patch that had been applied in the field with a shaky laptop battery. The SHA in the patch notes didn't match the binary on disk. The watchdog timer had been widened to 80ms to "solve" an unrelated issue.

@@ -1,11 +1,11 @@
 {
   "publicationId": "red-ops",
-  "issueSlug": "vol-0-preflight",
+  "issueSlug": "preflight",
   "displayTitle": "Preflight",
   "volume": 0,
-  "number": 9,
-  "date": "2024-05-01",
+  "number": 1,
+  "date": "12-21-2025",
   "theme": "Preflight",
   "status": "locked",
-  "notesFromEditor": "A warm-up set of drills before the line went live."
+  "notesFromEditor": "The most underrated and probably skipped issue of any publication. Here I will cover lessones learned, and tips I wish I had when I first started out."
 }
