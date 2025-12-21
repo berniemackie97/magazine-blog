@@ -253,9 +253,13 @@
 
 .pub-back__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 2.5rem 2rem;
   justify-items: center;
+  padding: 1.5rem;
+  background: var(--surface-sunken);
+  border-radius: 12px;
+  border: 1px solid var(--ink-faint);
 }
 
 .pub-back__item {
@@ -405,8 +409,9 @@
   }
 
   .pub-back__grid {
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 2rem 1.5rem;
+    padding: 1.25rem;
   }
 
   .pub-articles__grid {
@@ -462,7 +467,8 @@
 
   .pub-back__grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
+    gap: 1.5rem 1rem;
+    padding: 1rem;
   }
 
   .pub-back__item,
