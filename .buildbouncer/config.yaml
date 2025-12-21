@@ -1,9 +1,24 @@
 version: 1
+meta:
+    template:
+        id: astro
+    inputs:
+        node.runner: npm
+        node.scripts: check,build
+        template.id: astro
 checks:
-    - name: check
+    - id: detector:node-scripts:bce9aaf2049f
+      source: detector:node-scripts
+      name: check
       run: npm run check
-    - name: build
+      shell: cmd
+      requires: npm
+    - id: detector:node-scripts:0caa52acc7b3
+      source: detector:node-scripts
+      name: build
       run: npm run build
+      shell: cmd
+      requires: npm
 insults:
     mode: snarky
     file: .buildbouncer/assets/insults/default.json
