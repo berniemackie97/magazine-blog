@@ -148,3 +148,12 @@
     grid-template-columns: repeat(3, 1fr);
   }
 }
+
+@media (min-width: 1024px) {
+  .article-page .article-header {
+    /* main column width = full width - (sidebar + gap) */
+    max-width: calc(100% - (280px + 2rem));
+    margin-left: 0;
+    margin-right: calc(280px + 2rem);
+  }
+}
