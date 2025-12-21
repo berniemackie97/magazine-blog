@@ -9,17 +9,17 @@ import '../styles/pages/home.css';
 
 // Get all publications for sidebar
 const allPublications = await getCollection('publications');
-const publications = allPublications.filter((p) => p.data.isFeatured);
+const featuredPublications = allPublications.filter((p) => p.data.isFeatured);
 
 // Get latest locked issues across all publications
 const allIssues = await getCollection('issues');
-const latestIssues = allIssues
+const latestLockedIssues = allIssues
   .filter((i) => i.data.status === 'locked')
   .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime())
   .slice(0, 8);
 
 const latestItems = await Promise.all(
-  latestIssues.map(async (issue) => {
+  latestLockedIssues.map(async (issue) => {
     const publication = await getEntry('publications', issue.data.publicationId);
     const posts = await getPostsForIssue(issue.data.publicationId, issue.data.issueSlug);
     const tilt = (Math.random() - 0.5) * 6;
@@ -34,14 +34,14 @@ const latestItems = await Promise.all(
 
 // Get per-publication shelves
 const shelves = await Promise.all(
-  publications.map(async (publication) => {
-    const pubIssues = allIssues
+  featuredPublications.map(async (publication) => {
+    const lockedPublicationIssues = allIssues
       .filter((i) => i.data.publicationId === publication.id && i.data.status === 'locked')
       .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime())
       .slice(0, 4);
 
     const items = await Promise.all(
-      pubIssues.map(async (issue) => {
+      lockedPublicationIssues.map(async (issue) => {
         const posts = await getPostsForIssue(publication.id, issue.data.issueSlug);
         const tilt = (Math.random() - 0.5) * 5;
         return {
@@ -58,15 +58,15 @@ const shelves = await Promise.all(
 
 // Get recent posts for sidebar
 const recentPosts = await getLatestPosts(5);
-const pubMap = Object.fromEntries(allPublications.map((p) => [p.id, p]));
+const publicationMap = Object.fromEntries(allPublications.map((p) => [p.id, p]));
 ---
 
 <Layout title="The Rack">
   <div class="rack page-shell home-page">
     <!-- Hero Section -->
     <section class="rack__hero">
-      <h1 class="rack__title">Fresh Off The Press</h1>
-      <p class="rack__subtitle">Grab a cover, crack it open, start reading</p>
+      <h1 class="rack__title">IN PROGRESS, IN PRINT</h1>
+      <p class="rack__subtitle">Guides, writeups, and experiments published as virtual magazines.</p>
     </section>
 
     <div class="rack__layout">
@@ -74,7 +74,7 @@ const pubMap = Object.fromEntries(allPublications.map((p) => [p.id, p]));
         <!-- Latest Issues Shelf -->
         {latestItems.length > 0 && (
           <section class="rack__shelf rack__shelf--featured">
-            <h2 class="shelf__label">Latest Issues</h2>
+            <h2 class="shelf__label">Latest Featured Issues</h2>
             <div class="shelf__container">
               <div class="shelf__row">
                 {latestItems.map((item, idx) => (
@@ -102,21 +102,22 @@ const pubMap = Object.fromEntries(allPublications.map((p) => [p.id, p]));
 
         <!-- Feature Cards -->
         <section class="feature-section">
+          <h2 class="text-center mb-5">How The Rack Works</h2>
           <div class="feature-grid">
             <div class="feature-card">
-              <div class="feature-card__label">Curated</div>
-              <h3 class="feature-card__title">Themed Issues</h3>
-              <p class="feature-card__body">Each issue is carefully curated around a theme, with articles that build on each other.</p>
+              <div class="feature-card__label">Category</div>
+              <h3 class="feature-card__title">Publications</h3>
+              <p class="feature-card__body">A publication is a topic lane. Think “brand” or “series” like Web, Security, Game Dev, Tools. Each publication has its own style and releases issues over time.</p>
             </div>
             <div class="feature-card">
-              <div class="feature-card__label">Practical</div>
-              <h3 class="feature-card__title">Real Code</h3>
-              <p class="feature-card__body">No fluff. Every tutorial includes working examples you can actually use.</p>
+              <div class="feature-card__label">Drops</div>
+              <h3 class="feature-card__title">Issues</h3>
+              <p class="feature-card__body">An issue is a release. It’s a curated bundle of articles that belong together, published under a publication. When a new issue drops, it’s meant to be read as a set.</p>
             </div>
             <div class="feature-card">
-              <div class="feature-card__label">Fresh</div>
-              <h3 class="feature-card__title">Regular Drops</h3>
-              <p class="feature-card__body">New issues drop regularly. Subscribe to never miss a release.</p>
+              <div class="feature-card__label">Pages</div>
+              <h3 class="feature-card__title">Articles</h3>
+              <p class="feature-card__body">Articles are the individual pieces inside an issue: guides, writeups, experiments, and notes. Some are quick, some are deep, but they always live inside an issue.</p>
             </div>
           </div>
         </section>
@@ -170,7 +171,7 @@ const pubMap = Object.fromEntries(allPublications.map((p) => [p.id, p]));
           <h3 class="sidebar-card__title">Recent Articles</h3>
           <ul class="recent-posts">
             {recentPosts.map((post) => {
-              const pub = pubMap[post.data.publicationId];
+              const pub = publicationMap[post.data.publicationId];
               return (
                 <li>
                   <a href={`/posts/${post.slug}`} class="recent-post">
@@ -191,9 +192,6 @@ const pubMap = Object.fromEntries(allPublications.map((p) => [p.id, p]));
           <h3 class="sidebar-card__title">What's The Rack?</h3>
           <p class="sidebar-card__text">
             A collection of themed tech magazines. Each issue is curated around a topic, with articles that actually teach you something.
-          </p>
-          <p class="sidebar-card__text">
-            No endless scroll. No clickbait. Just good writing about code.
           </p>
         </div>
       </aside>
