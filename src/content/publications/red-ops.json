@@ -1,7 +1,7 @@
 {
   "id": "red-ops",
   "name": "Red Ops Review",
-  "description": "Reverse engineering, incident writeups, and offensive tooling in print-inspired form.",
+  "description": "Reverse engineering, and offensive tooling in print inspired form.",
   "accent": "#ff6b6b",
   "displayFont": "display-serif",
   "sections": [
