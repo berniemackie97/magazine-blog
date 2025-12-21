@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "recent": {
+    "intro": [
+      "intro.rope.1"
+    ],
+    "loading": [
+      "loading.list.1",
+      "loading.sniff.1"
+    ],
+    "success": [
+      "success.stamp.1"
+    ]
+  }
+}

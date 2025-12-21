@@ -21,7 +21,6 @@ if (!publication) {
   throw new Error('Publication not found');
 }
 
-// Use raw collection entries to preserve coverSpec inheritance
 const allIssues = await getCollection('issues');
 const pubIssues = allIssues
   .filter((i) => i.data.publicationId === publication.id)
@@ -35,73 +34,107 @@ const backIssues = lockedIssues.slice(1);
 const latestLockedPosts = latestLocked ? await getPostsForIssue(publication.id, latestLocked.data.issueSlug) : [];
 const featuredCoverLines = latestLocked ? coverLinesFromPosts(latestLockedPosts, 5) : [];
 
+const openIssuePosts = openIssue ? await getPostsForIssue(publication.id, openIssue.data.issueSlug) : [];
+const openCoverLines = openIssue ? coverLinesFromPosts(openIssuePosts, 3) : [];
+
 const backIssueCards = await Promise.all(
   backIssues.map(async (issue) => {
     const posts = await getPostsForIssue(publication.id, issue.data.issueSlug);
-    const tilt = (Math.random() - 0.5) * 3;
+    const tilt = (Math.random() - 0.5) * 2;
     return { issue, coverLines: coverLinesFromPosts(posts, 4), tilt };
   })
 );
 
-// Get latest articles using raw collection
 const allPosts = await getCollection('posts', ({ data }) => !data.draft);
 const latestArticles = allPosts
   .filter((p) => p.data.publicationId === publication.id)
   .sort((a, b) => new Date(b.data.publishedAt).getTime() - new Date(a.data.publishedAt).getTime())
   .slice(0, 4);
+
+const totalIssues = lockedIssues.length + (openIssue ? 1 : 0);
+const totalArticles = allPosts.filter((p) => p.data.publicationId === publication.id).length;
 ---
 <Layout title={`${publication.data.name} - The Rack`} publication={publication} accent={publication.data.accent}>
-  <div class="publication-page page-shell page-content">
-    <header class="publication-header">
-      <span class="publication-label">{publication.data.name}</span>
-      <h1 class="publication-title">{publication.data.description}</h1>
-      {openIssue && (
-        <a href={`/issues/${publication.id}/${openIssue.data.issueSlug}`} class="btn-primary">
-          View Open Issue
-        </a>
-      )}
+  <div class="pub-detail" data-publication={publication.id}>
+    <!-- Hero Section -->
+    <header class="pub-hero">
+      <span class="pub-hero__eyebrow">Publication</span>
+      <h1 class="pub-hero__title">{publication.data.name}</h1>
+      <p class="pub-hero__tagline">{publication.data.description}</p>
+      <div class="pub-hero__meta">
+        <span class="pub-hero__stat">{totalIssues} Issues</span>
+        <span class="pub-hero__stat">{totalArticles} Articles</span>
+        <a href={`/publications/${publication.id}/rss.xml`} class="pub-hero__rss">RSS</a>
+      </div>
     </header>
 
-    {latestLocked && (
-      <section class="publication-section">
-        <h2 class="section-label">Latest Issue</h2>
-        <div class="featured-issue">
-          <IssueCoverCard issue={latestLocked} publication={publication} coverLines={featuredCoverLines} showStatus />
+    <!-- Current Issues Row - Latest and Open side by side -->
+    {(latestLocked || openIssue) && (
+      <section class="pub-current">
+        <h2 class="pub-section-title">Current Issues</h2>
+        <div class="pub-current__grid">
+          {latestLocked && (
+            <article class="pub-issue-card pub-issue-card--featured">
+              <div class="pub-issue-card__label">
+                <span class="pub-issue-card__tag">Latest</span>
+              </div>
+              <div class="pub-issue-card__cover">
+                <IssueCoverCard issue={latestLocked} publication={publication} coverLines={featuredCoverLines} showStatus />
+              </div>
+              <div class="pub-issue-card__info">
+                <h3 class="pub-issue-card__title">{latestLocked.data.displayTitle}</h3>
+                <a href={`/issues/${publication.id}/${latestLocked.data.issueSlug}`} class="pub-issue-card__cta">
+                  Read Issue
+                </a>
+              </div>
+            </article>
+          )}
+
+          {openIssue && (
+            <article class="pub-issue-card pub-issue-card--open">
+              <div class="pub-issue-card__label">
+                <span class="pub-issue-card__tag pub-issue-card__tag--live">In Progress</span>
+              </div>
+              <div class="pub-issue-card__cover">
+                <IssueCoverCard issue={openIssue} publication={publication} coverLines={openCoverLines} showStatus />
+              </div>
+              <div class="pub-issue-card__info">
+                <h3 class="pub-issue-card__title">{openIssue.data.displayTitle}</h3>
+                <a href={`/issues/${publication.id}/${openIssue.data.issueSlug}`} class="pub-issue-card__cta pub-issue-card__cta--outline">
+                  Follow Along
+                </a>
+              </div>
+            </article>
+          )}
         </div>
       </section>
     )}
 
-    {openIssue && (
-      <section class="publication-section">
-        <h2 class="section-label">Open Issue</h2>
-        <div class="featured-issue">
-          <IssueCoverCard
-            issue={openIssue}
-            publication={publication}
-            coverLines={coverLinesFromPosts(await getPostsForIssue(publication.id, openIssue.data.issueSlug), 3)}
-            showStatus
-          />
-        </div>
-      </section>
-    )}
-
+    <!-- Back Issues Section -->
     {backIssueCards.length > 0 && (
-      <section class="publication-section">
-        <h2 class="section-label">Back Issues</h2>
-        <div class="back-issues-grid">
+      <section class="pub-back">
+        <div class="pub-section-header">
+          <h2 class="pub-section-title">Back Issues</h2>
+          <span class="pub-section-count">{backIssueCards.length} issues</span>
+        </div>
+        <div class="pub-back__grid">
           {backIssueCards.map((card) => (
-            <div class="back-issue-item" style={`--tilt: ${card.tilt}deg`}>
-              <IssueCoverCard issue={card.issue} publication={publication} coverLines={card.coverLines} showStatus />
+            <div class="pub-back__item" style={`--tilt: ${card.tilt}deg`}>
+              <IssueCoverCard issue={card.issue} publication={publication} coverLines={card.coverLines} />
             </div>
           ))}
         </div>
       </section>
     )}
 
+    <!-- Latest Articles Section -->
     {latestArticles.length > 0 && (
-      <section class="publication-section">
-        <h2 class="section-label">Latest Articles</h2>
-        <div class="articles-grid">
+      <section class="pub-articles">
+        <div class="pub-section-header">
+          <h2 class="pub-section-title">Latest Articles</h2>
+          <a href="/archive" class="pub-section-link">View All</a>
+        </div>
+        <div class="pub-articles__grid">
           {latestArticles.map((post) => (
             <PostCard post={post} publication={publication} />
           ))}
