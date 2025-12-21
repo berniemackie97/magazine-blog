@@ -24,9 +24,6 @@
   min-width: 0;
 }
 
-/* =====================================================
-   SHELF REDESIGN - Newsstand Style
-   ===================================================== */
 .home-page .rack__shelf {
   margin-bottom: 3rem;
 }
@@ -44,17 +41,12 @@
   left: -1rem;
   right: -1rem;
   bottom: 0;
-  background: linear-gradient(
-    180deg,
-    #e8e0d0 0%,
-    #ddd5c5 50%,
-    #d5cdc0 100%
-  );
+  background: linear-gradient(180deg, #e8e0d0 0%, #ddd5c5 50%, #d5cdc0 100%);
   border: 3px solid var(--ink-rich);
   border-radius: 12px 12px 0 0;
   box-shadow:
-    inset 0 2px 8px rgba(0,0,0,0.08),
-    inset 0 -4px 12px rgba(0,0,0,0.05);
+    inset 0 2px 8px rgba(0, 0, 0, 0.08),
+    inset 0 -4px 12px rgba(0, 0, 0, 0.05);
   z-index: -1;
 }
 
@@ -76,8 +68,8 @@
   border-top: none;
   border-radius: 0 0 8px 8px;
   box-shadow:
-    0 6px 16px rgba(0,0,0,0.25),
-    inset 0 2px 0 rgba(255,255,255,0.15);
+    0 6px 16px rgba(0, 0, 0, 0.25),
+    inset 0 2px 0 rgba(255, 255, 255, 0.15);
 }
 
 /* Metal shine highlight */
@@ -88,11 +80,12 @@
   left: 10%;
   right: 10%;
   height: 4px;
-  background: linear-gradient(90deg,
+  background: linear-gradient(
+    90deg,
     transparent 0%,
-    rgba(255,255,255,0.3) 20%,
-    rgba(255,255,255,0.5) 50%,
-    rgba(255,255,255,0.3) 80%,
+    rgba(255, 255, 255, 0.3) 20%,
+    rgba(255, 255, 255, 0.5) 50%,
+    rgba(255, 255, 255, 0.3) 80%,
     transparent 100%
   );
   border-radius: 2px;
@@ -106,26 +99,17 @@
   left: 0;
   right: 0;
   height: 6px;
-  background: linear-gradient(
-    180deg,
-    #3a3a3a 0%,
-    #1a1a1a 100%
-  );
+  background: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 100%);
   border-radius: 0 0 5px 5px;
 }
 
 /* Featured shelf gets extra emphasis */
 .home-page .rack__shelf--featured .shelf__container::before {
-  background: linear-gradient(
-    180deg,
-    #f5efe5 0%,
-    #ebe5d8 50%,
-    #e0d8c8 100%
-  );
+  background: linear-gradient(180deg, #f5efe5 0%, #ebe5d8 50%, #e0d8c8 100%);
   box-shadow:
-    inset 0 2px 8px rgba(0,0,0,0.06),
-    inset 0 -4px 12px rgba(0,0,0,0.04),
-    0 0 0 1px rgba(0,0,0,0.05);
+    inset 0 2px 8px rgba(0, 0, 0, 0.06),
+    inset 0 -4px 12px rgba(0, 0, 0, 0.04),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
 }
 
 /* Per-publication shelves get accent color tint */
@@ -144,6 +128,13 @@
   gap: 1rem;
   flex-wrap: wrap;
   margin: 2rem 0 3rem;
+}
+
+/* Surgical fix: keep action button hover text readable on ALL screen sizes */
+.home-page .actions-row a.btn.btn--secondary:hover,
+.home-page .actions-row a.btn.btn--secondary:focus-visible {
+  color: var(--ink-rich);
+  background: var(--surface-sunken);
 }
 
 .home-page .feature-section {
