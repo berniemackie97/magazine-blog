@@ -9,48 +9,86 @@ import '../../styles/pages/publications-index.css';
 
 const publications = await getCollection('publications');
 const allIssues = await getCollection('issues');
+const allPosts = await getCollection('posts', ({ data }) => !data.draft);
 
 const cards = await Promise.all(
   publications.map(async (publication) => {
-    // Get latest locked issue for this publication using raw collection entries
+    // Get all locked issues for this publication
     const pubIssues = allIssues
       .filter((i) => i.data.publicationId === publication.id && i.data.status === 'locked')
       .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
 
     const issue = pubIssues[0] ?? null;
     const posts = issue ? await getPostsForIssue(publication.id, issue.data.issueSlug) : [];
-    return { publication, issue, coverLines: coverLinesFromPosts(posts, 4) };
+    const totalIssues = pubIssues.length;
+    const totalArticles = allPosts.filter((p) => p.data.publicationId === publication.id).length;
+
+    return {
+      publication,
+      issue,
+      coverLines: coverLinesFromPosts(posts, 4),
+      totalIssues,
+      totalArticles
+    };
   })
 );
 ---
 <Layout title="Publications - The Rack">
-  <div class="page-shell page-content publications-index-page">
-    <header class="page-header">
-      <h1>Publications</h1>
-      <p class="page-header__sub">Different magazines for different vibes</p>
+  <div class="pubs-index">
+    <!-- Hero Section -->
+    <header class="pubs-hero">
+      <span class="pubs-hero__eyebrow">Our Titles</span>
+      <h1 class="pubs-hero__title">Publications</h1>
+      <p class="pubs-hero__tagline">Different magazines for different vibes</p>
     </header>
 
-    <div class="publications-grid">
+    <!-- Publications Grid -->
+    <div class="pubs-grid">
       {cards.map((card) => (
-        <article class="publication-card" style={`--pub-accent: ${card.publication.data.accent}`}>
-          <div class="publication-card__header">
-            <h2 class="publication-card__name">{card.publication.data.name}</h2>
-            <p class="publication-card__desc">{card.publication.data.description}</p>
-            <a href={`/publications/${card.publication.id}`} class="btn">
-              View All Issues
-            </a>
+        <article class="pub-showcase" style={`--pub-accent: ${card.publication.data.accent}`}>
+          <!-- Header Section -->
+          <div class="pub-showcase__header">
+            <div class="pub-showcase__badge"></div>
+            <h2 class="pub-showcase__name">{card.publication.data.name}</h2>
+            <p class="pub-showcase__desc">{card.publication.data.description}</p>
+            <div class="pub-showcase__stats">
+              <span class="pub-showcase__stat">{card.totalIssues} Issues</span>
+              <span class="pub-showcase__stat">{card.totalArticles} Articles</span>
+            </div>
           </div>
-          <div class="publication-card__preview">
+
+          <!-- Cover Preview -->
+          <div class="pub-showcase__preview">
             {card.issue ? (
-              <IssueCoverCard issue={card.issue} publication={card.publication} coverLines={card.coverLines} />
+              <div class="pub-showcase__cover">
+                <IssueCoverCard issue={card.issue} publication={card.publication} coverLines={card.coverLines} />
+              </div>
             ) : (
-              <div class="no-issues">
-                <p>No published issues yet</p>
+              <div class="pub-showcase__empty">
+                <p>Coming Soon</p>
               </div>
             )}
           </div>
+
+          <!-- Footer / CTA -->
+          <div class="pub-showcase__footer">
+            <a href={`/publications/${card.publication.id}`} class="pub-showcase__cta">
+              Explore {card.publication.data.name}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </a>
+          </div>
         </article>
       ))}
+    </div>
+
+    <!-- Browse All CTA -->
+    <div class="pubs-cta">
+      <a href="/issues" class="pubs-cta__link">
+        <span class="pubs-cta__text">Or browse all issues at once</span>
+        <span class="pubs-cta__arrow">→</span>
+      </a>
     </div>
   </div>
 </Layout>
