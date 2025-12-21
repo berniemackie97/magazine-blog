@@ -513,24 +513,50 @@ h3 {
   font-size: clamp(2rem, 5vw, 3.5rem);
   margin-bottom: 0.5rem;
   color: var(--ink-rich);
+
   text-shadow:
     1px 1px 0 rgba(0, 0, 0, 0.08),
-    -1px -1px 0 rgba(255, 255, 255, 0.25);
-  display: inline-block;
-  position: relative;
+    -1px -1px 0 rgba(255, 255, 255, 0.22);
 }
 
-.rack__title::after {
-  content: "";
-  position: absolute;
-  left: -0.08em;
-  right: -0.08em;
-  bottom: 0.12em;
-  height: 0.32em;
-  background: color-mix(in srgb, var(--pop-lemon) 55%, transparent);
-  z-index: -1;
-  transform: rotate(-1.2deg);
-  border-radius: 4px;
+@media (max-width: 900px) {
+  .rack__title {
+    display: inline;
+    padding: 0 0.08em;
+    line-height: 1.05;
+    letter-spacing: 0.03em;
+
+    /* highlight only under the bottom part of the letters */
+    background: linear-gradient(
+      transparent 82%,
+      color-mix(in srgb, var(--pop-lemon) 55%, transparent) 0
+    );
+
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+}
+
+@media (min-width: 901px) {
+  .rack__title {
+    display: inline-block;
+    position: relative;
+    padding: 0;
+    background: none;
+  }
+
+  .rack__title::after {
+    content: "";
+    position: absolute;
+    left: -0.08em;
+    right: -0.08em;
+    bottom: 0.12em;
+    height: 0.32em;
+    background: color-mix(in srgb, var(--pop-lemon) 55%, transparent);
+    z-index: -1;
+    transform: rotate(-1.2deg);
+    border-radius: 4px;
+  }
 }
 
 .rack__subtitle {
