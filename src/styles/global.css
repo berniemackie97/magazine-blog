@@ -169,8 +169,7 @@
 }
 
 /* Back issues grid background for dark theme */
-[data-publication="red-ops"] .back-issues-grid,
-[data-publication="red-ops"] .featured-issue {
+[data-publication="red-ops"] .back-issues-grid {
   padding: 1.5rem;
   background: #161b22;
   border: 1px solid #30363d;

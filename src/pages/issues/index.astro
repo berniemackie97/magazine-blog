@@ -21,39 +21,84 @@ const issueCards = await Promise.all(
 );
 
 const publications = await getCollection('publications');
+
+// Group issues by publication for the stats
+const issuesByPub = publications.map(pub => ({
+  pub,
+  count: issues.filter(i => i.data.publicationId === pub.id).length
+}));
 ---
 <Layout title="All Issues - The Rack">
-  <div class="page-shell page-content issues-index-page">
-    <header class="page-header">
-      <h1>Browse All Issues</h1>
-      <p class="page-header__sub">Every issue we've published, ready to read.</p>
+  <div class="issues-index">
+    <!-- Hero Section -->
+    <header class="issues-hero">
+      <div class="issues-hero__content">
+        <span class="issues-hero__eyebrow">The Newsstand</span>
+        <h1 class="issues-hero__title">All Issues</h1>
+        <p class="issues-hero__tagline">Every issue we've published, ready to read</p>
+      </div>
+      <div class="issues-hero__stats">
+        {issuesByPub.map(({ pub, count }) => (
+          <div class="issues-hero__stat-item" style={`--accent: ${pub.data.accent}`}>
+            <span class="issues-hero__stat-count">{count}</span>
+            <span class="issues-hero__stat-label">{pub.data.name}</span>
+          </div>
+        ))}
+      </div>
     </header>
 
-    <div class="filter-bar">
-      <select id="pub-filter" class="filter-select">
-        <option value="">All Publications</option>
-        {publications.map((p) => (
-          <option value={p.id}>{p.data.name}</option>
-        ))}
-      </select>
+    <!-- Filter Bar -->
+    <div class="issues-controls">
+      <div class="issues-filter-wrap">
+        <label for="pub-filter" class="issues-filter__label">Filter by</label>
+        <select id="pub-filter" class="issues-filter__select">
+          <option value="">All Publications</option>
+          {publications.map((p) => (
+            <option value={p.id}>{p.data.name}</option>
+          ))}
+        </select>
+      </div>
+      <span class="issues-count" id="issue-count">{issues.length} issues</span>
     </div>
 
-    <div class="shelf-grid" id="issue-grid">
-      {issueCards.map((card) => (
-        <div
-          data-filter-item
-          data-publication={card.publication.id}
-          style={`--tilt: ${card.tilt}deg`}
-        >
-          <IssueCoverCard issue={card.issue} publication={card.publication} coverLines={card.coverLines} showStatus />
-        </div>
-      ))}
+    <!-- Magazine Rack Display -->
+    <div class="rack">
+      <div class="rack__shelf" id="issue-grid">
+        {issueCards.map((card) => (
+          <article
+            class="rack__item"
+            data-filter-item
+            data-publication={card.publication.id}
+            style={`--tilt: ${card.tilt}deg; --accent: ${card.publication.data.accent}`}
+          >
+            <IssueCoverCard issue={card.issue} publication={card.publication} coverLines={card.coverLines} showStatus />
+            <div class="rack__shadow"></div>
+          </article>
+        ))}
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="issues-empty" id="empty-state" style="display: none;">
+      <p class="issues-empty__text">No issues match that filter</p>
+      <button class="issues-empty__btn" id="clear-filter">Show All</button>
     </div>
   </div>
 
   <script is:inline>
     const select = document.getElementById('pub-filter');
     const items = document.querySelectorAll('[data-filter-item]');
+    const countEl = document.getElementById('issue-count');
+    const emptyState = document.getElementById('empty-state');
+    const clearBtn = document.getElementById('clear-filter');
+    const rack = document.querySelector('.rack');
+
+    function updateDisplay() {
+      const visible = [...items].filter(item => item.style.display !== 'none').length;
+      if (countEl) countEl.textContent = `${visible} issue${visible !== 1 ? 's' : ''}`;
+      if (emptyState) emptyState.style.display = visible === 0 ? 'flex' : 'none';
+      if (rack) rack.style.display = visible === 0 ? 'none' : '';
+    }
 
     if (select) {
       select.addEventListener('change', (e) => {
@@ -65,6 +110,15 @@ const publications = await getCollection('publications');
             item.style.display = 'none';
           }
         });
+        updateDisplay();
+      });
+    }
+
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        if (select) select.value = '';
+        items.forEach((item) => item.style.display = '');
+        updateDisplay();
       });
     }
   </script>
