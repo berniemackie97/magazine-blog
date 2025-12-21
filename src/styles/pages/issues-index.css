@@ -3,17 +3,17 @@
    ========================================================================== */
 
 .issues-index {
-  padding-bottom: 2rem;
+  padding-bottom: 3rem;
 }
 
 /* ==========================================================================
-   Hero Section - Centered
+   Hero Section
    ========================================================================== */
 
 .issues-hero {
   text-align: center;
   padding: 3rem 0;
-  margin-bottom: 2.5rem;
+  margin-bottom: 2rem;
   border-bottom: 3px solid var(--ink-rich);
 }
 
@@ -69,7 +69,7 @@
   border: 2px solid var(--ink-faint);
   border-radius: 10px;
   border-top: 4px solid var(--accent, var(--pop-coral));
-  min-width: 100px;
+  min-width: 120px;
 }
 
 .issues-hero__stat-count {
@@ -100,7 +100,7 @@
   justify-content: center;
   gap: 1.5rem;
   padding: 1rem 1.5rem;
-  margin-bottom: 2.5rem;
+  margin-bottom: 3rem;
   background: var(--surface-sunken);
   border-radius: 10px;
   border: 1px solid var(--ink-faint);
@@ -152,13 +152,16 @@
 
 .rack {
   position: relative;
-  padding: 1rem 0 2rem;
+  padding: 2rem;
+  background: var(--surface-sunken);
+  border-radius: 16px;
+  border: 2px solid var(--ink-faint);
 }
 
 .rack__shelf {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 2.5rem 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 3rem 2.5rem;
   justify-items: center;
 }
 
@@ -166,29 +169,31 @@
   position: relative;
   transform: rotate(var(--tilt, 0deg));
   transition: transform 0.25s ease, z-index 0s 0.25s;
+  max-width: 320px;
+  width: 100%;
 }
 
 .rack__item:hover {
-  transform: rotate(0deg) translateY(-8px) scale(1.02);
+  transform: rotate(0deg) translateY(-10px) scale(1.03);
   z-index: 10;
   transition: transform 0.25s ease, z-index 0s;
 }
 
 .rack__shadow {
   position: absolute;
-  bottom: -10px;
-  left: 10%;
-  right: 10%;
-  height: 16px;
-  background: radial-gradient(ellipse at center, rgba(0,0,0,0.12) 0%, transparent 70%);
-  opacity: 0.8;
+  bottom: -15px;
+  left: 5%;
+  right: 5%;
+  height: 25px;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0.2) 0%, transparent 70%);
+  opacity: 1;
   transition: opacity 0.25s ease, transform 0.25s ease;
   pointer-events: none;
 }
 
 .rack__item:hover .rack__shadow {
-  opacity: 0.4;
-  transform: translateY(6px) scaleX(1.1);
+  opacity: 0.5;
+  transform: translateY(8px) scaleX(1.15);
 }
 
 /* ==========================================================================
@@ -250,16 +255,20 @@
 
   .issues-hero__stat-item {
     padding: 0.875rem 1.25rem;
-    min-width: 90px;
+    min-width: 100px;
   }
 
   .issues-hero__stat-count {
     font-size: 1.75rem;
   }
 
+  .rack {
+    padding: 1.5rem;
+  }
+
   .rack__shelf {
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 2rem 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 2.5rem 2rem;
   }
 }
 
@@ -268,9 +277,13 @@
    ========================================================================== */
 
 @media (max-width: 640px) {
+  .issues-index {
+    padding-bottom: 2rem;
+  }
+
   .issues-hero {
-    padding: 2rem 0;
-    margin-bottom: 2rem;
+    padding: 1.5rem 0;
+    margin-bottom: 1.5rem;
   }
 
   .issues-hero__content {
@@ -278,16 +291,16 @@
   }
 
   .issues-hero__eyebrow {
-    font-size: 0.65rem;
-    padding: 0.35rem 0.85rem;
+    font-size: 0.6rem;
+    padding: 0.3rem 0.75rem;
   }
 
   .issues-hero__title {
-    font-size: clamp(2rem, 10vw, 2.5rem);
+    font-size: clamp(1.75rem, 8vw, 2.25rem);
   }
 
   .issues-hero__tagline {
-    font-size: 1.15rem;
+    font-size: 1rem;
   }
 
   .issues-hero__stats {
@@ -297,51 +310,61 @@
   .issues-hero__stat-item {
     flex: 1;
     min-width: 0;
-    padding: 0.75rem 0.5rem;
+    padding: 0.6rem 0.5rem;
   }
 
   .issues-hero__stat-count {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
   }
 
   .issues-hero__stat-label {
-    font-size: 0.6rem;
+    font-size: 0.55rem;
   }
 
   .issues-controls {
     flex-direction: column;
     align-items: stretch;
-    gap: 1rem;
-    padding: 1rem;
-    margin-bottom: 2rem;
+    gap: 0.75rem;
+    padding: 0.875rem;
+    margin-bottom: 1.5rem;
   }
 
   .issues-filter-wrap {
     flex-direction: column;
     align-items: stretch;
-    gap: 0.5rem;
+    gap: 0.4rem;
   }
 
   .issues-filter__label {
     text-align: center;
+    font-size: 0.7rem;
   }
 
   .issues-filter__select {
     width: 100%;
     min-width: unset;
+    font-size: 0.8rem;
+    padding: 0.5rem 0.75rem;
   }
 
   .issues-count {
     text-align: center;
+    font-size: 0.8rem;
   }
 
   .rack {
-    padding: 0.5rem 0 1.5rem;
+    padding: 1rem;
+    border-radius: 12px;
   }
 
   .rack__shelf {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem 1rem;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .rack__item {
+    max-width: 280px;
+    margin: 0 auto;
   }
 
   .rack__item,
@@ -367,7 +390,7 @@
   .issues-hero__stat-item {
     flex-direction: row;
     justify-content: space-between;
-    padding: 0.75rem 1rem;
+    padding: 0.6rem 1rem;
     border-top-width: 0;
     border-left: 4px solid var(--accent, var(--pop-coral));
   }
@@ -381,13 +404,7 @@
     margin-top: 0;
   }
 
-  .rack__shelf {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-
   .rack__item {
-    display: flex;
-    justify-content: center;
+    max-width: 260px;
   }
 }
