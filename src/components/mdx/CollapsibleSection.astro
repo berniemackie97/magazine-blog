@@ -1,0 +1,47 @@
+---
+import "../../styles/components/collapsible-section.css";
+
+interface Props {
+  title: string;
+  subtitle?: string;
+  label?: string;
+  meta?: string;
+  open?: boolean;
+  accent?: string;
+  level?: 2 | 3 | 4;
+  id?: string;
+}
+
+const {
+  title,
+  subtitle,
+  label,
+  meta,
+  open = false,
+  accent,
+  level = 3,
+  id,
+} = Astro.props;
+
+const HeadingTag = `h${level}` as const;
+const style = accent ? `--fold-accent: ${accent};` : undefined;
+---
+
+<details class="section-fold" open={open} style={style}>
+  <summary class="section-fold__summary" id={id}>
+    <span class="section-fold__icon">></span>
+    <div class="section-fold__text">
+      <HeadingTag class="section-fold__title">{title}</HeadingTag>
+      {subtitle && <p class="section-fold__subtitle">{subtitle}</p>}
+    </div>
+    {(label || meta) && (
+      <div class="section-fold__meta">
+        {label && <span class="section-fold__label">{label}</span>}
+        {meta && <span class="section-fold__meta-text">{meta}</span>}
+      </div>
+    )}
+  </summary>
+  <div class="section-fold__content">
+    <slot />
+  </div>
+</details>

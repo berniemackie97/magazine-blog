@@ -1,0 +1,16 @@
+---
+import "../../styles/components/callout.css";
+
+interface Props {
+  title?: string;
+}
+
+const { title } = Astro.props;
+---
+
+<aside class="callout">
+  {title && <div class="callout__title">{title}</div>}
+  <div class="callout__body">
+    <slot />
+  </div>
+</aside>

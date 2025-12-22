@@ -1,0 +1,34 @@
+.callout {
+  margin: 2rem 0;
+  padding: 1.25rem;
+  border: 2px solid var(--ink-rich);
+  border-radius: 10px;
+  background: var(--surface-accent);
+  box-shadow: 4px 4px 0 var(--ink-rich);
+}
+
+.callout__title {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-rich);
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px dashed var(--ink-faint);
+}
+
+.callout__body {
+  color: var(--ink-body);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.callout__body :where(ul, ol) {
+  margin: 0.75rem 0 0;
+  padding-left: 1.25rem;
+}
+
+.callout__body :where(li) {
+  margin: 0.35rem 0;
+}

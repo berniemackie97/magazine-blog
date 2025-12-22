@@ -1,0 +1,289 @@
+.resource-grid {
+  --resource-min: 220px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--resource-min), 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0 2rem;
+}
+
+.resource-grid--dense {
+  --resource-min: 200px;
+  gap: 0.75rem;
+}
+
+.article-body .resource-card a {
+  text-decoration: none;
+}
+
+.resource-card {
+  --resource-accent: var(--pop-coral);
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem 1rem 0.85rem;
+  background: var(--surface-raised);
+  border: 2px solid var(--ink-faint);
+  border-radius: 12px;
+  color: var(--ink-body);
+  box-shadow: 4px 4px 0 var(--ink-faint);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+  overflow: hidden;
+}
+
+.resource-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--resource-accent) 20%, transparent),
+    transparent 60%
+  );
+  opacity: 0.6;
+  pointer-events: none;
+  transform: translateY(10%);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 0;
+}
+
+.resource-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--resource-accent);
+  opacity: 0.8;
+  z-index: 0;
+}
+
+.resource-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.resource-card__main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  color: inherit;
+  flex: 1;
+  cursor: pointer;
+}
+
+.resource-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--ink-faint);
+  border-color: var(--resource-accent);
+  color: var(--ink-rich);
+}
+
+.resource-card:hover::before {
+  opacity: 0.85;
+  transform: translateY(0);
+}
+
+.resource-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.resource-card__badge {
+  padding: 0.2rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid
+    color-mix(in srgb, var(--resource-accent) 60%, var(--ink-faint));
+  background: color-mix(in srgb, var(--resource-accent) 18%, transparent);
+  color: var(--resource-accent);
+  box-shadow: 2px 2px 0 var(--ink-faint);
+}
+
+.resource-card__meta {
+  color: var(--ink-muted);
+  text-align: right;
+}
+
+.resource-card__title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--ink-rich);
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.resource-card__main:hover .resource-card__title {
+  color: var(--resource-accent);
+}
+
+.resource-card__summary {
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+  line-height: 1.5;
+}
+
+.resource-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.resource-card__tag {
+  padding: 0.15rem 0.4rem;
+  border-radius: 999px;
+  background: var(--surface-sunken);
+  border: 1px solid var(--ink-faint);
+  font-size: 0.65rem;
+  font-family: var(--font-mono);
+  color: var(--ink-muted);
+}
+
+.resource-card__footer {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--resource-accent);
+}
+
+.resource-card__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--resource-accent);
+}
+
+.resource-card__cta:hover {
+  color: var(--ink-rich);
+}
+
+.resource-card__arrow {
+  font-weight: 600;
+}
+
+.resource-card__alts {
+  margin-top: 0.35rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--ink-faint);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.resource-card__alts-label {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.resource-card__alts-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.resource-card__alts-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.45rem;
+  border-radius: 999px;
+  border: 1px dashed var(--ink-faint);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--resource-accent);
+  background: color-mix(in srgb, var(--resource-accent) 12%, transparent);
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease,
+    background 0.15s ease;
+}
+
+.resource-card__alts-link:hover {
+  border-color: var(--resource-accent);
+  color: var(--ink-rich);
+  background: color-mix(in srgb, var(--resource-accent) 20%, transparent);
+}
+
+.resource-card__alts-note {
+  font-size: 0.55rem;
+  color: var(--ink-muted);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.resource-card[data-tone="free"] {
+  --resource-accent: var(--accent-alt, var(--pop-mint));
+}
+
+.resource-card[data-tone="paid"] {
+  --resource-accent: var(--pop-tangerine);
+}
+
+.resource-card[data-tone="freemium"] {
+  --resource-accent: var(--pop-lemon);
+}
+
+.resource-card[data-tone="hardware"] {
+  --resource-accent: var(--pop-bubblegum);
+}
+
+[data-publication="red-ops"] .resource-card {
+  background: #161b22;
+  border-color: #30363d;
+  box-shadow: 4px 4px 0 #30363d;
+}
+
+[data-publication="red-ops"] .resource-card:hover {
+  box-shadow: 6px 6px 0 #30363d;
+}
+
+[data-publication="red-ops"] .resource-card__badge {
+  border-color: color-mix(in srgb, var(--resource-accent) 55%, #30363d);
+  box-shadow: 2px 2px 0 #30363d;
+}
+
+[data-publication="red-ops"] .resource-card__alts {
+  border-top-color: #30363d;
+}
+
+[data-publication="red-ops"] .resource-card__alts-link {
+  border-color: #30363d;
+}
+
+[data-publication="red-ops"] .resource-card__tag {
+  background: #0d1117;
+  border-color: #30363d;
+}
+
+[data-publication="red-ops"] .resource-card[data-tone="paid"] {
+  --resource-accent: #d29922;
+}
+
+[data-publication="red-ops"] .resource-card[data-tone="freemium"] {
+  --resource-accent: #58a6ff;
+}
+
+[data-publication="red-ops"] .resource-card[data-tone="hardware"] {
+  --resource-accent: #f85149;
+}

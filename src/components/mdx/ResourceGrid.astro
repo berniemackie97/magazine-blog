@@ -1,0 +1,18 @@
+---
+import "../../styles/components/resource-cards.css";
+
+interface Props {
+  minWidth?: string;
+  dense?: boolean;
+}
+
+const { minWidth, dense = false } = Astro.props;
+const style = minWidth ? `--resource-min: ${minWidth};` : undefined;
+const classes = ["resource-grid", dense ? "resource-grid--dense" : ""]
+  .filter(Boolean)
+  .join(" ");
+---
+
+<div class={classes} style={style}>
+  <slot />
+</div>
