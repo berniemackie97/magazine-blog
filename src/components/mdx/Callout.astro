@@ -3,14 +3,34 @@ import "../../styles/components/callout.css";
 
 interface Props {
   title?: string;
+  checklist?: boolean;
+  items?: string[];
 }
 
-const { title } = Astro.props;
+const { title, checklist = false, items } = Astro.props;
+const hasItems = Array.isArray(items) && items.length > 0;
 ---
 
 <aside class="callout">
   {title && <div class="callout__title">{title}</div>}
   <div class="callout__body">
-    <slot />
+    {hasItems ? (
+      <ul class={`callout__list ${checklist ? "callout__checklist" : ""}`}>
+        {items?.map((item) => (
+          <li>
+            {checklist ? (
+              <label class="callout__check">
+                <input type="checkbox" />
+                <span>{item}</span>
+              </label>
+            ) : (
+              item
+            )}
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <slot />
+    )}
   </div>
 </aside>

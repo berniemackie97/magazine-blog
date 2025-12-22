@@ -34,12 +34,15 @@ import CollapsibleSection from "../../components/mdx/CollapsibleSection.astro";
   source for you to explore at your own discretion.
 </PullQuote>
 
-<Callout title="Day-one checklist">
-  - Isolate your lab network (NAT or host-only).
-  - Snapshot clean VM baselines before running samples.
-  - Keep a clean host; run risky binaries only in VMs.
-  - Log hashes, configs, and steps as you go.
-</Callout>
+<Callout
+  title="Day-one checklist"
+  checklist
+  items={[
+    "Choose a hypervisor (VirtualBox, VMware, etc).",
+    "Install core tooling (Ghidra, debugger, Wireshark).",
+    "Optional: download the starter packs below.",
+  ]}
+/>
 
 <CaptionedFigure
   src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1200&q=80"
@@ -49,33 +52,33 @@ import CollapsibleSection from "../../components/mdx/CollapsibleSection.astro";
   else is just tools.
 </CaptionedFigure>
 
-## What you're building
+## What you will find here
 
-A home lab for RE + red team work usually ends up as:
+A little bit of everything you would need to get started. 
 
-- **A safe playground** (intentionally vulnerable targets + isolated network)
-- **A microscope** (RE tooling to inspect binaries, memory, traffic, and behavior)
-- **A workshop** (compilers/IDEs/scripts to build POCs, harnesses, loaders, parsers)
-- **A notebook** (notes + screenshots + "what I tried" logs you can reproduce later)
-
-Keep the clean side and the dirty side separate. You will thank yourself later.
+- **Tools:** Core kit + optional tracks.
+- **Software:** Hypervisors, base OS, and workflow helpers.
+- **Learning:** Curated resources and practice paths.
+- **Starter packs:** Downloadable bundles.
 
 ---
 
-## Lab tour (optional)
+{/* ## Lab tour
 
 <CaptionedVideo
   title="Lab tour"
   caption="Drop a YouTube/Vimeo link or local MP4 to give readers a quick walkthrough."
 />
 
----
+--- */}
 
 ## Tools
 
+Start with the core kit. Add specialized tools only when you need them.
+
 <CollapsibleSection
-  title="Reverse engineering core"
-  subtitle="Disassemblers, decompilers, and analysis suites."
+  title="Core toolkit (start here)"
+  subtitle="One disassembler, one debugger, one packet tool, one instrumentation layer."
   label="Core"
   open
 >
@@ -109,55 +112,6 @@ Keep the clean side and the dirty side separate. You will thank yourself later.
     summary="Modern UI with strong analysis workflows."
   />
   <ResourceCard
-    title="Hopper"
-    href="https://www.hopperapp.com/"
-    badge="Paid"
-    tone="paid"
-    meta="macOS, Linux"
-    summary="Native disassembler with scripting hooks."
-  />
-  <ResourceCard
-    title="radare2"
-    href="https://rada.re/n/"
-    badge="Free"
-    tone="free"
-    meta="CLI, cross-platform"
-    summary="Powerful command-line RE toolbox."
-  />
-  <ResourceCard
-    title="Cutter"
-    href="https://cutter.re/"
-    badge="Free"
-    tone="free"
-    meta="GUI for radare2"
-    summary="Modern GUI on top of radare2."
-  />
-  <ResourceCard
-    title="Rizin"
-    href="https://rizin.re/"
-    badge="Free"
-    tone="free"
-    meta="CLI, cross-platform"
-    summary="radare2 fork with a cleaner core."
-  />
-  <ResourceCard
-    title="RetDec"
-    href="https://retdec.com/"
-    badge="Free"
-    tone="free"
-    meta="Web + CLI"
-    summary="Decompiler for quick triage and exports."
-  />
-</ResourceGrid>
-</CollapsibleSection>
-
-<CollapsibleSection
-  title="Debuggers + runtime analysis"
-  subtitle="Breakpoints, hooks, and live instrumentation."
-  label="Runtime"
->
-<ResourceGrid>
-  <ResourceCard
     title="x64dbg"
     href="https://x64dbg.com/"
     badge="Free"
@@ -174,30 +128,6 @@ Keep the clean side and the dirty side separate. You will thank yourself later.
     summary="Microsoft debugger for kernel and user mode."
   />
   <ResourceCard
-    title="Visual Studio Debugger"
-    href="https://visualstudio.microsoft.com/"
-    badge="Freemium"
-    tone="freemium"
-    meta="Windows"
-    summary="Great for native and managed debugging."
-  />
-  <ResourceCard
-    title="GDB"
-    href="https://www.gnu.org/software/gdb/"
-    badge="Free"
-    tone="free"
-    meta="Linux, Unix"
-    summary="Classic GNU debugger and scripting."
-  />
-  <ResourceCard
-    title="LLDB"
-    href="https://lldb.llvm.org/"
-    badge="Free"
-    tone="free"
-    meta="macOS, Linux, Windows"
-    summary="LLVM debugger with modern commands."
-  />
-  <ResourceCard
     title="Frida"
     href="https://frida.re/"
     badge="Free"
@@ -206,61 +136,12 @@ Keep the clean side and the dirty side separate. You will thank yourself later.
     summary="Dynamic instrumentation and live hooks."
   />
   <ResourceCard
-    title="DynamoRIO"
-    href="https://dynamorio.org/"
-    badge="Free"
-    tone="free"
-    meta="Cross-platform"
-    summary="Runtime binary instrumentation framework."
-  />
-  <ResourceCard
-    title="Intel PIN"
-    href="https://www.intel.com/content/www/us/en/developer/articles/tool/pin-a-binary-instrumentation-tool-downloads.html"
-    badge="Free"
-    tone="free"
-    meta="Windows, Linux"
-    summary="Binary instrumentation for custom analysis."
-  />
-</ResourceGrid>
-</CollapsibleSection>
-
-<CollapsibleSection
-  title="Binary triage + file inspection"
-  subtitle="Signatures, hex work, firmware, and format parsing."
-  label="Triage"
->
-<ResourceGrid>
-  <ResourceCard
-    title="Detect It Easy (DIE)"
-    href="https://github.com/horsicq/DIE-engine"
+    title="Wireshark"
+    href="https://www.wireshark.org/"
     badge="Free"
     tone="free"
     meta="Windows, macOS, Linux"
-    summary="File signatures, packer detection, and info."
-  />
-  <ResourceCard
-    title="PE-bear"
-    href="https://github.com/hasherezade/pe-bear"
-    badge="Free"
-    tone="free"
-    meta="Windows"
-    summary="PE file viewer and quick triage."
-  />
-  <ResourceCard
-    title="010 Editor"
-    href="https://www.sweetscape.com/010editor/"
-    badge="Paid"
-    tone="paid"
-    meta="Windows, macOS, Linux"
-    summary="Hex editor with binary templates."
-  />
-  <ResourceCard
-    title="HxD"
-    href="https://mh-nexus.de/en/hxd/"
-    badge="Free"
-    tone="free"
-    meta="Windows"
-    summary="Lightweight hex editor for quick edits."
+    summary="Packet capture and deep protocol analysis."
   />
   <ResourceCard
     title="ImHex"
@@ -270,6 +151,17 @@ Keep the clean side and the dirty side separate. You will thank yourself later.
     meta="Windows, macOS, Linux"
     summary="Hex editor with patterns and plugins."
   />
+</ResourceGrid>
+</CollapsibleSection>
+
+<CollapsibleSection
+  title="Specialized tracks"
+  subtitle="Add these when you need firmware, mobile, or web focus."
+  label="Optional"
+>
+**Firmware + file analysis**
+
+<ResourceGrid>
   <ResourceCard
     title="Binwalk"
     href="https://github.com/ReFirmLabs/binwalk"
@@ -279,14 +171,6 @@ Keep the clean side and the dirty side separate. You will thank yourself later.
     summary="Firmware extraction and analysis tooling."
   />
   <ResourceCard
-    title="Kaitai Struct"
-    href="https://kaitai.io/"
-    badge="Free"
-    tone="free"
-    meta="Cross-platform"
-    summary="Declarative binary format parser generator."
-  />
-  <ResourceCard
     title="YARA"
     href="https://virustotal.github.io/yara/"
     badge="Free"
@@ -294,14 +178,18 @@ Keep the clean side and the dirty side separate. You will thank yourself later.
     meta="Cross-platform"
     summary="Pattern matching for malware triage."
   />
+  <ResourceCard
+    title="010 Editor"
+    href="https://www.sweetscape.com/010editor/"
+    badge="Paid"
+    tone="paid"
+    meta="Windows, macOS, Linux"
+    summary="Hex editor with binary templates."
+  />
 </ResourceGrid>
-</CollapsibleSection>
 
-<CollapsibleSection
-  title="Managed + mobile RE"
-  subtitle=".NET, Android, and mobile-focused tooling."
-  label="Managed"
->
+**Managed + mobile**
+
 <ResourceGrid>
   <ResourceCard
     title="dnSpyEx"
@@ -312,36 +200,12 @@ Keep the clean side and the dirty side separate. You will thank yourself later.
     summary=".NET decompiler and debugger."
   />
   <ResourceCard
-    title="ILSpy"
-    href="https://github.com/icsharpcode/ILSpy"
-    badge="Free"
-    tone="free"
-    meta="Windows, macOS, Linux"
-    summary="Open source .NET decompiler."
-  />
-  <ResourceCard
-    title="dotPeek"
-    href="https://www.jetbrains.com/decompiler/"
-    badge="Free"
-    tone="free"
-    meta="Windows"
-    summary="JetBrains .NET decompiler."
-  />
-  <ResourceCard
     title="JADX"
     href="https://github.com/skylot/jadx"
     badge="Free"
     tone="free"
     meta="Windows, macOS, Linux"
     summary="Android DEX decompiler and viewer."
-  />
-  <ResourceCard
-    title="apktool"
-    href="https://ibotpeaches.github.io/Apktool/"
-    badge="Free"
-    tone="free"
-    meta="Cross-platform"
-    summary="Decode and rebuild APK resources."
   />
   <ResourceCard
     title="MobSF"
@@ -360,66 +224,8 @@ Keep the clean side and the dirty side separate. You will thank yourself later.
     summary="Commercial decompiler for mobile RE."
   />
 </ResourceGrid>
-</CollapsibleSection>
 
-<CollapsibleSection
-  title="Network + protocol analysis"
-  subtitle="Traffic capture, proxies, and IDS tooling."
-  label="Network"
->
-<ResourceGrid>
-  <ResourceCard
-    title="Wireshark"
-    href="https://www.wireshark.org/"
-    badge="Free"
-    tone="free"
-    meta="Windows, macOS, Linux"
-    summary="Packet capture and deep protocol analysis."
-  />
-  <ResourceCard
-    title="tcpdump"
-    href="https://www.tcpdump.org/"
-    badge="Free"
-    tone="free"
-    meta="CLI"
-    summary="Fast CLI packet capture and filters."
-  />
-  <ResourceCard
-    title="Zeek"
-    href="https://zeek.org/"
-    badge="Free"
-    tone="free"
-    meta="Linux"
-    summary="Network security monitor and scripting."
-  />
-  <ResourceCard
-    title="Suricata"
-    href="https://suricata.io/"
-    badge="Free"
-    tone="free"
-    meta="Cross-platform"
-    summary="IDS/IPS engine with rules."
-  />
-  <ResourceCard
-    title="mitmproxy"
-    href="https://mitmproxy.org/"
-    badge="Free"
-    tone="free"
-    meta="Cross-platform"
-    summary="Intercept and modify HTTP/S traffic."
-  />
-</ResourceGrid>
-</CollapsibleSection>
-
-<CollapsibleSection
-  title="Red team essentials (authorized use only)"
-  subtitle="Recon, web testing, credentials, and C2."
-  label="Authorized use"
->
-Keep this inside your lab or explicitly scoped engagements. Treat these like
-power tools: documented intent, controlled environment, and clear permission.
-
-**Recon + discovery**
+**Web + red team**
 
 <ResourceGrid>
   <ResourceCard
@@ -430,35 +236,6 @@ power tools: documented intent, controlled environment, and clear permission.
     meta="Cross-platform"
     summary="Port scanning and service fingerprinting."
   />
-  <ResourceCard
-    title="Masscan"
-    href="https://github.com/robertdavidgraham/masscan"
-    badge="Free"
-    tone="free"
-    meta="CLI"
-    summary="Fast internet-scale port scanner."
-  />
-  <ResourceCard
-    title="Amass"
-    href="https://github.com/owasp-amass/amass"
-    badge="Free"
-    tone="free"
-    meta="Cross-platform"
-    summary="Subdomain enumeration and mapping."
-  />
-  <ResourceCard
-    title="Shodan"
-    href="https://www.shodan.io/"
-    badge="Freemium"
-    tone="freemium"
-    meta="Web"
-    summary="Search engine for exposed services."
-  />
-</ResourceGrid>
-
-**Web testing**
-
-<ResourceGrid>
   <ResourceCard
     title="Burp Suite"
     href="https://portswigger.net/burp"
@@ -483,120 +260,6 @@ power tools: documented intent, controlled environment, and clear permission.
     meta="CLI"
     summary="Fast content discovery and fuzzing."
   />
-  <ResourceCard
-    title="Nuclei"
-    href="https://github.com/projectdiscovery/nuclei"
-    badge="Free"
-    tone="free"
-    meta="CLI"
-    summary="Template-based vulnerability scanning."
-  />
-  <ResourceCard
-    title="SQLmap"
-    href="https://sqlmap.org/"
-    badge="Free"
-    tone="free"
-    meta="CLI"
-    summary="Automated SQL injection testing."
-  />
-  <ResourceCard
-    title="Gobuster"
-    href="https://github.com/OJ/gobuster"
-    badge="Free"
-    tone="free"
-    meta="CLI"
-    summary="Directory and DNS busting."
-  />
-</ResourceGrid>
-
-**Credential + auth testing**
-
-<ResourceGrid>
-  <ResourceCard
-    title="Hashcat"
-    href="https://hashcat.net/hashcat/"
-    badge="Free"
-    tone="free"
-    meta="Windows, macOS, Linux"
-    summary="GPU-accelerated password recovery."
-  />
-  <ResourceCard
-    title="John the Ripper"
-    href="https://www.openwall.com/john/"
-    badge="Free"
-    tone="free"
-    meta="Cross-platform"
-    summary="Password auditing and cracking suite."
-  />
-  <ResourceCard
-    title="Hydra"
-    href="https://github.com/vanhauser-thc/thc-hydra"
-    badge="Free"
-    tone="free"
-    meta="CLI"
-    summary="Online password guessing tool."
-  />
-  <ResourceCard
-    title="BloodHound"
-    href="https://github.com/SpecterOps/BloodHound"
-    badge="Free"
-    tone="free"
-    meta="Windows, macOS, Linux"
-    summary="Active Directory attack path analysis."
-  />
-</ResourceGrid>
-
-**C2 + emulation frameworks**
-
-<ResourceGrid>
-  <ResourceCard
-    title="Metasploit Framework"
-    href="https://www.metasploit.com/"
-    badge="Free"
-    tone="free"
-    meta="Windows, macOS, Linux"
-    summary="Exploit framework and tooling."
-  />
-  <ResourceCard
-    title="Sliver"
-    href="https://github.com/BishopFox/sliver"
-    badge="Free"
-    tone="free"
-    meta="Cross-platform"
-    summary="Open source C2 framework."
-  />
-  <ResourceCard
-    title="Mythic"
-    href="https://github.com/its-a-feature/Mythic"
-    badge="Free"
-    tone="free"
-    meta="Cross-platform"
-    summary="Extensible C2 with plugin-based agents."
-  />
-  <ResourceCard
-    title="Cobalt Strike"
-    href="https://www.cobaltstrike.com/"
-    badge="Paid"
-    tone="paid"
-    meta="Cross-platform"
-    summary="Commercial red team platform."
-  />
-  <ResourceCard
-    title="MITRE Caldera"
-    href="https://caldera.mitre.org/"
-    badge="Free"
-    tone="free"
-    meta="Cross-platform"
-    summary="Adversary emulation and automation."
-  />
-  <ResourceCard
-    title="Atomic Red Team"
-    href="https://github.com/redcanaryco/atomic-red-team"
-    badge="Free"
-    tone="free"
-    meta="Cross-platform"
-    summary="Small, focused tests for ATT&CK."
-  />
 </ResourceGrid>
 </CollapsibleSection>
 
@@ -605,8 +268,8 @@ power tools: documented intent, controlled environment, and clear permission.
 ## Software
 
 <CollapsibleSection
-  title="Virtualization + base OS"
-  subtitle="Foundational hypervisors and host setups."
+  title="Lab foundation"
+  subtitle="Pick a hypervisor + base OS + one analysis VM."
   label="Foundation"
   open
 >
@@ -636,23 +299,6 @@ power tools: documented intent, controlled environment, and clear permission.
     summary="Built-in Windows hypervisor."
   />
   <ResourceCard
-    title="Proxmox VE"
-    href="https://www.proxmox.com/en/proxmox-ve"
-    badge="Free"
-    tone="free"
-    meta="Linux"
-    summary="Type-1 hypervisor for lab servers."
-  />
-</ResourceGrid>
-</CollapsibleSection>
-
-<CollapsibleSection
-  title="Lab distros + analysis VMs"
-  subtitle="Pre-built environments for security research."
-  label="VM distros"
->
-<ResourceGrid>
-  <ResourceCard
     title="Windows 11"
     href="https://www.microsoft.com/windows/windows-11"
     badge="Paid"
@@ -667,22 +313,6 @@ power tools: documented intent, controlled environment, and clear permission.
     tone="free"
     meta="Linux"
     summary="General-purpose Linux base."
-  />
-  <ResourceCard
-    title="Kali Linux"
-    href="https://www.kali.org/"
-    badge="Free"
-    tone="free"
-    meta="Linux"
-    summary="Security distro, keep it in a VM."
-  />
-  <ResourceCard
-    title="Parrot OS"
-    href="https://www.parrotsec.org/"
-    badge="Free"
-    tone="free"
-    meta="Linux"
-    summary="Security-focused desktop distro."
   />
   <ResourceCard
     title="FLARE-VM"
@@ -700,62 +330,13 @@ power tools: documented intent, controlled environment, and clear permission.
     meta="Linux"
     summary="Linux distro for malware analysis."
   />
-  <ResourceCard
-    title="Commando VM"
-    href="https://github.com/mandiant/commando-vm"
-    badge="Free"
-    tone="free"
-    meta="Windows"
-    summary="Windows tooling for security testing."
-  />
 </ResourceGrid>
 </CollapsibleSection>
 
 <CollapsibleSection
-  title="Containers + lab automation"
-  subtitle="Repeatable builds and scripted setups."
-  label="Automation"
->
-<ResourceGrid>
-  <ResourceCard
-    title="Docker Desktop"
-    href="https://www.docker.com/products/docker-desktop/"
-    badge="Freemium"
-    tone="freemium"
-    meta="Windows, macOS, Linux"
-    summary="Container runtime for labs and tooling."
-  />
-  <ResourceCard
-    title="Podman"
-    href="https://podman.io/"
-    badge="Free"
-    tone="free"
-    meta="Linux, macOS, Windows"
-    summary="Daemonless container engine."
-  />
-  <ResourceCard
-    title="Vagrant"
-    href="https://www.vagrantup.com/"
-    badge="Free"
-    tone="free"
-    meta="Cross-platform"
-    summary="Repeatable VM builds for labs."
-  />
-  <ResourceCard
-    title="Ansible"
-    href="https://www.ansible.com/"
-    badge="Free"
-    tone="free"
-    meta="Cross-platform"
-    summary="Automation for lab provisioning."
-  />
-</ResourceGrid>
-</CollapsibleSection>
-
-<CollapsibleSection
-  title="Developer workbench"
-  subtitle="Editors, languages, and tooling glue."
-  label="Workbench"
+  title="Workflow + automation"
+  subtitle="Keep lab builds reproducible and notes organized."
+  label="Workflow"
 >
 <ResourceGrid>
   <ResourceCard
@@ -775,54 +356,21 @@ power tools: documented intent, controlled environment, and clear permission.
     summary="Lightweight editor with great tooling."
   />
   <ResourceCard
-    title="JetBrains IDEs"
-    href="https://www.jetbrains.com/"
+    title="Docker Desktop"
+    href="https://www.docker.com/products/docker-desktop/"
     badge="Freemium"
     tone="freemium"
     meta="Windows, macOS, Linux"
-    summary="Power IDEs for multi-language work."
+    summary="Container runtime for labs and tooling."
   />
   <ResourceCard
-    title="Python"
-    href="https://www.python.org/"
+    title="Vagrant"
+    href="https://www.vagrantup.com/"
     badge="Free"
     tone="free"
     meta="Cross-platform"
-    summary="Scripting glue for every lab task."
+    summary="Repeatable VM builds for labs."
   />
-  <ResourceCard
-    title="Rust"
-    href="https://www.rust-lang.org/"
-    badge="Free"
-    tone="free"
-    meta="Cross-platform"
-    summary="Fast, safe systems tooling."
-  />
-  <ResourceCard
-    title="Go"
-    href="https://go.dev/"
-    badge="Free"
-    tone="free"
-    meta="Cross-platform"
-    summary="Simple concurrency and tooling."
-  />
-  <ResourceCard
-    title="Node.js"
-    href="https://nodejs.org/"
-    badge="Free"
-    tone="free"
-    meta="Cross-platform"
-    summary="Useful for web tooling and scripts."
-  />
-</ResourceGrid>
-</CollapsibleSection>
-
-<CollapsibleSection
-  title="Notes + knowledge base"
-  subtitle="Capture your steps and keep a memory."
-  label="Notes"
->
-<ResourceGrid>
   <ResourceCard
     title="Obsidian"
     href="https://obsidian.md/"
@@ -830,107 +378,6 @@ power tools: documented intent, controlled environment, and clear permission.
     tone="freemium"
     meta="Windows, macOS, Linux"
     summary="Local markdown notes and graphs."
-  />
-  <ResourceCard
-    title="Notion"
-    href="https://www.notion.so/"
-    badge="Freemium"
-    tone="freemium"
-    meta="Web"
-    summary="Docs, databases, and planning."
-  />
-  <ResourceCard
-    title="Logseq"
-    href="https://logseq.com/"
-    badge="Free"
-    tone="free"
-    meta="Windows, macOS, Linux"
-    summary="Outliner + knowledge base."
-  />
-  <ResourceCard
-    title="Joplin"
-    href="https://joplinapp.org/"
-    badge="Free"
-    tone="free"
-    meta="Windows, macOS, Linux"
-    summary="Open source notes with sync options."
-  />
-</ResourceGrid>
-</CollapsibleSection>
-
----
-
-## Hardware + lab interfaces
-
-<CollapsibleSection
-  title="Bench + field gear"
-  subtitle="Interfaces, probes, and RF tools."
-  label="Hardware"
->
-<ResourceGrid>
-  <ResourceCard
-    title="Saleae Logic Analyzer"
-    href="https://www.saleae.com/"
-    badge="Paid"
-    tone="hardware"
-    meta="USB"
-    summary="Reliable digital capture and protocol decode."
-  />
-  <ResourceCard
-    title="Bus Pirate"
-    href="https://github.com/BusPirate/Bus_Pirate"
-    badge="Free"
-    tone="hardware"
-    meta="USB"
-    summary="Open hardware multi-protocol tool."
-  />
-  <ResourceCard
-    title="GreatFET One"
-    href="https://greatscottgadgets.com/greatfet/"
-    badge="Free"
-    tone="hardware"
-    meta="USB"
-    summary="Open hardware for embedded RE."
-  />
-  <ResourceCard
-    title="SEGGER J-Link"
-    href="https://www.segger.com/products/debug-probes/j-link/"
-    badge="Paid"
-    tone="hardware"
-    meta="JTAG/SWD"
-    summary="High-quality debug probe."
-  />
-  <ResourceCard
-    title="ST-LINK"
-    href="https://www.st.com/en/development-tools/st-link-v3set.html"
-    badge="Paid"
-    tone="hardware"
-    meta="JTAG/SWD"
-    summary="Affordable STM32 debug probe."
-  />
-  <ResourceCard
-    title="RTL-SDR"
-    href="https://www.rtl-sdr.com/"
-    badge="Paid"
-    tone="hardware"
-    meta="RF"
-    summary="Low-cost software defined radio."
-  />
-  <ResourceCard
-    title="HackRF One"
-    href="https://greatscottgadgets.com/hackrf/"
-    badge="Paid"
-    tone="hardware"
-    meta="RF"
-    summary="Wideband SDR for signal work."
-  />
-  <ResourceCard
-    title="Proxmark3"
-    href="https://proxmark.com/"
-    badge="Paid"
-    tone="hardware"
-    meta="RFID"
-    summary="RFID/NFC research platform."
   />
 </ResourceGrid>
 </CollapsibleSection>
@@ -962,14 +409,6 @@ power tools: documented intent, controlled environment, and clear permission.
     summary="Damn Vulnerable Web App."
   />
   <ResourceCard
-    title="OWASP WebGoat"
-    href="https://owasp.org/www-project-webgoat/"
-    badge="Free"
-    tone="free"
-    meta="Web app"
-    summary="Learning labs for web vulnerabilities."
-  />
-  <ResourceCard
     title="Metasploitable"
     href="https://information.rapid7.com/metasploitable-download.html"
     badge="Free"
@@ -985,22 +424,6 @@ power tools: documented intent, controlled environment, and clear permission.
     meta="Platform"
     summary="Guided labs and challenge boxes."
   />
-  <ResourceCard
-    title="TryHackMe"
-    href="https://tryhackme.com/"
-    badge="Freemium"
-    tone="freemium"
-    meta="Platform"
-    summary="Structured learning paths."
-  />
-  <ResourceCard
-    title="pwnable.kr"
-    href="https://pwnable.kr/"
-    badge="Free"
-    tone="free"
-    meta="CTF"
-    summary="Binary exploitation practice."
-  />
 </ResourceGrid>
 </CollapsibleSection>
 
@@ -1008,7 +431,55 @@ power tools: documented intent, controlled environment, and clear permission.
 
 ## Learning resources
 
-{/* Add your learning resources here. */}
+<CollapsibleSection
+  title="Learning resources"
+  subtitle="Small, high-signal picks to avoid overwhelm."
+  label="Start here"
+  open
+>
+<ResourceGrid>
+  <ResourceCard
+    title="MITRE ATT&CK"
+    href="https://attack.mitre.org/"
+    badge="Free"
+    tone="free"
+    meta="Framework"
+    summary="Tactics, techniques, and detection ideas."
+  />
+  <ResourceCard
+    title="PortSwigger Web Security Academy"
+    href="https://portswigger.net/web-security"
+    badge="Free"
+    tone="free"
+    meta="Web labs"
+    summary="Hands-on labs for web testing and Burp skills."
+  />
+  <ResourceCard
+    title="OpenSecurityTraining2"
+    href="https://opensecuritytraining.info/"
+    badge="Free"
+    tone="free"
+    meta="Courses"
+    summary="Deep-dive RE, OS, and low-level training."
+  />
+  <ResourceCard
+    title="pwn.college"
+    href="https://pwn.college/"
+    badge="Free"
+    tone="free"
+    meta="Labs"
+    summary="Interactive binary exploitation and RE exercises."
+  />
+  <ResourceCard
+    title="TryHackMe"
+    href="https://tryhackme.com/"
+    badge="Freemium"
+    tone="freemium"
+    meta="Paths"
+    summary="Guided learning tracks for red team basics."
+  />
+</ResourceGrid>
+</CollapsibleSection>
 
 ---
 
@@ -1056,17 +527,64 @@ MediaFire, Dropbox, or Drive once you have the zips ready.
 
 ---
 
-## Hygiene rules that save you pain
+## Hardware + lab interfaces
 
 <CollapsibleSection
-  title="Lab hygiene checklist"
-  subtitle="Small habits that prevent big losses."
-  label="Safety"
+  title="Bench + field gear"
+  subtitle="Interfaces, probes, and RF tools."
+  label="Hardware"
 >
+<ResourceGrid>
+  <ResourceCard
+    title="Saleae Logic Analyzer"
+    href="https://www.saleae.com/"
+    badge="Paid"
+    tone="hardware"
+    meta="USB"
+    summary="Reliable digital capture and protocol decode."
+  />
+  <ResourceCard
+    title="Bus Pirate"
+    href="https://github.com/BusPirate/Bus_Pirate"
+    badge="Free"
+    tone="hardware"
+    meta="USB"
+    summary="Open hardware multi-protocol tool."
+  />
+  <ResourceCard
+    title="SEGGER J-Link"
+    href="https://www.segger.com/products/debug-probes/j-link/"
+    badge="Paid"
+    tone="hardware"
+    meta="JTAG/SWD"
+    summary="High-quality debug probe."
+  />
+  <ResourceCard
+    title="RTL-SDR"
+    href="https://www.rtl-sdr.com/"
+    badge="Paid"
+    tone="hardware"
+    meta="RF"
+    summary="Low-cost software defined radio."
+  />
+  <ResourceCard
+    title="Proxmark3"
+    href="https://proxmark.com/"
+    badge="Paid"
+    tone="hardware"
+    meta="RFID"
+    summary="RFID/NFC research platform."
+  />
+</ResourceGrid>
+</CollapsibleSection>
+
+---
+
+## Hygiene rules that save you pain
+
 <Callout title="Lab hygiene">
   - Snapshot before you run unknown binaries.
   - Never reuse passwords between lab boxes and personal gear.
   - Do not upload unknown samples to public scanners without understanding the risk.
   - Write down what you did as you go. Future-you is a different person.
 </Callout>
-</CollapsibleSection>
