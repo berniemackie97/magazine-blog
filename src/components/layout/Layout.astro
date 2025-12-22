@@ -26,13 +26,14 @@ const {
 const accentValue = (accent ?? publication?.data.accent)?.trim() || null;
 const rootStyle = accentValue ? `--accent: ${accentValue};` : undefined;
 const publicationKey = publication?.id ?? 'global';
+const colorScheme = publicationKey === 'red-ops' ? 'dark' : 'light';
 ---
 <!DOCTYPE html>
 <html lang={lang} style={rootStyle} data-publication={publicationKey}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="color-scheme" content="light" />
+    <meta name="color-scheme" content={colorScheme} />
     <meta name="description" content={description} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

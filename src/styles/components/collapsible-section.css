@@ -1,0 +1,184 @@
+.section-fold {
+  --fold-accent: var(--pop-coral);
+  margin: 1.5rem 0;
+  border: 2px solid var(--ink-faint);
+  border-radius: 14px;
+  background: var(--surface-raised);
+  box-shadow: 4px 4px 0 var(--ink-faint);
+  overflow: hidden;
+}
+
+.section-fold[open] {
+  border-color: color-mix(in srgb, var(--fold-accent) 40%, var(--ink-faint));
+}
+
+.section-fold__summary {
+  list-style: none;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 1rem 1.25rem;
+}
+
+.section-fold[open] .section-fold__summary {
+  background: color-mix(in srgb, var(--fold-accent) 8%, transparent);
+}
+
+.section-fold__summary::-webkit-details-marker {
+  display: none;
+}
+
+.section-fold__icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 2px solid var(--ink-faint);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--fold-accent);
+  background: color-mix(in srgb, var(--fold-accent) 12%, transparent);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.section-fold__summary:hover .section-fold__icon {
+  border-color: color-mix(in srgb, var(--fold-accent) 60%, var(--ink-faint));
+}
+
+.section-fold__summary:hover .section-fold__title {
+  color: var(--fold-accent);
+}
+
+.section-fold[open] .section-fold__icon {
+  transform: rotate(90deg);
+  border-color: color-mix(in srgb, var(--fold-accent) 60%, var(--ink-faint));
+}
+
+.section-fold__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-rich);
+}
+
+.section-fold__subtitle {
+  margin: 0.3rem 0 0;
+  font-size: 0.9rem;
+  color: var(--ink-muted);
+  line-height: 1.4;
+}
+
+.section-fold__meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.section-fold__label {
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--ink-faint);
+  background: color-mix(in srgb, var(--fold-accent) 18%, transparent);
+  color: var(--fold-accent);
+  box-shadow: 2px 2px 0 var(--ink-faint);
+}
+
+.section-fold__content {
+  padding: 0.25rem 1.25rem 1.25rem;
+  border-top: 1px dashed var(--ink-faint);
+  animation: fold-in 0.2s ease;
+}
+
+.section-fold__content .resource-grid {
+  margin: 1rem 0 0.5rem;
+}
+
+@keyframes fold-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 640px) {
+  .section-fold__summary {
+    grid-template-columns: auto 1fr;
+  }
+
+  .section-fold__meta {
+    align-items: flex-start;
+    margin-left: 44px;
+  }
+}
+
+[data-publication="red-ops"] .section-fold {
+  background: #161b22;
+  border-color: #30363d;
+  box-shadow: 4px 4px 0 #30363d;
+}
+
+[data-publication="red-ops"] .section-fold__icon {
+  border-color: #30363d;
+  background: color-mix(in srgb, #58a6ff 18%, transparent);
+  color: #58a6ff;
+}
+
+[data-publication="red-ops"] .section-fold__label {
+  border-color: #30363d;
+  box-shadow: 2px 2px 0 #30363d;
+}
+
+[data-publication="red-ops"] .section-fold__content {
+  border-top-color: #30363d;
+}
+
+[data-publication="field-guide"] .section-fold {
+  border-style: dashed;
+  border-color: #bfae9f;
+  box-shadow: none;
+  background: #fffdf8;
+}
+
+[data-publication="field-guide"] .section-fold__summary {
+  background: transparent;
+}
+
+[data-publication="field-guide"] .section-fold__icon {
+  border-style: dashed;
+  border-color: #bfae9f;
+  background: #ebe5d8;
+  color: #1f7a8c;
+}
+
+[data-publication="field-guide"] .section-fold__title {
+  font-family: var(--font-hand);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+[data-publication="field-guide"] .section-fold__label {
+  border-style: dashed;
+  border-color: #bfae9f;
+  color: #1f7a8c;
+  background: #ebe5d8;
+  box-shadow: none;
+}
+
+[data-publication="field-guide"] .section-fold__content {
+  border-top-color: #bfae9f;
+}

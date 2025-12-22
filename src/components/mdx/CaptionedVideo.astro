@@ -1,0 +1,85 @@
+---
+import "../../styles/components/captioned-video.css";
+
+interface Props {
+  src?: string;
+  title?: string;
+  caption?: string;
+  provider?: "youtube" | "vimeo" | "local";
+  poster?: string;
+  aspect?: string;
+  placeholder?: string;
+}
+
+const {
+  src,
+  title,
+  caption,
+  provider,
+  poster,
+  aspect = "16 / 9",
+  placeholder = "Video coming soon.",
+} = Astro.props;
+
+const inferProvider = (value?: string) => {
+  if (!value) return undefined;
+  if (value.includes("youtu")) return "youtube";
+  if (value.includes("vimeo")) return "vimeo";
+  return "local";
+};
+
+const resolveEmbedSrc = (value: string, kind: "youtube" | "vimeo" | "local") => {
+  if (kind === "local") return value;
+  if (kind === "youtube") {
+    const match = value.match(
+      /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([A-Za-z0-9_-]+)/
+    );
+    const id = match?.[1];
+    return id ? `https://www.youtube.com/embed/${id}` : value;
+  }
+  const match = value.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  const id = match?.[1];
+  return id ? `https://player.vimeo.com/video/${id}` : value;
+};
+
+const resolvedProvider = provider ?? inferProvider(src);
+const embedSrc =
+  src && resolvedProvider
+    ? resolveEmbedSrc(src, resolvedProvider)
+    : undefined;
+const isEmbed = embedSrc && resolvedProvider !== "local";
+const isLocal = embedSrc && resolvedProvider === "local";
+const hasCaption = Boolean(title || caption);
+---
+
+<figure class="video-embed" style={`--video-aspect: ${aspect};`}>
+  <div class="video-embed__frame">
+    {isEmbed && (
+      <iframe
+        src={embedSrc}
+        title={title ?? "Embedded video"}
+        loading="lazy"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen
+      />
+    )}
+    {isLocal && (
+      <video controls poster={poster} preload="metadata">
+        <source src={embedSrc} />
+        Your browser does not support the video tag.
+      </video>
+    )}
+    {!embedSrc && (
+      <div class="video-embed__placeholder">
+        <span class="video-embed__tag">Video</span>
+        <p class="video-embed__prompt">{placeholder}</p>
+      </div>
+    )}
+  </div>
+  {hasCaption && (
+    <figcaption class="video-embed__caption">
+      {title && <span class="video-embed__title">{title}</span>}
+      {caption && <span>{caption}</span>}
+    </figcaption>
+  )}
+</figure>

@@ -1,0 +1,91 @@
+---
+import "../../styles/components/resource-cards.css";
+
+interface Props {
+  title: string;
+  href: string;
+  summary?: string;
+  badge?: string;
+  tone?: "free" | "paid" | "freemium" | "hardware";
+  meta?: string;
+  tags?: string[];
+  external?: boolean;
+  accent?: string;
+  altSources?: {
+    label: string;
+    href: string;
+    note?: string;
+  }[];
+}
+
+const {
+  title,
+  href,
+  summary,
+  badge,
+  tone,
+  meta,
+  tags = [],
+  external = true,
+  accent,
+  altSources = [],
+} = Astro.props;
+
+const rel = external ? "noreferrer noopener" : undefined;
+const target = external ? "_blank" : undefined;
+const style = accent ? `--resource-accent: ${accent};` : undefined;
+const hasAltSources = altSources.length > 0;
+---
+
+<article class="resource-card" data-tone={tone} style={style}>
+  <a
+    class="resource-card__main"
+    href={href}
+    target={target}
+    rel={rel}
+    aria-label={`Open ${title}`}
+  >
+    <div class="resource-card__head">
+      {badge && (
+        <span class="resource-card__badge" data-tone={tone}>
+          {badge}
+        </span>
+      )}
+      {meta && <span class="resource-card__meta">{meta}</span>}
+    </div>
+    <h4 class="resource-card__title">{title}</h4>
+    {summary && <p class="resource-card__summary">{summary}</p>}
+    {tags?.length > 0 && (
+      <div class="resource-card__tags">
+        {tags.map((tag) => (
+          <span class="resource-card__tag">{tag}</span>
+        ))}
+      </div>
+    )}
+    <div class="resource-card__footer">
+      <span class="resource-card__cta">
+        Open <span class="resource-card__arrow">-></span>
+      </span>
+    </div>
+  </a>
+  {hasAltSources && (
+    <div class="resource-card__alts">
+      <span class="resource-card__alts-label">Alt sources</span>
+      <div class="resource-card__alts-list">
+        {altSources.map((source) => (
+          <a
+            class="resource-card__alts-link"
+            href={source.href}
+            target={target}
+            rel={rel}
+          >
+            <span class="resource-card__alts-name">{source.label}</span>
+            {source.note && (
+              <span class="resource-card__alts-note">({source.note})</span>
+            )}
+          </a>
+        ))}
+      </div>
+    </div>
+  )}
+</article>
