@@ -1,0 +1,56 @@
+---
+interface Props {
+  id?: string;
+  title: string;
+  subtitle?: string;
+}
+
+const { id, title, subtitle } = Astro.props;
+const headingId = id ? `${id}-title` : undefined;
+---
+
+<section class="paper" id={id} aria-labelledby={headingId}>
+  <header>
+    <h2 id={headingId}>{title}</h2>
+    {subtitle && <p class="mono-label">{subtitle}</p>}
+  </header>
+  <slot />
+</section>
+
+<style>
+  .paper {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 28px clamp(16px, 4vw, 32px) 32px;
+    background-color: var(--newsprint);
+    background-image: radial-gradient(rgb(0 0 0 / 0.05) 1px, transparent 1px);
+    background-size: 4px 4px;
+    color: var(--ink);
+    transform: rotate(-0.6deg);
+    box-shadow:
+      0 2px 0 var(--newsprint-edge),
+      0 4px 0 #ede6d8,
+      0 6px 0 var(--newsprint-edge),
+      0 18px 30px rgb(0 0 0 / 0.18);
+  }
+
+  header {
+    padding-bottom: 10px;
+    border-bottom: 3px double var(--ink);
+    text-align: center;
+  }
+
+  h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 5vw, 2.5rem);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  p {
+    margin: 6px 0 0;
+    color: var(--ink-soft);
+  }
+</style>

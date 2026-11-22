@@ -1,0 +1,123 @@
+---
+import { formatDate } from "../../lib/dates";
+import Barcode from "./Barcode.astro";
+import type { CoverModel } from "./model";
+
+interface Props {
+  model: CoverModel;
+}
+
+const { model } = Astro.props;
+/** Size the headline so its longest word fits one line instead of breaking. */
+const longestWord = Math.max(...model.title.split(/\s+/).map((w) => w.length), 1);
+---
+
+<div class="tech">
+  <div class="top">
+    <span class="masthead">{model.publicationName.toUpperCase()}</span>
+    {model.locked && <span class="status">LOCKED</span>}
+  </div>
+  <span class="title" style={`--longest:${longestWord}`}>{model.title.toUpperCase()}</span>
+  {model.dek && <span class="dek">{model.dek}</span>}
+  <div class="bottom">
+    {
+      model.lines.length > 0 && (
+        <ul class="lines">
+          {model.lines.map((line) => (
+            <li>
+              <span aria-hidden="true">▸</span> {line}
+            </li>
+          ))}
+        </ul>
+      )
+    }
+    <div class="foot">
+      <span class="meta">
+        VOL {model.volume} · NO {model.number}<br />
+        {formatDate(model.date, "short").toUpperCase()}
+      </span>
+      <Barcode price={model.price} />
+    </div>
+  </div>
+</div>
+
+<style>
+  .tech {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 6.5cqi 6.5cqi 6cqi 6cqi;
+    border-left: 4cqi solid var(--cover-spine);
+    background-color: var(--cover-paper);
+    background-image:
+      linear-gradient(rgb(88 166 255 / 0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(88 166 255 / 0.07) 1px, transparent 1px);
+    background-size: 7.5cqi 7.5cqi;
+    font-family: var(--font-mono);
+  }
+
+  .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .masthead {
+    font-size: 4.8cqi;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    color: var(--cover-accent);
+  }
+
+  .status {
+    padding: 1cqi 2.4cqi;
+    background: var(--cover-spine);
+    color: var(--cover-paper);
+    font-size: 3.8cqi;
+    font-weight: 600;
+  }
+
+  .title {
+    margin-top: 6.5cqi;
+    font-family: var(--font-display);
+    /* Archivo Black caps run ~0.78em wide; 82cqi is the usable line length. */
+    font-size: min(18cqi, calc(82cqi / (var(--longest) * 0.78)));
+    line-height: 0.95;
+    color: #e6edf3;
+  }
+
+  .dek {
+    margin-top: 3cqi;
+    font-size: 4.8cqi;
+    color: #8b949e;
+  }
+
+  .bottom {
+    margin-top: auto;
+  }
+
+  .lines {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 4.6cqi;
+    line-height: 1.5;
+  }
+
+  .lines span {
+    color: #58a6ff;
+  }
+
+  .foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-top: 4.5cqi;
+  }
+
+  .meta {
+    font-size: 4.2cqi;
+    color: #8b949e;
+  }
+</style>

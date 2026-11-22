@@ -1,94 +1,28 @@
 ---
-import Layout from '../../components/layout/Layout.astro';
-import IssueCoverCard from '../../components/issues/IssueCoverCard.astro';
-import { getCollection } from 'astro:content';
-import { getPostsForIssue } from '../../lib/data';
-import { coverLinesFromPosts } from '../../lib/lineup';
+import PublicationCard from "../../components/publication/PublicationCard.astro";
+import Awning from "../../components/site/Awning.astro";
+import Container from "../../components/site/Container.astro";
+import PageHero from "../../components/site/PageHero.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getPublicationShelves } from "../../lib/content/rack";
 
-import '../../styles/pages/publications-index.css';
-
-const publications = await getCollection('publications');
-const allIssues = await getCollection('issues');
-const allPosts = await getCollection('posts', ({ data }) => !data.draft);
-
-const cards = await Promise.all(
-  publications.map(async (publication) => {
-    // Get all locked issues for this publication
-    const pubIssues = allIssues
-      .filter((i) => i.data.publicationId === publication.id && i.data.status === 'locked')
-      .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
-
-    const issue = pubIssues[0] ?? null;
-    const posts = issue ? await getPostsForIssue(publication.id, issue.data.issueSlug) : [];
-    const totalIssues = pubIssues.length;
-    const totalArticles = allPosts.filter((p) => p.data.publicationId === publication.id).length;
-
-    return {
-      publication,
-      issue,
-      coverLines: coverLinesFromPosts(posts, 4),
-      totalIssues,
-      totalArticles
-    };
-  })
-);
+const shelves = await getPublicationShelves({ featuredOnly: false });
 ---
-<Layout title="Publications - The Rack">
-  <div class="pubs-index">
-    <!-- Hero Section -->
-    <header class="pubs-hero">
-      <span class="pubs-hero__eyebrow">Our Current Publications</span>
-      <h1 class="pubs-hero__title">Publications</h1>
-      <p class="pubs-hero__tagline">Each publication has its own vibe, style and topics.</p>
-    </header>
 
-    <!-- Publications Grid -->
-    <div class="pubs-grid">
-      {cards.map((card) => (
-        <article class="pub-showcase" style={`--pub-accent: ${card.publication.data.accent}`}>
-          <!-- Header Section -->
-          <div class="pub-showcase__header">
-            <div class="pub-showcase__badge"></div>
-            <h2 class="pub-showcase__name">{card.publication.data.name}</h2>
-            <p class="pub-showcase__desc">{card.publication.data.description}</p>
-            <div class="pub-showcase__stats">
-              <span class="pub-showcase__stat">{card.totalIssues} Issues</span>
-              <span class="pub-showcase__stat">{card.totalArticles} Articles</span>
-            </div>
-          </div>
-
-          <!-- Cover Preview -->
-          <div class="pub-showcase__preview">
-            {card.issue ? (
-              <div class="pub-showcase__cover">
-                <IssueCoverCard issue={card.issue} publication={card.publication} coverLines={card.coverLines} />
-              </div>
-            ) : (
-              <div class="pub-showcase__empty">
-                <p>Coming Soon</p>
-              </div>
-            )}
-          </div>
-
-          <!-- Footer / CTA -->
-          <div class="pub-showcase__footer">
-            <a href={`/publications/${card.publication.id}`} class="pub-showcase__cta">
-              Explore {card.publication.data.name}
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M5 12h14M12 5l7 7-7 7"/>
-              </svg>
-            </a>
-          </div>
-        </article>
-      ))}
+<BaseLayout title="Publications" description="Every publication on The Rack, each with its own beat and its own look.">
+  <Awning />
+  <Container>
+    <PageHero title="Subscriptions" highlight="desk." lede="Each publication has its own beat and its own look. Pick one and read the whole run." />
+    <div class="grid">
+      {shelves.map((shelf) => <PublicationCard shelf={shelf} />)}
     </div>
+  </Container>
+</BaseLayout>
 
-    <!-- Browse All CTA -->
-    <div class="pubs-cta">
-      <a href="/issues" class="pubs-cta__link">
-        <span class="pubs-cta__text">Or browse all issues at once</span>
-        <span class="pubs-cta__arrow">→</span>
-      </a>
-    </div>
-  </div>
-</Layout>
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr));
+    gap: 40px 32px;
+  }
+</style>

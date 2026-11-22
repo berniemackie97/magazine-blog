@@ -1,103 +1,163 @@
 ---
-import Layout from '../../../components/layout/Layout.astro';
-import IssueOpener from '../../../components/issues/IssueOpener.astro';
-import Toc from '../../../components/issues/Toc.astro';
+import type { GetStaticPaths } from "astro";
+import Cover from "../../../components/cover/Cover.astro";
+import ContentsList from "../../../components/issue/ContentsList.astro";
+import EditorLetter from "../../../components/issue/EditorLetter.astro";
+import Folio from "../../../components/issue/Folio.astro";
+import IssueSpread from "../../../components/issue/IssueSpread.astro";
+import Container from "../../../components/site/Container.astro";
+import HandLink from "../../../components/site/HandLink.astro";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { formatDate } from "../../../lib/dates";
+import { startPages } from "../../../lib/content/folio";
+import { getIssues, issueLabel } from "../../../lib/content/issues";
+import { byRunningOrder, getPostsForIssue } from "../../../lib/content/posts";
+import { requirePublication } from "../../../lib/content/publications";
+import type { Issue } from "../../../lib/content/types";
+import { urls } from "../../../lib/urls";
 
-import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
-import { getIssue, getPostsForIssue } from '../../../lib/data';
-import { buildIssueLineup } from '../../../lib/lineup';
+export const getStaticPaths = (async () => {
+  const issues = await getIssues();
+  return issues.map((issue) => ({
+    params: { publicationId: issue.publicationId, issueSlug: issue.slug },
+    props: { issue },
+  }));
+}) satisfies GetStaticPaths;
 
-import '../../../styles/pages/issue-detail.css';
-
-export async function getStaticPaths() {
-  const issues = await getCollection('issues');
-  const publications = await getCollection('publications');
-  const pubIds = new Set(publications.map((p) => p.id));
-
-  return issues
-    .filter((issue: CollectionEntry<'issues'>) =>
-      pubIds.has(issue.data.publicationId)
-    )
-    .map((issue: CollectionEntry<'issues'>) => ({
-      params: {
-        publicationId: issue.data.publicationId,
-        issueSlug: issue.data.issueSlug,
-      },
-    }));
+interface Props {
+  issue: Issue;
 }
 
-const { publicationId, issueSlug } = Astro.params;
-if (!publicationId || !issueSlug) {
-  throw new Error('Missing issue params');
-}
-
-const publication = await getEntry('publications', publicationId);
-const issue = await getIssue(publicationId, issueSlug);
-if (!publication || !issue) {
-  throw new Error('Issue not found');
-}
-
-const posts = await getPostsForIssue(publicationId, issueSlug);
-const { lead, secondary, briefs } = buildIssueLineup(posts as any, issue as any);
-const hasLead = !!lead;
-
-const formattedDate = new Date(issue.data.date).toLocaleDateString('en-US', {
-  month: 'long',
-  day: 'numeric',
-  year: 'numeric',
-});
+const { issue } = Astro.props;
+const publication = await requirePublication(issue.publicationId);
+const posts = (await getPostsForIssue(publication.id, issue.slug)).sort(byRunningOrder);
+const pages = startPages(posts);
+const firstPost = posts[0];
+const description = issue.editorNote ?? `${publication.name}, ${issueLabel(issue)}: ${issue.title}.`;
 ---
-<Layout
-  title={`${issue.data.displayTitle} - ${publication.data.name}`}
+
+<BaseLayout
+  title={`${issue.title} · ${publication.name}`}
+  description={description}
   publication={publication}
-  accent={publication.data.accent}
+  backdrop="counter"
 >
-  <div class="issue-page page-shell page-content">
-    <header class="issue-header">
-      <span class="issue-label">{publication.data.name}</span>
-      <h1 class="issue-title">{issue.data.displayTitle}</h1>
+  <Container>
+    <HandLink href={urls.publication(publication.id)}>← back to {publication.name}</HandLink>
 
-      <div class="issue-meta">
-        <span>Vol {issue.data.volume}</span>
-        <span class="meta-sep">|</span>
-        <span>No {issue.data.number}</span>
-        <span class="meta-sep">|</span>
-        <span>{formattedDate}</span>
-        <span class="badge badge--accented" style={`--badge-accent: ${publication.data.accent}`}>
-          {issue.data.status}
-        </span>
-        <span class="theme-tag">
-          {issue.data.theme}
-        </span>
-      </div>
-
-      {issue.data.notesFromEditor && (
-        <p class="editor-notes">
-          {issue.data.notesFromEditor}
-        </p>
-      )}
-    </header>
-
-    {hasLead ? (
-      <>
-        <IssueOpener
-          issue={issue as any}
-          publication={publication as any}
-          lead={lead as any}
-          secondary={secondary as any}
-          briefs={briefs as any}
-        />
-        <div class="toc-section">
-          <Toc posts={posts as any} sections={publication.data.sections} />
+    <IssueSpread>
+      <Fragment slot="left">
+        <div class="running-head mono-label">
+          <span>{publication.name}</span>
+          <span>{issueLabel(issue)} · {formatDate(issue.date, "short")}</span>
         </div>
-      </>
-    ) : (
-      <div class="pending-card">
-        <span class="pending-label">Lineup pending</span>
-        <p class="pending-text">
-          This issue is missing a lead story. Add a lead post to publish its opener.
-        </p>
-      </div>
-    )}
-  </div>
-</Layout>
+        <h1>
+          Contents <span class="visually-hidden">of {issue.title}</span>
+        </h1>
+        <ContentsList posts={posts} publication={publication} startPages={pages} />
+        {issue.editorNote && <EditorLetter note={issue.editorNote} />}
+        <Folio page={2} side="left" />
+      </Fragment>
+
+      <Fragment slot="right">
+        <div class="cover-page">
+          <div class="cover">
+            <Cover item={{ issue, publication, posts }} />
+          </div>
+          {
+            firstPost ? (
+              <a class="start" href={urls.post(firstPost.id)}>Start reading →</a>
+            ) : (
+              <p class="pending">Still at the printer. Check back soon.</p>
+            )
+          }
+        </div>
+        <Folio page={3} side="right" label={issue.title} />
+      </Fragment>
+    </IssueSpread>
+
+    <div class="after">
+      <HandLink href={urls.home()}>grab another off the rack</HandLink>
+      <a class="feed mono-label" href={urls.publicationFeed(publication.id)}>Subscribe via RSS</a>
+    </div>
+  </Container>
+</BaseLayout>
+
+<style>
+  .running-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--page-border);
+    font-size: 0.6875rem;
+    color: var(--page-muted);
+  }
+
+  h1 {
+    margin: 28px 0 0;
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(3.25rem, 7vw, 5.75rem);
+    line-height: 0.9;
+    text-transform: uppercase;
+  }
+
+  .cover-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
+    height: 100%;
+    justify-content: center;
+  }
+
+  .cover {
+    width: min(100%, 420px);
+    box-shadow: 10px 10px 0 rgb(0 0 0 / 0.35);
+  }
+
+  .start {
+    display: inline-flex;
+    align-items: center;
+    min-height: 52px;
+    padding: 0 22px;
+    background: var(--page-accent);
+    color: var(--page-bg);
+    font-family: var(--font-display);
+    font-size: 1.125rem;
+    text-decoration: none;
+    box-shadow: 4px 4px 0 var(--page-text);
+    transition: transform 150ms, box-shadow 150ms;
+  }
+
+  .start:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 var(--page-text);
+  }
+
+  .pending {
+    margin: 0;
+    font-family: var(--font-hand);
+    font-size: 1.5rem;
+    color: var(--page-muted);
+  }
+
+  .after {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-top: 48px;
+  }
+
+  .feed {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+    color: var(--lemon);
+    font-size: 0.8125rem;
+  }
+</style>

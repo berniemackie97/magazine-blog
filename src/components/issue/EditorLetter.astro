@@ -1,0 +1,46 @@
+---
+import { site } from "../../config/site";
+
+interface Props {
+  note: string;
+}
+
+const { note } = Astro.props;
+---
+
+<aside class="letter" aria-labelledby="editor-letter">
+  <h2 id="editor-letter" class="mono-label">From the editor</h2>
+  <p>{note}</p>
+  <p class="signature">— {site.author}</p>
+</aside>
+
+<style>
+  .letter {
+    margin-top: 36px;
+    padding: 22px 24px;
+    background: var(--page-surface);
+    border: 1px solid var(--page-border);
+  }
+
+  h2 {
+    margin: 0 0 10px;
+    font-size: 0.6875rem;
+    color: var(--page-accent);
+  }
+
+  p {
+    margin: 0;
+    font-size: 1.0625rem;
+    line-height: 1.6;
+  }
+
+  .signature {
+    display: inline-block;
+    margin-top: 14px;
+    font-family: var(--font-hand);
+    font-weight: 700;
+    font-size: 1.75rem;
+    color: var(--page-accent);
+    transform: rotate(-3deg);
+  }
+</style>

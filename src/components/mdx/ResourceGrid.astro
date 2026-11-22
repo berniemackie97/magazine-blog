@@ -1,18 +1,12 @@
----
-import "../../styles/components/resource-cards.css";
+<ul class="grid" role="list"><slot /></ul>
 
-interface Props {
-  minWidth?: string;
-  dense?: boolean;
-}
-
-const { minWidth, dense = false } = Astro.props;
-const style = minWidth ? `--resource-min: ${minWidth};` : undefined;
-const classes = ["resource-grid", dense ? "resource-grid--dense" : ""]
-  .filter(Boolean)
-  .join(" ");
----
-
-<div class={classes} style={style}>
-  <slot />
-</div>
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr));
+    gap: 12px;
+    margin: 0 0 1.5rem;
+    padding: 0;
+    list-style: none;
+  }
+</style>

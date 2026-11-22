@@ -1,18 +1,21 @@
-import { defineConfig } from 'astro/config';
-import mdx from '@astrojs/mdx';
-import tailwind from '@astrojs/tailwind';
-import sitemap from '@astrojs/sitemap';
-import react from '@astrojs/react';
-import vercel from '@astrojs/vercel';
+import mdx from "@astrojs/mdx";
+import sitemap from "@astrojs/sitemap";
+import vercel from "@astrojs/vercel";
+import { defineConfig } from "astro/config";
 
 export default defineConfig({
-  site: 'https://the-rack.vercel.app/',
-  output: 'static',
+  site: "https://the-rack.vercel.app",
+  output: "static",
+  trailingSlash: "never",
   adapter: vercel(),
-  integrations: [react(), mdx(), tailwind(), sitemap()],
+  integrations: [mdx(), sitemap()],
   markdown: {
-    shikiConfig: {
-      theme: 'dracula',
+    shikiConfig: { theme: "github-dark" },
+  },
+  vite: {
+    build: {
+      // Never inline scripts: keeps the Content-Security-Policy free of 'unsafe-inline' for scripts.
+      assetsInlineLimit: 0,
     },
   },
 });

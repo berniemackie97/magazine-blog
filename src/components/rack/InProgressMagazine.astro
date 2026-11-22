@@ -1,0 +1,83 @@
+---
+import { tiltFor } from "../../lib/tilt";
+
+interface Props {
+  shelfKey: string;
+  /** When set, the wrapped magazine links to the open issue. */
+  href?: string;
+  caption?: string;
+}
+
+const { shelfKey, href, caption = "next issue, still at the printer" } = Astro.props;
+const Tag = href ? "a" : "div";
+---
+
+<li class="slot" style={`--tilt:${tiltFor(`${shelfKey}:wip`)}deg`}>
+  <Tag class="wrap" href={href} aria-label={href ? `In progress: ${caption}` : undefined}>
+    <span class="stamp">IN PROGRESS</span>
+    <span class="caption">{caption}</span>
+  </Tag>
+</li>
+
+<style>
+  .slot {
+    flex: 0 0 auto;
+    width: clamp(160px, 42vw, 208px);
+    list-style: none;
+  }
+
+  .wrap {
+    position: relative;
+    display: grid;
+    place-items: center;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    background-color: var(--kraft);
+    background-image: repeating-linear-gradient(45deg, rgb(0 0 0 / 0.04) 0 2px, transparent 2px 6px);
+    text-decoration: none;
+    transform: rotate(var(--tilt));
+    transform-origin: 50% 100%;
+    filter: drop-shadow(0 10px 10px rgb(0 0 0 / 0.45));
+  }
+
+  /* Shrink-wrap sheen */
+  .wrap::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(115deg, transparent 30%, rgb(255 255 255 / 0.35) 42%, transparent 52%);
+  }
+
+  .stamp {
+    padding: 6px 10px;
+    border: 3px solid var(--coral-ink);
+    color: var(--coral-ink);
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    letter-spacing: 0.04em;
+    transform: rotate(-14deg);
+  }
+
+  /* Sits above the shelf lip so it stays legible. */
+  .caption {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 16%;
+    padding: 0 12px;
+    text-align: center;
+    font-family: var(--font-hand);
+    font-size: 1.25rem;
+    line-height: 1.1;
+    color: var(--wood-dark);
+  }
+
+  a.wrap {
+    transition: transform var(--dur-lift) var(--ease-lift);
+  }
+
+  a.wrap:hover,
+  a.wrap:focus-visible {
+    transform: translateY(-34px) rotate(0deg);
+  }
+</style>

@@ -1,36 +1,105 @@
 ---
-import "../../styles/components/callout.css";
-
+/** A note taped into the page. With `checklist`, items render as tickable boxes. */
 interface Props {
   title?: string;
   checklist?: boolean;
   items?: string[];
 }
 
-const { title, checklist = false, items } = Astro.props;
-const hasItems = Array.isArray(items) && items.length > 0;
+const { title, checklist = false, items = [] } = Astro.props;
 ---
 
 <aside class="callout">
-  {title && <div class="callout__title">{title}</div>}
-  <div class="callout__body">
-    {hasItems ? (
-      <ul class={`callout__list ${checklist ? "callout__checklist" : ""}`}>
-        {items?.map((item) => (
-          <li>
-            {checklist ? (
-              <label class="callout__check">
+  <span class="tape" aria-hidden="true"></span>
+  {title && <p class="title">{title}</p>}
+  {
+    items.length > 0 ? (
+      <ul class:list={{ checklist }}>
+        {items.map((item) =>
+          checklist ? (
+            <li>
+              <label>
                 <input type="checkbox" />
                 <span>{item}</span>
               </label>
-            ) : (
-              item
-            )}
-          </li>
-        ))}
+            </li>
+          ) : (
+            <li>{item}</li>
+          ),
+        )}
       </ul>
     ) : (
-      <slot />
-    )}
-  </div>
+      <div class="body"><slot /></div>
+    )
+  }
 </aside>
+
+<style>
+  .callout {
+    position: relative;
+    max-width: 420px;
+    margin: 2rem auto 2.5rem;
+    padding: 24px 22px 18px;
+    background: var(--note);
+    color: var(--ink);
+    box-shadow: 0 10px 20px rgb(0 0 0 / 0.35);
+    transform: rotate(1.5deg);
+  }
+
+  .tape {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    width: 84px;
+    height: 24px;
+    margin-left: -42px;
+    background: var(--tape);
+    transform: rotate(-4deg);
+  }
+
+  .title {
+    margin: 0 0 8px;
+    font-family: var(--font-hand);
+    font-weight: 700;
+    font-size: 1.875rem;
+    line-height: 1;
+  }
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-family: var(--font-hand);
+    font-size: 1.3125rem;
+    line-height: 1.25;
+  }
+
+  li {
+    margin: 0 0 6px;
+  }
+
+  label {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    min-height: var(--tap);
+    cursor: pointer;
+  }
+
+  input {
+    flex: none;
+    width: 20px;
+    height: 20px;
+    margin-top: 4px;
+    accent-color: var(--coral-ink);
+  }
+
+  input:checked + span {
+    text-decoration: line-through;
+    opacity: 0.6;
+  }
+
+  .body {
+    font-size: 1rem;
+  }
+</style>

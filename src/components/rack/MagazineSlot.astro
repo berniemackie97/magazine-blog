@@ -1,0 +1,52 @@
+---
+import { issueLabel } from "../../lib/content/issues";
+import type { RackItem } from "../../lib/content/types";
+import { tiltFor } from "../../lib/tilt";
+import { urls } from "../../lib/urls";
+import Cover from "../cover/Cover.astro";
+
+interface Props {
+  item: RackItem;
+  /** Salt so the same issue sits at a different angle on different shelves. */
+  shelfKey: string;
+}
+
+const { item, shelfKey } = Astro.props;
+const { issue, publication } = item;
+const label = `${publication.name}: ${issue.title}, ${issueLabel(issue)}`;
+---
+
+<li class="slot" style={`--tilt:${tiltFor(`${shelfKey}:${issue.key}`)}deg`}>
+  <a class="magazine" href={urls.issue(publication.id, issue.slug)} aria-label={label}>
+    <Cover item={item} />
+  </a>
+</li>
+
+<style>
+  .slot {
+    flex: 0 0 auto;
+    width: clamp(160px, 42vw, 208px);
+    list-style: none;
+  }
+
+  .magazine {
+    display: block;
+    transform: rotate(var(--tilt));
+    transform-origin: 50% 100%;
+    filter: drop-shadow(0 10px 10px rgb(0 0 0 / 0.45));
+    transition:
+      transform var(--dur-lift) var(--ease-lift),
+      filter var(--dur-lift) var(--ease-lift);
+  }
+
+  .magazine:hover,
+  .magazine:focus-visible {
+    transform: translateY(-34px) rotate(0deg);
+    filter: drop-shadow(0 26px 22px rgb(0 0 0 / 0.55));
+  }
+
+  .magazine:focus-visible {
+    outline: 3px solid var(--lemon);
+    outline-offset: 4px;
+  }
+</style>

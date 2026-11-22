@@ -1,0 +1,22 @@
+---
+interface Props {
+  id?: string;
+}
+
+const { id } = Astro.props;
+---
+
+<div class="frame" id={id}>
+  <slot />
+</div>
+
+<style>
+  .frame {
+    border: 14px solid var(--wood);
+    border-bottom-width: 22px;
+    background: var(--wood);
+    box-shadow:
+      0 30px 50px rgb(40 25 10 / 0.35),
+      inset 0 0 0 2px var(--wood-edge);
+  }
+</style>

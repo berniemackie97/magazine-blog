@@ -1,14 +1,38 @@
 ---
 interface Props {
   src: string;
-  alt?: string;
+  alt: string;
+  width?: number;
+  height?: number;
 }
 
-const { src, alt } = Astro.props;
+const { src, alt, width, height } = Astro.props;
 ---
-<figure class="my-8 overflow-hidden rounded-lg border border-[var(--rule)] bg-[var(--paper)] shadow-paper">
-  <img src={src} alt={alt ?? ''} class="h-auto w-full object-cover" loading="lazy" />
-  <figcaption class="border-t border-[var(--rule)] bg-[var(--paper)] px-4 py-3 text-sm text-neutral-200">
-    <slot />
-  </figcaption>
+
+<figure class="figure">
+  <img src={src} alt={alt} width={width} height={height} loading="lazy" decoding="async" />
+  <figcaption><slot /></figcaption>
 </figure>
+
+<style>
+  .figure {
+    margin: 2.5rem 0;
+    padding: 10px 10px 0;
+    background: var(--paper);
+    box-shadow: 0 10px 24px rgb(0 0 0 / 0.35);
+    transform: rotate(-0.8deg);
+  }
+
+  img {
+    width: 100%;
+    height: auto;
+  }
+
+  figcaption {
+    padding: 10px 4px 12px;
+    font-family: var(--font-hand);
+    font-size: 1.25rem;
+    line-height: 1.25;
+    color: var(--ink);
+  }
+</style>

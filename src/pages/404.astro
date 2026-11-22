@@ -1,0 +1,17 @@
+---
+import PinnedNote from "../components/paper/PinnedNote.astro";
+import Container from "../components/site/Container.astro";
+import PageHero from "../components/site/PageHero.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { urls } from "../lib/urls";
+---
+
+<BaseLayout title="Sold out" description="That page isn't on the rack.">
+  <Container>
+    <PageHero title="Sold" highlight="out." lede="That page isn't on the rack. Maybe it never went to print, or it moved shelves.">
+      <PinnedNote tilt={-3}>
+        try <a href={urls.home()}>the front rack</a> or <a href={urls.archive()}>the back issues</a>
+      </PinnedNote>
+    </PageHero>
+  </Container>
+</BaseLayout>

@@ -1,0 +1,22 @@
+---
+import type { PostListing } from "../../lib/content/listings";
+import ArticleRow from "./ArticleRow.astro";
+
+interface Props {
+  listings: PostListing[];
+  id?: string;
+}
+
+const { listings, id } = Astro.props;
+---
+
+<ul class="list" id={id} role="list">
+  {listings.map((listing) => <ArticleRow {...listing} />)}
+</ul>
+
+<style>
+  .list {
+    margin: 14px 0 0;
+    padding: 0;
+  }
+</style>

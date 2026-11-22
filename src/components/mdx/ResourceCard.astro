@@ -1,5 +1,10 @@
 ---
-import "../../styles/components/resource-cards.css";
+/** A classified-ad style listing for an external tool or resource. */
+interface AltSource {
+  label: string;
+  href: string;
+  note?: string;
+}
 
 interface Props {
   title: string;
@@ -8,84 +13,123 @@ interface Props {
   badge?: string;
   tone?: "free" | "paid" | "freemium" | "hardware";
   meta?: string;
-  tags?: string[];
-  external?: boolean;
-  accent?: string;
-  altSources?: {
-    label: string;
-    href: string;
-    note?: string;
-  }[];
+  altSources?: AltSource[];
 }
 
-const {
-  title,
-  href,
-  summary,
-  badge,
-  tone,
-  meta,
-  tags = [],
-  external = true,
-  accent,
-  altSources = [],
-} = Astro.props;
-
-const rel = external ? "noreferrer noopener" : undefined;
-const target = external ? "_blank" : undefined;
-const style = accent ? `--resource-accent: ${accent};` : undefined;
-const hasAltSources = altSources.length > 0;
+const { title, href, summary, badge, tone, meta, altSources = [] } = Astro.props;
+const external = /^https?:\/\//.test(href);
+const linkAttrs = external ? { target: "_blank", rel: "noopener noreferrer" } : {};
 ---
 
-<article class="resource-card" data-tone={tone} style={style}>
-  <a
-    class="resource-card__main"
-    href={href}
-    target={target}
-    rel={rel}
-    aria-label={`Open ${title}`}
-  >
-    <div class="resource-card__head">
-      {badge && (
-        <span class="resource-card__badge" data-tone={tone}>
-          {badge}
-        </span>
-      )}
-      {meta && <span class="resource-card__meta">{meta}</span>}
-    </div>
-    <h4 class="resource-card__title">{title}</h4>
-    {summary && <p class="resource-card__summary">{summary}</p>}
-    {tags?.length > 0 && (
-      <div class="resource-card__tags">
-        {tags.map((tag) => (
-          <span class="resource-card__tag">{tag}</span>
-        ))}
-      </div>
-    )}
-    <div class="resource-card__footer">
-      <span class="resource-card__cta">
-        Open <span class="resource-card__arrow">-></span>
-      </span>
-    </div>
+<li class="ad" data-tone={tone}>
+  <a class="main" href={href} {...linkAttrs}>
+    <span class="head mono-label">
+      {badge && <span class="badge">{badge}</span>}
+      {meta && <span class="meta">{meta}</span>}
+    </span>
+    <span class="title">{title}</span>
+    {summary && <span class="summary">{summary}</span>}
+    {external && <span class="visually-hidden">(opens in a new tab)</span>}
   </a>
-  {hasAltSources && (
-    <div class="resource-card__alts">
-      <span class="resource-card__alts-label">Alt sources</span>
-      <div class="resource-card__alts-list">
+  {
+    altSources.length > 0 && (
+      <div class="alts">
+        <span class="mono-label">Also</span>
         {altSources.map((source) => (
-          <a
-            class="resource-card__alts-link"
-            href={source.href}
-            target={target}
-            rel={rel}
-          >
-            <span class="resource-card__alts-name">{source.label}</span>
-            {source.note && (
-              <span class="resource-card__alts-note">({source.note})</span>
-            )}
+          <a href={source.href} target="_blank" rel="noopener noreferrer">
+            {source.label}
+            {source.note && <span class="note"> ({source.note})</span>}
           </a>
         ))}
       </div>
-    </div>
-  )}
-</article>
+    )
+  }
+</li>
+
+<style>
+  .ad {
+    display: flex;
+    flex-direction: column;
+    border: 2px solid var(--page-border);
+    background: var(--page-bg);
+    transition:
+      border-color 200ms,
+      transform 200ms;
+  }
+
+  .ad:hover {
+    border-color: var(--page-accent);
+    transform: translateY(-2px);
+  }
+
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 14px 14px 12px;
+    text-decoration: none;
+    color: var(--page-text);
+  }
+
+  .head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+    font-size: 0.6875rem;
+  }
+
+  .badge {
+    color: var(--page-muted);
+  }
+
+  .ad[data-tone="free"] .badge {
+    color: #3fb950;
+  }
+
+  .ad[data-tone="paid"] .badge {
+    color: #e3b341;
+  }
+
+  .ad[data-tone="freemium"] .badge {
+    color: #79c0ff;
+  }
+
+  .meta {
+    color: var(--page-muted);
+  }
+
+  .title {
+    font-family: var(--font-display);
+    font-size: 1.125rem;
+    line-height: 1.15;
+  }
+
+  .summary {
+    font-size: 0.9375rem;
+    line-height: 1.45;
+  }
+
+  .alts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    align-items: baseline;
+    padding: 10px 14px;
+    border-top: 1px dashed var(--page-border);
+    font-size: 0.8125rem;
+  }
+
+  .alts .mono-label {
+    font-size: 0.625rem;
+    color: var(--page-muted);
+  }
+
+  .alts a {
+    color: var(--page-accent);
+  }
+
+  .note {
+    color: var(--page-muted);
+  }
+</style>

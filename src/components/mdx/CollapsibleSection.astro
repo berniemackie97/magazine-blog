@@ -1,47 +1,93 @@
 ---
-import "../../styles/components/collapsible-section.css";
-
 interface Props {
   title: string;
   subtitle?: string;
   label?: string;
-  meta?: string;
   open?: boolean;
-  accent?: string;
-  level?: 2 | 3 | 4;
   id?: string;
 }
 
-const {
-  title,
-  subtitle,
-  label,
-  meta,
-  open = false,
-  accent,
-  level = 3,
-  id,
-} = Astro.props;
-
-const HeadingTag = `h${level}` as const;
-const style = accent ? `--fold-accent: ${accent};` : undefined;
+const { title, subtitle, label, open = false, id } = Astro.props;
 ---
 
-<details class="section-fold" open={open} style={style}>
-  <summary class="section-fold__summary" id={id}>
-    <span class="section-fold__icon">></span>
-    <div class="section-fold__text">
-      <HeadingTag class="section-fold__title">{title}</HeadingTag>
-      {subtitle && <p class="section-fold__subtitle">{subtitle}</p>}
-    </div>
-    {(label || meta) && (
-      <div class="section-fold__meta">
-        {label && <span class="section-fold__label">{label}</span>}
-        {meta && <span class="section-fold__meta-text">{meta}</span>}
-      </div>
-    )}
+<details class="fold" open={open} id={id}>
+  <summary>
+    <span class="text">
+      <span class="title">{title}</span>
+      {subtitle && <span class="subtitle">{subtitle}</span>}
+    </span>
+    {label && <span class="label mono-label">{label}</span>}
+    <span class="chevron" aria-hidden="true"></span>
   </summary>
-  <div class="section-fold__content">
-    <slot />
-  </div>
+  <div class="content"><slot /></div>
 </details>
+
+<style>
+  .fold {
+    margin: 1.5rem 0;
+    border: 2px solid var(--page-text);
+  }
+
+  summary {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-height: 56px;
+    padding: 14px 18px;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .title {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    line-height: 1.15;
+    text-transform: uppercase;
+  }
+
+  .subtitle {
+    font-size: 0.9375rem;
+    color: var(--page-muted);
+  }
+
+  .label {
+    font-size: 0.6875rem;
+    color: var(--page-accent-alt);
+  }
+
+  .chevron {
+    width: 10px;
+    height: 10px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg);
+    transition: transform 200ms;
+  }
+
+  .fold[open] .chevron {
+    transform: rotate(-135deg);
+  }
+
+  .fold[open] summary {
+    border-bottom: 2px solid var(--page-text);
+  }
+
+  .content {
+    padding: 18px;
+  }
+
+  .content > :global(:last-child) {
+    margin-bottom: 0;
+  }
+</style>

@@ -1,0 +1,39 @@
+---
+/**
+ * Scroll-linked progress bar. Pure CSS (scroll-driven animations); browsers
+ * without support simply don't show it, so no script is shipped.
+ */
+---
+
+<div class="progress" aria-hidden="true"><span></span></div>
+
+<style>
+  .progress {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    height: 3px;
+    background: rgb(0 0 0 / 0.35);
+  }
+
+  span {
+    display: block;
+    height: 100%;
+    background: var(--coral);
+    transform-origin: 0 50%;
+    transform: scaleX(0);
+  }
+
+  @supports (animation-timeline: scroll()) {
+    span {
+      animation: fill linear both;
+      animation-timeline: scroll(root block);
+    }
+  }
+
+  @keyframes fill {
+    to {
+      transform: scaleX(1);
+    }
+  }
+</style>

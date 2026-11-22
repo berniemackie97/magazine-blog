@@ -1,0 +1,69 @@
+---
+/** Big wall-painted page title with an optional highlighted second line. */
+interface Props {
+  title: string;
+  highlight?: string;
+  lede?: string;
+}
+
+const { title, highlight, lede } = Astro.props;
+---
+
+<div class="hero">
+  <div class="copy">
+    <h1>
+      {title}
+      {highlight && (<><br /><mark>{highlight}</mark></>)}
+    </h1>
+    {lede && <p>{lede}</p>}
+  </div>
+  <div class="aside"><slot /></div>
+</div>
+
+<style>
+  .hero {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px 40px;
+    padding: 40px 0;
+  }
+
+  .copy {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  h1 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(2.75rem, 7vw, 5.5rem);
+    line-height: 0.92;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+  }
+
+  mark {
+    background: linear-gradient(transparent 62%, var(--lemon) 62%, var(--lemon) 92%, transparent 92%);
+    color: inherit;
+  }
+
+  p {
+    max-width: 30em;
+    margin: 0;
+    font-size: 1.1875rem;
+    line-height: 1.5;
+    color: var(--ink-soft);
+  }
+
+  .aside:empty {
+    display: none;
+  }
+
+  .aside {
+    max-width: 300px;
+  }
+</style>

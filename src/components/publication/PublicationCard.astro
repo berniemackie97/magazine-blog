@@ -1,0 +1,110 @@
+---
+import type { Shelf } from "../../lib/content/rack";
+import { tiltFor } from "../../lib/tilt";
+import { urls } from "../../lib/urls";
+import Cover from "../cover/Cover.astro";
+
+interface Props {
+  shelf: Shelf;
+}
+
+const { publication, items } = Astro.props.shelf;
+const latest = items.find((item) => item.issue.status === "locked");
+const articleCount = items.reduce((sum, item) => sum + item.posts.length, 0);
+const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
+---
+
+<article class="card" style={`--tilt:${tiltFor(publication.id, 1.2)}deg`}>
+  <div class="cover">
+    {latest ? <Cover item={latest} /> : <div class="blank" aria-hidden="true"></div>}
+  </div>
+  <div class="info">
+    <p class="kicker mono-label">{publication.kicker}</p>
+    <h2><a href={urls.publication(publication.id)}>{publication.name}</a></h2>
+    <p class="description">{publication.description}</p>
+    <p class="stats mono-label">{plural(items.length, "issue")} · {plural(articleCount, "article")}</p>
+    <a class="feed mono-label" href={urls.publicationFeed(publication.id)}>RSS</a>
+  </div>
+</article>
+
+<style>
+  .card {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    padding: 24px;
+    background: var(--note);
+    box-shadow: 0 12px 24px rgb(0 0 0 / 0.18);
+    transform: rotate(var(--tilt));
+  }
+
+  /* The whole card is clickable through the heading link. */
+  h2 a::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+  }
+
+  .cover {
+    flex: 0 0 150px;
+    filter: drop-shadow(6px 6px 0 rgb(0 0 0 / 0.3));
+    transition: transform var(--dur-lift) var(--ease-lift);
+  }
+
+  .card:hover .cover {
+    transform: translateY(-6px) rotate(-1deg);
+  }
+
+  .blank {
+    aspect-ratio: 3 / 4;
+    background: var(--kraft);
+  }
+
+  .info {
+    flex: 1 1 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .kicker,
+  .stats {
+    margin: 0;
+    font-size: 0.6875rem;
+    color: var(--ink-soft);
+  }
+
+  h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 1.75rem;
+    line-height: 1;
+  }
+
+  h2 a {
+    text-decoration: none;
+  }
+
+  .card:hover h2 a {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  .description {
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .feed {
+    position: relative;
+    z-index: 1;
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+    margin-top: auto;
+    color: var(--coral-ink);
+  }
+</style>

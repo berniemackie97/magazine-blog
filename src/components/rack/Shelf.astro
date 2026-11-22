@@ -1,0 +1,103 @@
+---
+import type { RackItem } from "../../lib/content/types";
+import { urls } from "../../lib/urls";
+import InProgressMagazine from "./InProgressMagazine.astro";
+import MagazineSlot from "./MagazineSlot.astro";
+import ShelfTag from "./ShelfTag.astro";
+
+interface Props {
+  id: string;
+  label: string;
+  note?: string;
+  tone?: "note" | "lemon";
+  items: RackItem[];
+  /** Makes the shelf label link to the publication's full run. */
+  moreHref?: string;
+  /** Show a wrapped placeholder when no issue on this shelf is open. */
+  showUpcoming?: boolean;
+}
+
+const { id, label, note, tone, items, moreHref, showUpcoming = true } = Astro.props;
+
+const published = items.filter((item) => item.issue.status === "locked");
+const open = items.filter((item) => item.issue.status === "open");
+const headingId = `${id}-title`;
+---
+
+<section class="shelf" aria-labelledby={headingId}>
+  <ShelfTag id={headingId} label={label} note={note} tone={tone} href={moreHref} />
+  <ul class="slots" role="list">
+    {published.map((item) => <MagazineSlot item={item} shelfKey={id} />)}
+    {
+      open.map((item) => (
+        <InProgressMagazine
+          shelfKey={`${id}:${item.issue.key}`}
+          href={urls.issue(item.publication.id, item.issue.slug)}
+          caption={item.issue.title}
+        />
+      ))
+    }
+    {showUpcoming && open.length === 0 && <InProgressMagazine shelfKey={id} />}
+  </ul>
+  <div class="lip" aria-hidden="true"></div>
+  <div class="ledge" aria-hidden="true"></div>
+</section>
+
+<style>
+  .shelf {
+    --pad: clamp(16px, 3vw, 32px);
+    --lip: 82px;
+    position: relative;
+    padding: 44px var(--pad) 0;
+    background-color: var(--wood-dark);
+    background-image: repeating-linear-gradient(90deg, rgb(255 255 255 / 0.025) 0 2px, transparent 2px 9px);
+  }
+
+  .slots {
+    display: flex;
+    align-items: flex-end;
+    gap: 28px;
+    margin: 0;
+    padding: 40px 4px 0;
+    margin-top: -40px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    scroll-snap-type: x proximity;
+  }
+
+  .slots::-webkit-scrollbar {
+    display: none;
+  }
+
+  .slots > :global(*) {
+    scroll-snap-align: start;
+  }
+
+  /* Clear acrylic lip that holds the bottom of every cover. */
+  .lip {
+    position: relative;
+    z-index: 2;
+    height: var(--lip);
+    margin: calc(var(--lip) * -1) calc(var(--pad) * -1) 0;
+    background: linear-gradient(
+      180deg,
+      rgb(255 255 255 / 0.34),
+      rgb(255 255 255 / 0.12) 18%,
+      rgb(255 255 255 / 0.08)
+    );
+    border-top: 1px solid rgb(255 255 255 / 0.7);
+    backdrop-filter: blur(1.5px);
+    pointer-events: none;
+  }
+
+  .ledge {
+    position: relative;
+    z-index: 3;
+    height: 22px;
+    margin: 0 calc(var(--pad) * -1);
+    background: var(--wood-edge);
+    border-top: 3px solid var(--wood-highlight);
+    box-shadow: 0 10px 18px rgb(0 0 0 / 0.4);
+  }
+
+</style>

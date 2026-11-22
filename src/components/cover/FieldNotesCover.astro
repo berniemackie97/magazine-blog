@@ -1,0 +1,131 @@
+---
+import { formatDate } from "../../lib/dates";
+import Barcode from "./Barcode.astro";
+import type { CoverModel } from "./model";
+
+interface Props {
+  model: CoverModel;
+}
+
+const { model } = Astro.props;
+---
+
+<div class="field">
+  <div class="top">
+    <span class="masthead">{model.publicationName.toUpperCase()}</span>
+    <span class="issue">VOL {model.volume} · NO {model.number}</span>
+  </div>
+  <span class="title">{model.title}</span>
+  {model.dek && <span class="dek">{model.dek}</span>}
+  <svg class="sketch" viewBox="0 0 120 50" aria-hidden="true">
+    <path d="M4 46 L34 14 L48 28 L66 6 L96 40 L116 46" />
+    <path d="M60 13 l6 -7 l6 7" />
+    <circle cx="96" cy="12" r="5" />
+  </svg>
+  <div class="bottom">
+    {
+      model.lines.length > 0 && (
+        <ul class="lines">
+          {model.lines.map((line) => (
+            <li>
+              <span aria-hidden="true">✓</span> {line}
+            </li>
+          ))}
+        </ul>
+      )
+    }
+    <div class="foot">
+      <span class="meta">{formatDate(model.date, "short").toUpperCase()}</span>
+      <Barcode price={model.price} />
+    </div>
+  </div>
+</div>
+
+<style>
+  .field {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 6.5cqi;
+    border-left: 4cqi solid var(--cover-spine);
+    background-color: var(--cover-paper);
+    background-image: repeating-linear-gradient(
+      transparent 0 10cqi,
+      rgb(31 122 140 / 0.16) 10cqi calc(10cqi + 1px)
+    );
+  }
+
+  .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-bottom: 3cqi;
+    border-bottom: 1cqi solid var(--cover-accent);
+    font-family: var(--font-mono);
+  }
+
+  .masthead {
+    font-size: 4.8cqi;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    color: var(--cover-accent);
+  }
+
+  .issue {
+    font-size: 3.8cqi;
+  }
+
+  .title {
+    margin-top: 5.5cqi;
+    font-family: var(--font-hand);
+    font-weight: 700;
+    font-size: 19cqi;
+    line-height: 0.95;
+  }
+
+  .dek {
+    font-family: var(--font-hand);
+    font-size: 8cqi;
+    opacity: 0.8;
+  }
+
+  .sketch {
+    width: 58cqi;
+    margin: 4cqi auto 0;
+    fill: none;
+    stroke: var(--cover-ink);
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .bottom {
+    margin-top: auto;
+  }
+
+  .lines {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-family: var(--font-hand);
+    font-size: 7.6cqi;
+    line-height: 1.15;
+  }
+
+  .foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-top: 4cqi;
+  }
+
+  .foot :global(.barcode) {
+    outline: 1px solid var(--cover-ink);
+  }
+
+  .meta {
+    font-family: var(--font-mono);
+    font-size: 4.2cqi;
+  }
+</style>

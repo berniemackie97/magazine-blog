@@ -1,0 +1,86 @@
+---
+import type { Post } from "../../lib/content/types";
+import { urls } from "../../lib/urls";
+
+interface Link {
+  href: string;
+  label: string;
+  title: string;
+}
+
+interface Props {
+  previous?: Post;
+  next?: Post;
+  /** Fallback for the left side when there's no previous article. */
+  back: Link;
+  /** Fallback for the right side when there's no next article. */
+  onward: Link;
+}
+
+const { previous, next, back, onward } = Astro.props;
+
+const left: Link = previous
+  ? { href: urls.post(previous.id), label: "← flip back", title: previous.headline }
+  : back;
+const right: Link = next
+  ? { href: urls.post(next.id), label: "turn the page →", title: next.headline }
+  : onward;
+---
+
+<nav class="turn" aria-label="Keep reading">
+  <a href={left.href}>
+    <span class="label">{left.label}</span>
+    <span class="title">{left.title}</span>
+  </a>
+  <a class="end" href={right.href}>
+    <span class="label">{right.label}</span>
+    <span class="title">{right.title}</span>
+  </a>
+</nav>
+
+<style>
+  .turn {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 40px;
+  }
+
+  a {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-height: var(--tap);
+    max-width: 48%;
+    text-decoration: none;
+    color: var(--note);
+  }
+
+  .end {
+    text-align: right;
+    margin-left: auto;
+  }
+
+  .label {
+    font-family: var(--font-hand);
+    font-size: 1.375rem;
+    color: #c9b79f;
+  }
+
+  .title {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    line-height: 1.15;
+  }
+
+  a:hover .title {
+    color: var(--lemon);
+  }
+
+  @media (max-width: 600px) {
+    a {
+      max-width: 100%;
+    }
+  }
+</style>
