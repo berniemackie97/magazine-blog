@@ -11,9 +11,9 @@ export default defineConfig({
   compressHTML: true,
   trailingSlash: "never",
   adapter: vercel(),
-  integrations: [mdx({ remarkPlugins: [mdxPolicy] }), sitemap()],
+  integrations: [mdx(), sitemap()],
   markdown: {
-    processor: unified(),
+    processor: unified({ remarkPlugins: [mdxPolicy] }),
     shikiConfig: { theme: "github-dark" },
   },
   vite: {

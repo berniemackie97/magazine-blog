@@ -7,10 +7,7 @@ import { experimental_AstroContainer } from "astro/container";
 
 // Exercise the built serverless code without opening a network listener.
 const root = process.cwd();
-const server = resolve(
-  root,
-  ".vercel/output/functions/_render.func/dist/server",
-);
+const server = resolve(root, ".vercel/output/functions/_render.func/server");
 const files = {};
 for (const collection of ["posts", "issues", "publications"])
   for (const name of await readdir(`src/content/${collection}`))

@@ -11,7 +11,9 @@ const hexColor = z
   .string()
   .regex(/^#[0-9a-fA-F]{6}$/, "Expected a 6-digit hex color like #1f7a8c");
 
-export const isoDate = z.string().date("Expected an ISO date (YYYY-MM-DD)");
+export const isoDate = z.iso.date({
+  error: "Expected an ISO date (YYYY-MM-DD)",
+});
 
 export const slug = z
   .string()

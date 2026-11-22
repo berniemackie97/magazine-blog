@@ -83,8 +83,9 @@ npm run check
 npm test
 npm run build
 npm run test:production
+npm run test:browser
 ```
 
-The last command exercises the built Vercel serverless modules with an isolated GitHub API fixture. It verifies authorization, writes, conflict rejection, unsafe-MDX rejection, cross-origin protection, release gating, publishing, and article/issue/publication preview rendering without a network listener or real repository mutation. CI runs it after the production build.
+The production integration command exercises the built Vercel serverless modules with an isolated GitHub API fixture. It verifies authorization, writes, conflict rejection, unsafe-MDX rejection, cross-origin protection, release gating, publishing, and article/issue/publication preview rendering without a network listener or real repository mutation. CI runs it after the production build.
 
 Real OAuth sign-in, GitHub branch protections, and the production deployment still require a configured environment and an end-to-end acceptance pass. An integration fixture is not evidence that production credentials or Vercel settings have been configured.
