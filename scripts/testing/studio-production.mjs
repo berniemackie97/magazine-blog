@@ -273,8 +273,9 @@ try {
   const uploaded = await uploadedResponse.json();
   assert.match(uploaded.path, /^public\/media\/test-photo-[a-f0-9]{12}\.webp$/);
   // The route parameter excludes the query string, as it does in Astro.
-  const imageContext = context("media");
-  imageContext.url.searchParams.set("path", uploaded.path);
+  const imageContext = context(
+    `media?path=${encodeURIComponent(uploaded.path)}`,
+  );
   const loadedImage = await endpoint(imageContext);
   assert.equal(loadedImage.status, 200);
   assert.equal(loadedImage.headers.get("Content-Type"), "image/webp");
