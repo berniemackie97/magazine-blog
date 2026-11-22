@@ -6,7 +6,10 @@ import { resolve } from "node:path";
 
 // Exercise the built serverless code without opening a network listener.
 const root = process.cwd();
-const server = resolve(root, ".vercel/output/functions/_render.func/server");
+const server = resolve(
+  root,
+  ".vercel/output/functions/_render.func/.vercel/output/server",
+);
 const files = {};
 for (const collection of ["posts", "issues", "publications"])
   for (const name of await readdir(`src/content/${collection}`))

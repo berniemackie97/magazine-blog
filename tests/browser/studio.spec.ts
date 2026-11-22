@@ -72,6 +72,7 @@ test("writes, previews, edits, compares history, and deletes a draft", async ({
     if (latest.entries.some((entry: { id: string }) => entry.id === id)) {
       const removed = await request.post("/api/studio/delete", {
         data: { collection: "posts", id, revision: latest.revision },
+        headers: { Origin: "http://127.0.0.1:4322" },
       });
       expect(removed.ok()).toBe(true);
     }
