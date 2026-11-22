@@ -1,0 +1,118 @@
+---
+import type { MarkdownHeading } from "astro";
+import type { Issue } from "../../lib/content/types";
+import { issueLabel } from "../../lib/content/issues";
+import { urls } from "../../lib/urls";
+
+interface Props {
+  headings: MarkdownHeading[];
+  tags: string[];
+  issue?: Issue;
+  publicationId: string;
+}
+
+const { headings, tags, issue, publicationId } = Astro.props;
+const sections = headings.filter((h) => h.depth === 2);
+---
+
+<aside class="rail">
+  {
+    sections.length > 1 && (
+      <nav aria-labelledby="in-article">
+        <h2 id="in-article" class="mono-label">In this article</h2>
+        <ul>
+          {sections.map((h) => (
+            <li>
+              <a href={`#${h.slug}`}>{h.text}</a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    )
+  }
+  {
+    issue && (
+      <div class="box">
+        <p class="mono-label">In this issue</p>
+        <a class="issue" href={urls.issue(publicationId, issue.slug)}>
+          {issue.title} · {issueLabel(issue)}
+        </a>
+      </div>
+    )
+  }
+  {
+    tags.length > 0 && (
+      <div class="box">
+        <p class="mono-label">Filed under</p>
+        <ul class="tags">
+          {tags.map((tag) => <li>#{tag}</li>)}
+        </ul>
+      </div>
+    )
+  }
+</aside>
+
+<style>
+  .rail {
+    position: sticky;
+    top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  h2,
+  .box p {
+    margin: 0 0 10px;
+    font-size: 0.6875rem;
+    color: var(--page-muted);
+  }
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  nav a {
+    display: block;
+    padding: 8px 0 8px 12px;
+    border-left: 2px solid var(--page-border);
+    font-size: 0.875rem;
+    color: var(--page-muted);
+    text-decoration: none;
+  }
+
+  nav a:hover {
+    color: var(--page-text);
+    border-left-color: var(--page-accent);
+  }
+
+  .box {
+    padding: 16px;
+    border: 1px dashed var(--page-border);
+  }
+
+  .issue {
+    font-family: var(--page-heading-font);
+    font-size: 1rem;
+    text-decoration: none;
+  }
+
+  .issue:hover {
+    color: var(--page-accent);
+  }
+
+  .tags {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    line-height: 1.8;
+    color: var(--page-accent);
+  }
+
+  @media (max-width: 900px) {
+    .rail {
+      position: static;
+    }
+  }
+</style>

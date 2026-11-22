@@ -1,0 +1,95 @@
+---
+import { formatDate } from "../../lib/dates";
+import type { Post, Publication } from "../../lib/content/types";
+import { toStyle } from "../../lib/theme";
+import { urls } from "../../lib/urls";
+
+interface Props {
+  post: Post;
+  publication: Publication;
+  issueTitle?: string;
+}
+
+const { post, publication, issueTitle } = Astro.props;
+const kicker = [publication.name, issueTitle].filter(Boolean).join(" · ");
+---
+
+<li
+  class="row"
+  data-filter-item
+  data-publication={publication.id}
+  data-format={post.format}
+  data-tags={post.tags.join(",")}
+>
+  <a href={urls.post(post.id)}>
+    <span class="body">
+      <span class="kicker mono-label" style={toStyle({ color: publication.paperAccent })}>
+        {kicker}
+      </span>
+      <span class="headline">{post.headline}</span>
+      <span class="dek">{post.dek}</span>
+    </span>
+    <span class="meta mono-label">
+      <time datetime={post.publishedAt}>{formatDate(post.publishedAt, "compact")}</time>
+      <span>{post.readingMinutes} min</span>
+    </span>
+  </a>
+</li>
+
+<style>
+  .row {
+    list-style: none;
+  }
+
+  /* Rule only between visible rows, so filtering never leaves stray lines. */
+  .row:not([hidden]) ~ .row:not([hidden]) {
+    border-top: 1px solid var(--ink);
+  }
+
+  .row[hidden] {
+    display: none;
+  }
+
+  a {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+    padding: 14px 0;
+    text-decoration: none;
+  }
+
+  a:hover .headline {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  .body {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .kicker {
+    font-size: 0.6875rem;
+  }
+
+  .headline {
+    font-family: var(--font-display);
+    font-size: 1.375rem;
+    line-height: 1.15;
+  }
+
+  .dek {
+    font-size: 0.9375rem;
+    color: var(--ink-soft);
+  }
+
+  .meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    font-size: 0.6875rem;
+    color: var(--ink-soft);
+  }
+</style>

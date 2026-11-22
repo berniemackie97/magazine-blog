@@ -1,0 +1,51 @@
+---
+import { coverLines } from "../../lib/content/coverLines";
+import type { RackItem } from "../../lib/content/types";
+import { coverVars, toStyle } from "../../lib/theme";
+import BoldPopCover from "./BoldPopCover.astro";
+import FieldNotesCover from "./FieldNotesCover.astro";
+import TechMonoCover from "./TechMonoCover.astro";
+import type { CoverModel } from "./model";
+
+interface Props {
+  item: RackItem;
+}
+
+const { item } = Astro.props;
+const { issue, publication, posts } = item;
+
+const model: CoverModel = {
+  publicationName: publication.name,
+  title: issue.title,
+  dek: issue.coverDek,
+  lines: coverLines(posts, issue.coverLines, 2),
+  volume: issue.volume,
+  number: issue.number,
+  date: issue.date,
+  price: issue.price,
+  locked: issue.status === "locked",
+};
+
+const templates = {
+  "tech-mono": TechMonoCover,
+  "field-notes": FieldNotesCover,
+  "bold-pop": BoldPopCover,
+} as const;
+
+const Template = templates[publication.cover.template];
+---
+
+<div class="cover" style={toStyle(coverVars(publication))}>
+  <Template model={model} />
+</div>
+
+<style>
+  .cover {
+    container-type: inline-size;
+    position: relative;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    background: var(--cover-paper);
+    color: var(--cover-ink);
+  }
+</style>

@@ -1,0 +1,32 @@
+---
+/** Handwritten navigation link used on the wooden counter. */
+interface Props {
+  href: string;
+  align?: "start" | "end";
+}
+
+const { href, align = "start" } = Astro.props;
+---
+
+<a class:list={["hand", align]} href={href}><slot /></a>
+
+<style>
+  .hand {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+    font-family: var(--font-hand);
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: var(--note);
+    text-decoration: none;
+  }
+
+  .hand:hover {
+    color: var(--lemon);
+  }
+
+  .end {
+    justify-content: flex-end;
+  }
+</style>

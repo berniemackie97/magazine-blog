@@ -1,156 +1,30 @@
 ---
-import Layout from '../components/layout/Layout.astro';
-import { getCollection } from 'astro:content';
-import readingTime from 'reading-time';
+import ArchiveFilters from "../components/articles/ArchiveFilters.astro";
+import ArticleList from "../components/articles/ArticleList.astro";
+import Newsprint from "../components/paper/Newsprint.astro";
+import Container from "../components/site/Container.astro";
+import PageHero from "../components/site/PageHero.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getPostListings } from "../lib/content/listings";
+import { getPublications } from "../lib/content/publications";
 
-import '../styles/pages/archive.css';
+const [listings, publications] = await Promise.all([getPostListings(), getPublications()]);
 
-const publications = await getCollection('publications');
-const publicationMap = Object.fromEntries(publications.map((p) => [p.id, p]));
-const posts = (await getCollection('posts', ({ data }) => !data.draft)).map((post) => ({
-  ...post,
-  readingTimeMinutes: Math.max(1, Math.round(readingTime(post.body).minutes)),
+const unique = (values: string[]) => [...new Set(values)].sort();
+const formats = unique(listings.map((l) => l.post.format)).map((value) => ({
+  value,
+  label: value.replace("-", " "),
 }));
-const normalizedPosts = posts.map((post) => ({
-  ...post,
-  data: {
-    ...post.data,
-    publicationId: post.data.publicationId ?? '',
-    tags: post.data.tags ?? [],
-  },
-}));
-
-const sortedPosts = normalizedPosts.sort(
-  (a, b) => new Date(b.data.publishedAt).getTime() - new Date(a.data.publishedAt).getTime()
-);
-
-// Group by year for visual organization
-const postsByYear = sortedPosts.reduce((acc, post) => {
-  const year = new Date(post.data.publishedAt).getFullYear();
-  if (!acc[year]) acc[year] = [];
-  acc[year].push(post);
-  return acc;
-}, {} as Record<number, typeof sortedPosts>);
-
-const years = Object.keys(postsByYear).map(Number).sort((a, b) => b - a);
+const tags = unique(listings.flatMap((l) => l.post.tags)).map((value) => ({ value, label: `#${value}` }));
+const publicationOptions = publications.map((p) => ({ value: p.id, label: p.name }));
 ---
-<Layout title="Archive - The Rack">
-  <div class="archive">
-    <!-- Hero -->
-    <header class="archive-hero">
-      <span class="archive-hero__eyebrow">The Library</span>
-      <h1 class="archive-hero__title">Archive</h1>
-      <p class="archive-hero__tagline">Every article we've published, organized by time</p>
-      <div class="archive-hero__stats">
-        <span class="archive-hero__stat">{sortedPosts.length} Articles</span>
-        <span class="archive-hero__stat">{publications.length} Publications</span>
-      </div>
-    </header>
 
-    <!-- Filter Controls -->
-    <div class="archive-controls">
-      <div class="archive-filter-group">
-        <label for="pub-filter" class="archive-filter__label">Publication</label>
-        <select id="pub-filter" class="archive-filter__select">
-          <option value="">All</option>
-          {publications.map((p) => (
-            <option value={p.id}>{p.data.name}</option>
-          ))}
-        </select>
-      </div>
-      <div class="archive-results">
-        <span class="archive-count" id="archive-count">{sortedPosts.length} articles</span>
-      </div>
-    </div>
-
-    <!-- Articles by Year -->
-    <div class="archive-timeline" id="archive-timeline">
-      {years.map((year) => (
-        <section class="archive-year" data-year={year}>
-          <div class="archive-year__header">
-            <h2 class="archive-year__title">{year}</h2>
-            <span class="archive-year__count">{postsByYear[year].length} articles</span>
-          </div>
-          <div class="archive-grid">
-            {postsByYear[year].map((post) => {
-              const pub = publicationMap[post.data.publicationId];
-              return (
-                <article
-                  class="archive-card"
-                  data-filter-item
-                  data-publication={post.data.publicationId}
-                  style={`--card-accent: ${pub?.data.accent ?? 'var(--pop-coral)'}`}
-                >
-                  <a href={`/posts/${post.slug}`} class="archive-card__link">
-                    <div class="archive-card__header">
-                      <span class="archive-card__pub">{pub?.data.name ?? 'Unknown'}</span>
-                      <span class="archive-card__format">{post.data.format}</span>
-                    </div>
-                    <h3 class="archive-card__title">{post.data.headline}</h3>
-                    <p class="archive-card__summary">{post.data.summary}</p>
-                    <div class="archive-card__footer">
-                      <span class="archive-card__date">
-                        {new Date(post.data.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                      </span>
-                      <span class="archive-card__time">{post.readingTimeMinutes} min read</span>
-                    </div>
-                  </a>
-                </article>
-              );
-            })}
-          </div>
-        </section>
-      ))}
-    </div>
-
-    <!-- Empty State -->
-    <div class="archive-empty" id="archive-empty" style="display: none;">
-      <p class="archive-empty__text">No articles match that filter</p>
-      <button class="archive-empty__btn" id="clear-filter">Show All</button>
-    </div>
-  </div>
-
-  <script is:inline>
-    const select = document.getElementById('pub-filter');
-    const items = document.querySelectorAll('[data-filter-item]');
-    const countEl = document.getElementById('archive-count');
-    const emptyState = document.getElementById('archive-empty');
-    const timeline = document.getElementById('archive-timeline');
-    const clearBtn = document.getElementById('clear-filter');
-    const yearSections = document.querySelectorAll('.archive-year');
-
-    function updateDisplay() {
-      const visible = [...items].filter(item => item.style.display !== 'none').length;
-      if (countEl) countEl.textContent = `${visible} article${visible !== 1 ? 's' : ''}`;
-      if (emptyState) emptyState.style.display = visible === 0 ? 'flex' : 'none';
-      if (timeline) timeline.style.display = visible === 0 ? 'none' : '';
-
-      // Update year counts and hide empty years
-      yearSections.forEach(section => {
-        const yearItems = section.querySelectorAll('[data-filter-item]');
-        const visibleInYear = [...yearItems].filter(item => item.style.display !== 'none').length;
-        const yearCount = section.querySelector('.archive-year__count');
-        if (yearCount) yearCount.textContent = `${visibleInYear} article${visibleInYear !== 1 ? 's' : ''}`;
-        section.style.display = visibleInYear === 0 ? 'none' : '';
-      });
-    }
-
-    if (select) {
-      select.addEventListener('change', (e) => {
-        const value = e.target.value;
-        items.forEach((item) => {
-          item.style.display = (!value || item.dataset.publication === value) ? '' : 'none';
-        });
-        updateDisplay();
-      });
-    }
-
-    if (clearBtn) {
-      clearBtn.addEventListener('click', () => {
-        if (select) select.value = '';
-        items.forEach((item) => item.style.display = '');
-        updateDisplay();
-      });
-    }
-  </script>
-</Layout>
+<BaseLayout title="Archive" description="Every article on The Rack, filterable by publication, format and tag.">
+  <Container>
+    <PageHero title="Back" highlight="issues." lede="Every article ever filed. Filter the stack down to what you need." />
+    <Newsprint title="The Rack Daily" subtitle={`Archive edition · ${listings.length} articles`}>
+      <ArchiveFilters target="archive-list" publications={publicationOptions} formats={formats} tags={tags} />
+      <ArticleList id="archive-list" listings={listings} />
+    </Newsprint>
+  </Container>
+</BaseLayout>

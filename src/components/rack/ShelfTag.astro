@@ -1,0 +1,82 @@
+---
+interface Props {
+  id: string;
+  label: string;
+  note?: string;
+  tone?: "note" | "lemon";
+  tilt?: number;
+  /** Turns the tag into a link, e.g. to the publication's full run. */
+  href?: string;
+}
+
+const { id, label, note, tone = "note", tilt = -1.5, href } = Astro.props;
+---
+
+<h2 id={id} class:list={["tag", tone]} style={`--tilt:${tilt}deg`}>
+  {
+    href ? (
+      <a href={href}>
+        {label}
+        {note && <span class="note">{` · ${note}`}</span>}
+        <span class="arrow" aria-hidden="true">{" →"}</span>
+      </a>
+    ) : (
+      <>
+        {label}
+        {note && <span class="note">{` · ${note}`}</span>}
+      </>
+    )
+  }
+</h2>
+
+<style>
+  .tag {
+    position: absolute;
+    top: -16px;
+    left: 32px;
+    z-index: 4;
+    width: fit-content;
+    max-width: calc(100% - 64px);
+    margin: 0;
+    padding: 6px 14px 8px;
+    font-family: var(--font-hand);
+    font-weight: 700;
+    font-size: 1.375rem;
+    line-height: 1;
+    color: var(--ink);
+    box-shadow: 0 3px 6px rgb(0 0 0 / 0.3);
+    transform: rotate(var(--tilt));
+  }
+
+  a {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    min-height: 32px;
+    text-decoration: none;
+  }
+
+  /* Expand the hit area to the tag's padding box. */
+  a::after {
+    content: "";
+    position: absolute;
+    inset: -6px;
+  }
+
+  .tag:has(a):hover {
+    background: var(--lemon);
+  }
+
+  .note {
+    font-size: 1.125rem;
+    font-weight: 500;
+  }
+
+  .tag.note {
+    background: var(--note);
+  }
+
+  .tag.lemon {
+    background: var(--lemon);
+  }
+</style>

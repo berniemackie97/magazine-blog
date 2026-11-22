@@ -1,0 +1,85 @@
+---
+interface Option {
+  value: string;
+  label: string;
+}
+
+interface Props {
+  /** id of the list whose `[data-filter-item]` children get filtered. */
+  target: string;
+  publications: Option[];
+  formats: Option[];
+  tags: Option[];
+}
+
+const { target, publications, formats, tags } = Astro.props;
+
+const fields = [
+  { name: "publication", label: "Publication", options: publications },
+  { name: "format", label: "Format", options: formats },
+  { name: "tag", label: "Tag", options: tags },
+] as const;
+---
+
+<form class="filters" data-archive-filters data-target={target} aria-label="Filter articles">
+  {
+    fields.map((field) => (
+      <label>
+        <span class="mono-label">{field.label}</span>
+        <select name={field.name}>
+          <option value="">All</option>
+          {field.options.map((option) => (
+            <option value={option.value}>{option.label}</option>
+          ))}
+        </select>
+      </label>
+    ))
+  }
+  <p class="count mono-label" role="status" aria-live="polite" data-count></p>
+</form>
+
+<script>
+  import { initArchiveFilters } from "../../scripts/archiveFilters";
+
+  document.querySelectorAll<HTMLFormElement>("[data-archive-filters]").forEach(initArchiveFilters);
+</script>
+
+<style>
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 12px 20px;
+    margin: 20px 0 8px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--ink);
+  }
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1 1 160px;
+  }
+
+  .mono-label {
+    font-size: 0.6875rem;
+    color: var(--ink-soft);
+  }
+
+  select {
+    min-height: var(--tap);
+    padding: 0 10px;
+    border: 2px solid var(--ink);
+    border-radius: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: inherit;
+    font-size: 0.9375rem;
+  }
+
+  .count {
+    flex-basis: 100%;
+    margin: 0;
+  }
+</style>

@@ -1,145 +1,74 @@
 ---
-import Layout from '../../components/layout/Layout.astro';
-import IssueCoverCard from '../../components/issues/IssueCoverCard.astro';
-import PostCard from '../../components/posts/PostCard.astro';
-import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
-import { getPostsForIssue } from '../../lib/data';
-import { coverLinesFromPosts } from '../../lib/lineup';
+import type { GetStaticPaths } from "astro";
+import ArticleList from "../../components/articles/ArticleList.astro";
+import Newsprint from "../../components/paper/Newsprint.astro";
+import PinnedNote from "../../components/paper/PinnedNote.astro";
+import RackFrame from "../../components/rack/RackFrame.astro";
+import Shelf from "../../components/rack/Shelf.astro";
+import Awning from "../../components/site/Awning.astro";
+import Container from "../../components/site/Container.astro";
+import PageHero from "../../components/site/PageHero.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getPostListings } from "../../lib/content/listings";
+import { getPublications } from "../../lib/content/publications";
+import { getShelfFor } from "../../lib/content/rack";
+import type { Publication } from "../../lib/content/types";
+import { urls } from "../../lib/urls";
 
-import '../../styles/pages/publication-detail.css';
-
-export async function getStaticPaths() {
-  const publications = await getCollection('publications');
-  return publications.map((publication: CollectionEntry<'publications'>) => ({
+export const getStaticPaths = (async () => {
+  const publications = await getPublications();
+  return publications.map((publication) => ({
     params: { publicationId: publication.id },
+    props: { publication },
   }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  publication: Publication;
 }
 
-const { publicationId } = Astro.params;
-const publication = publicationId ? await getEntry('publications', publicationId) : null;
-if (!publication) {
-  throw new Error('Publication not found');
-}
-
-const allIssues = await getCollection('issues');
-const pubIssues = allIssues
-  .filter((i) => i.data.publicationId === publication.id)
-  .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
-
-const lockedIssues = pubIssues.filter((i) => i.data.status === 'locked');
-const openIssue = pubIssues.find((i) => i.data.status === 'open') ?? null;
-const latestLocked = lockedIssues[0] ?? null;
-const backIssues = lockedIssues.slice(1);
-
-const latestLockedPosts = latestLocked ? await getPostsForIssue(publication.id, latestLocked.data.issueSlug) : [];
-const featuredCoverLines = latestLocked ? coverLinesFromPosts(latestLockedPosts, 5) : [];
-
-const openIssuePosts = openIssue ? await getPostsForIssue(publication.id, openIssue.data.issueSlug) : [];
-const openCoverLines = openIssue ? coverLinesFromPosts(openIssuePosts, 3) : [];
-
-const backIssueCards = await Promise.all(
-  backIssues.map(async (issue) => {
-    const posts = await getPostsForIssue(publication.id, issue.data.issueSlug);
-    const tilt = (Math.random() - 0.5) * 2;
-    return { issue, coverLines: coverLinesFromPosts(posts, 4), tilt };
-  })
-);
-
-const allPosts = await getCollection('posts', ({ data }) => !data.draft);
-const latestArticles = allPosts
-  .filter((p) => p.data.publicationId === publication.id)
-  .sort((a, b) => new Date(b.data.publishedAt).getTime() - new Date(a.data.publishedAt).getTime())
-  .slice(0, 4);
-
-const totalIssues = lockedIssues.length + (openIssue ? 1 : 0);
-const totalArticles = allPosts.filter((p) => p.data.publicationId === publication.id).length;
+const { publication } = Astro.props;
+const [shelf, listings] = await Promise.all([
+  getShelfFor(publication),
+  getPostListings({ publicationId: publication.id }),
+]);
 ---
-<Layout title={`${publication.data.name} - The Rack`} publication={publication} accent={publication.data.accent}>
-  <div class="pub-detail" data-publication={publication.id}>
-    <!-- Hero Section -->
-    <header class="pub-hero">
-      <span class="pub-hero__eyebrow">Publication</span>
-      <h1 class="pub-hero__title">{publication.data.name}</h1>
-      <p class="pub-hero__tagline">{publication.data.description}</p>
-      <div class="pub-hero__meta">
-        <span class="pub-hero__stat">{totalIssues} Issues</span>
-        <span class="pub-hero__stat">{totalArticles} Articles</span>
-        <a href={`/publications/${publication.id}/rss.xml`} class="pub-hero__rss">RSS</a>
-      </div>
-    </header>
 
-    <!-- Current Issues Row - Latest and Open side by side -->
-    {(latestLocked || openIssue) && (
-      <section class="pub-current">
-        <h2 class="pub-section-title">Current Issues</h2>
-        <div class="pub-current__grid">
-          {latestLocked && (
-            <article class="pub-issue-card pub-issue-card--featured">
-              <div class="pub-issue-card__label">
-                <span class="pub-issue-card__tag">Latest</span>
-              </div>
-              <div class="pub-issue-card__cover">
-                <IssueCoverCard issue={latestLocked} publication={publication} coverLines={featuredCoverLines} showStatus />
-              </div>
-              <div class="pub-issue-card__info">
-                <h3 class="pub-issue-card__title">{latestLocked.data.displayTitle}</h3>
-                <a href={`/issues/${publication.id}/${latestLocked.data.issueSlug}`} class="pub-issue-card__cta">
-                  Read Issue
-                </a>
-              </div>
-            </article>
-          )}
+<BaseLayout title={publication.name} description={publication.description}>
+  <Fragment slot="head">
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={publication.name}
+      href={urls.publicationFeed(publication.id)}
+    />
+  </Fragment>
+  <Awning />
+  <Container>
+    <PageHero title={publication.name} lede={publication.description}>
+      <PinnedNote tilt={-2}>
+        Get new issues the day they drop: <a href={urls.publicationFeed(publication.id)}>RSS feed</a>
+      </PinnedNote>
+    </PageHero>
 
-          {openIssue && (
-            <article class="pub-issue-card pub-issue-card--open">
-              <div class="pub-issue-card__label">
-                <span class="pub-issue-card__tag pub-issue-card__tag--live">In Progress</span>
-              </div>
-              <div class="pub-issue-card__cover">
-                <IssueCoverCard issue={openIssue} publication={publication} coverLines={openCoverLines} showStatus />
-              </div>
-              <div class="pub-issue-card__info">
-                <h3 class="pub-issue-card__title">{openIssue.data.displayTitle}</h3>
-                <a href={`/issues/${publication.id}/${openIssue.data.issueSlug}`} class="pub-issue-card__cta pub-issue-card__cta--outline">
-                  Follow Along
-                </a>
-              </div>
-            </article>
-          )}
-        </div>
-      </section>
-    )}
+    <RackFrame>
+      <Shelf id={publication.id} label="The whole run" note={publication.kicker} tone="lemon" items={shelf.items} />
+    </RackFrame>
 
-    <!-- Back Issues Section -->
-    {backIssueCards.length > 0 && (
-      <section class="pub-back">
-        <div class="pub-section-header">
-          <h2 class="pub-section-title">Back Issues</h2>
-          <span class="pub-section-count">{backIssueCards.length} issues</span>
+    {
+      listings.length > 0 && (
+        <div class="articles">
+          <Newsprint id="articles" title={`${publication.name} articles`} subtitle="Every story filed, newest first">
+            <ArticleList listings={listings} />
+          </Newsprint>
         </div>
-        <div class="pub-back__grid">
-          {backIssueCards.map((card) => (
-            <div class="pub-back__item" style={`--tilt: ${card.tilt}deg`}>
-              <IssueCoverCard issue={card.issue} publication={publication} coverLines={card.coverLines} />
-            </div>
-          ))}
-        </div>
-      </section>
-    )}
+      )
+    }
+  </Container>
+</BaseLayout>
 
-    <!-- Latest Articles Section -->
-    {latestArticles.length > 0 && (
-      <section class="pub-articles">
-        <div class="pub-section-header">
-          <h2 class="pub-section-title">Latest Articles</h2>
-          <a href="/archive" class="pub-section-link">View All</a>
-        </div>
-        <div class="pub-articles__grid">
-          {latestArticles.map((post) => (
-            <PostCard post={post} publication={publication} />
-          ))}
-        </div>
-      </section>
-    )}
-  </div>
-</Layout>
+<style>
+  .articles {
+    margin-top: 72px;
+  }
+</style>

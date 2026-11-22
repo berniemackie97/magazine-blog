@@ -1,11 +1,11 @@
 {
-  "publicationId": "red-ops",
-  "issueSlug": "preflight",
-  "displayTitle": "Preflight",
+  "publication": "red-ops",
+  "slug": "preflight",
+  "title": "Preflight",
   "volume": 0,
   "number": 1,
-  "date": "12-21-2025",
-  "theme": "Preflight",
+  "date": "2025-12-21",
   "status": "locked",
-  "notesFromEditor": "The most underrated and probably skipped issue of any publication. Here I will cover lessones learned, and tips I wish I had when I first started out."
+  "editorNote": "The most underrated and probably skipped issue of any publication. Here I cover lessons learned, and tips I wish I had when I first started out.",
+  "coverDek": "Resources to help you get started"
 }

@@ -1,0 +1,103 @@
+---
+import Analytics from "@vercel/analytics/astro";
+import SiteHeader from "../components/site/SiteHeader.astro";
+import SiteFooter from "../components/site/SiteFooter.astro";
+import { site } from "../config/site";
+import type { Publication } from "../lib/content/types";
+import { pageThemeVars, toStyle } from "../lib/theme";
+import "../styles/base.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** Applies a publication's page theme to the whole document. */
+  publication?: Publication;
+  /** Surface behind the page: the shop wall or the wooden reading counter. */
+  backdrop?: "wall" | "counter";
+  ogType?: "website" | "article";
+}
+
+const {
+  title,
+  description = site.description,
+  publication,
+  backdrop = "wall",
+  ogType = "website",
+} = Astro.props;
+
+const fullTitle = title ? `${title} · ${site.name}` : `${site.name} · ${site.tagline}`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const themeStyle = publication ? toStyle(pageThemeVars(publication)) : undefined;
+const scheme = publication?.theme.scheme ?? "light";
+---
+
+<!doctype html>
+<html lang="en" data-backdrop={backdrop} style={themeStyle}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="alternate" type="application/rss+xml" title={site.name} href="/rss.xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <meta name="color-scheme" content={scheme} />
+    <meta name="theme-color" content="#1a1815" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary" />
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip-link" href="#content">Skip to content</a>
+    <SiteHeader />
+    <main id="content" tabindex="-1">
+      <slot />
+    </main>
+    <SiteFooter />
+    <Analytics />
+  </body>
+</html>
+
+<style>
+  html[data-backdrop="wall"] body {
+    background-color: var(--wall);
+    background-image: repeating-linear-gradient(90deg, var(--wall-seam) 0 1px, transparent 1px 120px);
+  }
+
+  html[data-backdrop="counter"] body {
+    background-color: var(--counter);
+    background-image:
+      repeating-linear-gradient(92deg, rgb(255 255 255 / 0.025) 0 3px, transparent 3px 22px),
+      repeating-linear-gradient(88deg, rgb(0 0 0 / 0.08) 0 1px, transparent 1px 47px);
+  }
+
+  main {
+    flex: 1;
+    width: 100%;
+  }
+
+  main:focus {
+    outline: none;
+  }
+
+  .skip-link {
+    position: absolute;
+    left: 1rem;
+    top: -100px;
+    z-index: 100;
+    padding: 0.75rem 1rem;
+    background: var(--lemon);
+    color: var(--ink);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .skip-link:focus {
+    top: 1rem;
+  }
+</style>

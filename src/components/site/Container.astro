@@ -1,0 +1,23 @@
+---
+interface Props {
+  as?: "div" | "section" | "header";
+  class?: string;
+}
+
+const { as = "div", class: className }: Props = Astro.props;
+const Tag = as;
+---
+
+<Tag class:list={["container", className]}>
+  <slot />
+</Tag>
+
+<style>
+  .container {
+    width: 100%;
+    max-width: var(--page-max);
+    margin: 0 auto;
+    padding-left: var(--gutter);
+    padding-right: var(--gutter);
+  }
+</style>

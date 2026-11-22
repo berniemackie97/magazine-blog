@@ -1,0 +1,53 @@
+---
+/**
+ * An open magazine lying on the counter: a left and a right page with a
+ * shaded fold between them. Pages stack on narrow screens.
+ */
+---
+
+<div class="spread">
+  <div class="page left"><slot name="left" /></div>
+  <div class="page right"><slot name="right" /></div>
+</div>
+
+<style>
+  .spread {
+    display: flex;
+    flex-wrap: wrap;
+    transform: rotate(-0.5deg);
+    box-shadow:
+      0 40px 60px rgb(0 0 0 / 0.5),
+      0 2px 0 rgb(0 0 0 / 0.4);
+  }
+
+  .page {
+    position: relative;
+    flex: 1 1 420px;
+    min-width: 0;
+    padding: clamp(24px, 4vw, 44px) clamp(20px, 4vw, 44px) 56px;
+    background-color: var(--page-bg);
+    color: var(--page-text);
+  }
+
+  /* Fold shading on the inner edges. */
+  .left {
+    background-image: linear-gradient(90deg, transparent 88%, rgb(0 0 0 / 0.35) 100%);
+  }
+
+  .right {
+    background-image: linear-gradient(90deg, rgb(0 0 0 / 0.4) 0%, transparent 12%);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .spread {
+      animation: open 500ms var(--ease-lift) both;
+    }
+
+    /* Motion only, never opacity: content must be readable even if animations are paused. */
+    @keyframes open {
+      from {
+        transform: rotate(-0.5deg) translateY(16px) scale(0.98);
+      }
+    }
+  }
+</style>

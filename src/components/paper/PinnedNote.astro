@@ -1,0 +1,40 @@
+---
+interface Props {
+  tilt?: number;
+  as?: "div" | "aside";
+  label?: string;
+}
+
+const { tilt = 2.5, as = "div", label }: Props = Astro.props;
+const Tag = as;
+---
+
+<Tag class="note" style={`--tilt:${tilt}deg`} aria-label={label}>
+  <span class="tape" aria-hidden="true"></span>
+  <slot />
+</Tag>
+
+<style>
+  .note {
+    position: relative;
+    padding: 22px 24px 18px;
+    background: var(--note);
+    color: var(--ink);
+    box-shadow: 0 8px 18px rgb(0 0 0 / 0.18);
+    transform: rotate(var(--tilt));
+    font-family: var(--font-hand);
+    font-size: 1.375rem;
+    line-height: 1.25;
+  }
+
+  .tape {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    width: 90px;
+    height: 24px;
+    margin-left: -45px;
+    background: var(--tape);
+    transform: rotate(-3deg);
+  }
+</style>

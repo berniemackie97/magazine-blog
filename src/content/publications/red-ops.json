@@ -1,35 +1,33 @@
 {
-  "id": "red-ops",
   "name": "Red Ops Review",
-  "description": "Reverse engineering, and offensive tooling in print inspired form.",
+  "description": "Reverse engineering and offensive tooling, in print-inspired form.",
+  "kicker": "reverse engineering",
   "accent": "#ff6b6b",
-  "displayFont": "display-serif",
+  "paperAccent": "#b8361f",
+  "featured": true,
   "sections": [
+    { "id": "tools", "label": "Tools" },
     { "id": "dev", "label": "Development" },
     { "id": "sec", "label": "Security" },
-    { "id": "lab", "label": "Lab Notes" },
-    { "id": "trail", "label": "Trail" }
+    { "id": "lab", "label": "Lab Notes" }
   ],
-  "isFeatured": true,
-  "defaultCoverSpec": {
+  "cover": {
     "template": "tech-mono",
-    "theme": {
-      "paper": "#0d1117",
-      "ink": "#c9d1d9",
-      "accent": "#ff6b6b",
-      "alt": "#ffa94d"
-    }
+    "paper": "#0d1117",
+    "ink": "#c9d1d9",
+    "accent": "#ff6b6b",
+    "spine": "#39d353"
   },
-  "pageTheme": {
-    "template": "tech-mono",
+  "theme": {
+    "scheme": "dark",
     "background": "#0d1117",
     "surface": "#161b22",
     "text": "#c9d1d9",
     "textMuted": "#8b949e",
-    "accent": "#58a6ff",
+    "accent": "#ff7b72",
     "accentAlt": "#39d353",
     "border": "#30363d",
-    "headingFont": "mono",
-    "bodyFont": "mono"
+    "headingFont": "display",
+    "bodyFont": "body"
   }
 }

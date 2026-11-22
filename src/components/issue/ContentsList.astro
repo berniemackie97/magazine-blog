@@ -1,0 +1,101 @@
+---
+import { sectionLabel } from "../../lib/content/publications";
+import type { Post, Publication } from "../../lib/content/types";
+import { urls } from "../../lib/urls";
+
+interface Props {
+  posts: Post[];
+  publication: Publication;
+  startPages: Map<string, number>;
+}
+
+const { posts, publication, startPages } = Astro.props;
+const formatLabel = (format: string) => format.replace("-", " ");
+---
+
+{
+  posts.length === 0 ? (
+    <p class="empty">Nothing filed yet. This one is still at the printer.</p>
+  ) : (
+    <ol class="contents">
+      {posts.map((post) => (
+        <li>
+          <a href={urls.post(post.id)}>
+            <span class="page" aria-label={`Page ${startPages.get(post.id)}`}>
+              {String(startPages.get(post.id)).padStart(2, "0")}
+            </span>
+            <span class="body">
+              <span class="kicker mono-label">
+                {formatLabel(post.format)} · {sectionLabel(publication, post.section)} · {post.readingMinutes} min
+              </span>
+              <span class="headline">{post.headline}</span>
+              <span class="dek">{post.dek}</span>
+            </span>
+          </a>
+        </li>
+      ))}
+    </ol>
+  )
+}
+
+<style>
+  .contents {
+    margin: 28px 0 0;
+    padding: 0;
+    list-style: none;
+    border-bottom: 1px solid var(--page-border);
+  }
+
+  li {
+    border-top: 1px solid var(--page-border);
+  }
+
+  a {
+    display: grid;
+    grid-template-columns: 72px minmax(0, 1fr);
+    gap: 16px;
+    padding: 18px 0;
+    text-decoration: none;
+  }
+
+  a:hover .headline {
+    color: var(--page-accent);
+  }
+
+  .page {
+    font-family: var(--font-display);
+    font-size: 3rem;
+    line-height: 0.9;
+    color: var(--page-accent);
+  }
+
+  .body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .kicker {
+    font-size: 0.6875rem;
+    color: var(--page-accent-alt);
+  }
+
+  .headline {
+    font-family: var(--page-heading-font);
+    font-size: 1.5rem;
+    line-height: 1.1;
+    transition: color 150ms;
+  }
+
+  .dek {
+    font-size: 0.9375rem;
+    color: var(--page-muted);
+  }
+
+  .empty {
+    margin: 28px 0 0;
+    font-family: var(--font-hand);
+    font-size: 1.5rem;
+    color: var(--page-muted);
+  }
+</style>

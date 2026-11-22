@@ -1,0 +1,42 @@
+---
+interface Props {
+  price: string;
+}
+
+const { price } = Astro.props;
+---
+
+<span class="barcode" aria-hidden="true">
+  <i></i>
+  <span>{price.toUpperCase()}</span>
+</span>
+
+<style>
+  .barcode {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5cqi;
+    padding: 2cqi 2.4cqi 1cqi;
+    background: #fff;
+    color: #000;
+    font-family: var(--font-mono);
+    font-size: 3cqi;
+    line-height: 1;
+  }
+
+  i {
+    display: block;
+    width: 22cqi;
+    height: 9.5cqi;
+    background: repeating-linear-gradient(
+      90deg,
+      #000 0 1px,
+      #fff 1px 2px,
+      #000 2px 4px,
+      #fff 4px 5px,
+      #000 5px 6px,
+      #fff 6px 8px
+    );
+  }
+</style>

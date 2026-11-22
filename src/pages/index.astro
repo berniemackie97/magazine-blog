@@ -1,200 +1,71 @@
 ---
-import Layout from '../components/layout/Layout.astro';
-import IssueCoverCard from '../components/issues/IssueCoverCard.astro';
-import { getCollection, getEntry } from 'astro:content';
-import { getPostsForIssue, getLatestPosts } from '../lib/data';
-import { coverLinesFromPosts } from '../lib/lineup';
+import ArticleList from "../components/articles/ArticleList.astro";
+import Newsprint from "../components/paper/Newsprint.astro";
+import PinnedNote from "../components/paper/PinnedNote.astro";
+import RackFrame from "../components/rack/RackFrame.astro";
+import Shelf from "../components/rack/Shelf.astro";
+import Awning from "../components/site/Awning.astro";
+import Container from "../components/site/Container.astro";
+import PageHero from "../components/site/PageHero.astro";
+import { site } from "../config/site";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getPostListings } from "../lib/content/listings";
+import { getFreshShelf, getPublicationShelves } from "../lib/content/rack";
+import { urls } from "../lib/urls";
 
-import '../styles/pages/home.css';
-
-// Get all publications for sidebar
-const allPublications = await getCollection('publications');
-const featuredPublications = allPublications.filter((p) => p.data.isFeatured);
-
-// Get latest locked issues across all publications
-const allIssues = await getCollection('issues');
-const latestLockedIssues = allIssues
-  .filter((i) => i.data.status === 'locked')
-  .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime())
-  .slice(0, 8);
-
-const latestItems = await Promise.all(
-  latestLockedIssues.map(async (issue) => {
-    const publication = await getEntry('publications', issue.data.publicationId);
-    const posts = await getPostsForIssue(issue.data.publicationId, issue.data.issueSlug);
-    const tilt = (Math.random() - 0.5) * 6;
-    return {
-      issue,
-      publication: publication!,
-      coverLines: coverLinesFromPosts(posts as any, 4),
-      tilt
-    };
-  })
-);
-
-// Get per-publication shelves
-const shelves = await Promise.all(
-  featuredPublications.map(async (publication) => {
-    const lockedPublicationIssues = allIssues
-      .filter((i) => i.data.publicationId === publication.id && i.data.status === 'locked')
-      .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime())
-      .slice(0, 4);
-
-    const items = await Promise.all(
-      lockedPublicationIssues.map(async (issue) => {
-        const posts = await getPostsForIssue(publication.id, issue.data.issueSlug);
-        const tilt = (Math.random() - 0.5) * 5;
-        return {
-          issue,
-          publication,
-          coverLines: coverLinesFromPosts(posts as any, 4),
-          tilt
-        };
-      })
-    );
-    return { publication, items };
-  })
-);
-
-// Get recent posts for sidebar
-const recentPosts = await getLatestPosts(5);
-const publicationMap = Object.fromEntries(allPublications.map((p) => [p.id, p]));
+const [fresh, shelves, latest] = await Promise.all([
+  getFreshShelf(6),
+  getPublicationShelves({ featuredOnly: true }),
+  getPostListings({ limit: 5 }),
+]);
 ---
 
-<Layout title="The Rack">
-  <div class="rack page-shell home-page">
-    <!-- Hero Section -->
-    <section class="rack__hero">
-      <h1 class="rack__title">IN PROGRESS, IN PRINT</h1>
-      <p class="rack__subtitle">Guides, writeups, and experiments published as virtual magazines.</p>
-    </section>
+<BaseLayout>
+  <Awning />
+  <Container>
+    <PageHero title="In progress," highlight="in print." lede={`${site.description} Pull one off the rack.`}>
+      <PinnedNote>Hey, I'm {site.author}. This is my devlog, printed one issue at a time.</PinnedNote>
+    </PageHero>
 
-    <div class="rack__layout">
-      <div class="rack__main">
-        <!-- Latest Issues Shelf -->
-        {latestItems.length > 0 && (
-          <section class="rack__shelf rack__shelf--featured">
-            <h2 class="shelf__label">Latest Featured Issues</h2>
-            <div class="shelf__container">
-              <div class="shelf__row">
-                {latestItems.map((item, idx) => (
-                  <div class="shelf__item" style={`--tilt: ${item.tilt}deg; --idx: ${idx}`}>
-                    <IssueCoverCard
-                      issue={item.issue}
-                      publication={item.publication}
-                      coverLines={item.coverLines}
-                      showStatus
-                    />
-                  </div>
-                ))}
-              </div>
-              <div class="shelf__ledge"></div>
-            </div>
-          </section>
-        )}
+    <RackFrame id="rack">
+      <Shelf id="fresh" label="Fresh off the press" tone="lemon" items={fresh} />
+      {
+        shelves.map(({ publication, items }) => (
+          <Shelf
+            id={publication.id}
+            label={publication.name}
+            note={publication.kicker}
+            items={items}
+            moreHref={urls.publication(publication.id)}
+          />
+        ))
+      }
+    </RackFrame>
 
-        <!-- Quick Actions -->
-        <section class="actions-row">
-          <a href="/issues" class="btn">Browse All Issues</a>
-          <a href="/publications" class="btn btn--secondary">Publications</a>
-          <a href="/archive" class="btn btn--secondary">Archive</a>
-        </section>
-
-        <!-- Feature Cards -->
-        <section class="feature-section">
-          <h2 class="text-center mb-5">How The Rack Works</h2>
-          <div class="feature-grid">
-            <div class="feature-card">
-              <div class="feature-card__label">Category</div>
-              <h3 class="feature-card__title">Publications</h3>
-              <p class="feature-card__body">A publication is a topic lane. Think “brand” or “series” like Web, Security, Game Dev, Tools. Each publication has its own style and releases issues over time.</p>
-            </div>
-            <div class="feature-card">
-              <div class="feature-card__label">Drops</div>
-              <h3 class="feature-card__title">Issues</h3>
-              <p class="feature-card__body">An issue is a release. It’s a curated bundle of articles that belong together, published under a publication. When a new issue drops, it’s meant to be read as a set.</p>
-            </div>
-            <div class="feature-card">
-              <div class="feature-card__label">Pages</div>
-              <h3 class="feature-card__title">Articles</h3>
-              <p class="feature-card__body">Articles are the individual pieces inside an issue: guides, writeups, experiments, and notes. Some are quick, some are deep, but they always live inside an issue.</p>
-            </div>
-          </div>
-        </section>
-
-        <!-- Per-Publication Shelves -->
-        {shelves.filter(s => s.items.length > 0).map((shelf) => (
-          <section class="rack__shelf" style={`--shelf-accent: ${shelf.publication.data.accent}`}>
-            <h2 class="shelf__label">{shelf.publication.data.name}</h2>
-            <div class="shelf__container">
-              <div class="shelf__row">
-                {shelf.items.map((item, idx) => (
-                  <div class="shelf__item" style={`--tilt: ${item.tilt}deg; --idx: ${idx}`}>
-                    <IssueCoverCard
-                      issue={item.issue}
-                      publication={item.publication}
-                      coverLines={item.coverLines}
-                    />
-                  </div>
-                ))}
-              </div>
-              <div class="shelf__ledge"></div>
-            </div>
-            <div class="shelf__cta">
-              <a href={`/publications/${shelf.publication.id}`} class="btn-link">
-                See all from {shelf.publication.data.name}
-              </a>
-            </div>
-          </section>
-        ))}
-      </div>
-
-      <!-- Sidebar -->
-      <aside class="rack__sidebar">
-        <!-- Publications Quick Links -->
-        <div class="sidebar-card">
-          <h3 class="sidebar-card__title">Publications</h3>
-          <ul class="pub-links">
-            {allPublications.map((pub) => (
-              <li>
-                <a href={`/publications/${pub.id}`} class="pub-link" style={`--pub-color: ${pub.data.accent}`}>
-                  <span class="pub-link__dot"></span>
-                  <span class="pub-link__name">{pub.data.name}</span>
-                </a>
-              </li>
-            ))}
-          </ul>
+    {
+      latest.length > 0 && (
+        <div class="daily">
+          <Newsprint id="daily" title="The Rack Daily" subtitle="Latest articles · every issue, every publication">
+            <ArticleList listings={latest} />
+            <a class="more" href={urls.archive()}>Read the full archive →</a>
+          </Newsprint>
         </div>
+      )
+    }
+  </Container>
+</BaseLayout>
 
-        <!-- Recent Articles -->
-        <div class="sidebar-card">
-          <h3 class="sidebar-card__title">Recent Articles</h3>
-          <ul class="recent-posts">
-            {recentPosts.map((post) => {
-              const pub = publicationMap[post.data.publicationId];
-              return (
-                <li>
-                  <a href={`/posts/${post.slug}`} class="recent-post">
-                    <span class="recent-post__pub" style={`--pub-accent: ${pub?.data.accent ?? 'var(--ink-muted)'}`}>
-                      {pub?.data.name ?? 'Unknown'}
-                    </span>
-                    <span class="recent-post__title">{post.data.headline}</span>
-                  </a>
-                </li>
-              );
-            })}
-          </ul>
-          <a href="/archive" class="btn-link sidebar-card__more">View all articles</a>
-        </div>
+<style>
+  .daily {
+    margin-top: 72px;
+  }
 
-        <!-- About Blurb -->
-        <div class="sidebar-card sidebar-card--accent">
-          <h3 class="sidebar-card__title">What's The Rack?</h3>
-          <p class="sidebar-card__text">
-            Hey there! I'm Bernie, the creator of The Rack. This is my devlog/journal where I share guides, writeups, and experiments as virtual magazines. 
-          </p>
-        </div>
-      </aside>
-    </div>
-  </div>
-</Layout>
+  .more {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+    margin-top: 8px;
+    font-weight: 700;
+    font-size: 0.9375rem;
+  }
+</style>

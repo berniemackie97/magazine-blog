@@ -1,0 +1,96 @@
+---
+import { formatDate } from "../../lib/dates";
+import Barcode from "./Barcode.astro";
+import type { CoverModel } from "./model";
+
+interface Props {
+  model: CoverModel;
+}
+
+const { model } = Astro.props;
+---
+
+<div class="pop">
+  <span class="masthead">{model.publicationName.toUpperCase()}</span>
+  <span class="badge">NO.{model.number}</span>
+  <span class="title">{model.title}</span>
+  {model.dek && <span class="dek">{model.dek}</span>}
+  <div class="bottom">
+    {model.lines.map((line) => <span class="line">{line}</span>)}
+    <div class="foot">
+      <span class="meta">VOL {model.volume} · {formatDate(model.date, "short").toUpperCase()}</span>
+      <Barcode price={model.price} />
+    </div>
+  </div>
+</div>
+
+<style>
+  .pop {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 6cqi;
+    border-left: 4cqi solid var(--cover-spine);
+    background: var(--cover-paper);
+  }
+
+  .masthead {
+    font-family: var(--font-display);
+    font-size: 11cqi;
+    line-height: 0.9;
+    color: var(--cover-accent);
+  }
+
+  .badge {
+    position: absolute;
+    top: 22cqi;
+    right: 6cqi;
+    display: grid;
+    place-items: center;
+    width: 20cqi;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--cover-accent);
+    color: var(--cover-paper);
+    font-family: var(--font-display);
+    font-size: 4.5cqi;
+    transform: rotate(12deg);
+  }
+
+  .title {
+    margin-top: 14cqi;
+    font-family: var(--font-display);
+    font-size: 15cqi;
+    line-height: 0.95;
+  }
+
+  .dek {
+    margin-top: 3cqi;
+    font-size: 5cqi;
+  }
+
+  .bottom {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5cqi;
+  }
+
+  .line {
+    font-weight: 700;
+    font-size: 5cqi;
+  }
+
+  .foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-top: 3cqi;
+  }
+
+  .meta {
+    font-family: var(--font-mono);
+    font-size: 3.8cqi;
+  }
+</style>

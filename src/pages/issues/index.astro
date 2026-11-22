@@ -1,125 +1,37 @@
 ---
-import Layout from '../../components/layout/Layout.astro';
-import IssueCoverCard from '../../components/issues/IssueCoverCard.astro';
-import { getCollection, getEntry } from 'astro:content';
-import { getPostsForIssue } from '../../lib/data';
-import { coverLinesFromPosts } from '../../lib/lineup';
+import RackFrame from "../../components/rack/RackFrame.astro";
+import Shelf from "../../components/rack/Shelf.astro";
+import Awning from "../../components/site/Awning.astro";
+import Container from "../../components/site/Container.astro";
+import PageHero from "../../components/site/PageHero.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getPublicationShelves } from "../../lib/content/rack";
+import { urls } from "../../lib/urls";
 
-import '../../styles/pages/issues-index.css';
-
-const issues = (await getCollection('issues'))
-  .filter((issue) => issue.data.status === 'locked')
-  .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
-
-const issueCards = await Promise.all(
-  issues.map(async (issue) => {
-    const publication = await getEntry('publications', issue.data.publicationId);
-    const posts = await getPostsForIssue(issue.data.publicationId, issue.data.issueSlug);
-    const tilt = (Math.random() - 0.5) * 3;
-    return { issue, publication: publication!, coverLines: coverLinesFromPosts(posts, 5), tilt };
-  })
-);
-
-const publications = await getCollection('publications');
-
-// Group issues by publication for the stats
-const issuesByPub = publications.map(pub => ({
-  pub,
-  count: issues.filter(i => i.data.publicationId === pub.id).length
-}));
+const shelves = await getPublicationShelves({ featuredOnly: false });
+const issueCount = shelves.reduce((sum, shelf) => sum + shelf.items.length, 0);
 ---
-<Layout title="All Issues - The Rack">
-  <div class="issues-index">
-    <!-- Hero Section -->
-    <header class="issues-hero">
-      <div class="issues-hero__content">
-        <span class="issues-hero__eyebrow">Our Newsstand</span>
-        <h1 class="issues-hero__title">All Issues</h1>
-        <p class="issues-hero__tagline">Archive of every issue, easily filterable.</p>
-      </div>
-      <div class="issues-hero__stats">
-        {issuesByPub.map(({ pub, count }) => (
-          <div class="issues-hero__stat-item" style={`--accent: ${pub.data.accent}`}>
-            <span class="issues-hero__stat-count">{count}</span>
-            <span class="issues-hero__stat-label">{pub.data.name}</span>
-          </div>
-        ))}
-      </div>
-    </header>
 
-    <!-- Filter Bar -->
-    <div class="issues-controls">
-      <div class="issues-filter-wrap">
-        <label for="pub-filter" class="issues-filter__label">Filter by</label>
-        <select id="pub-filter" class="issues-filter__select">
-          <option value="">All Publications</option>
-          {publications.map((p) => (
-            <option value={p.id}>{p.data.name}</option>
-          ))}
-        </select>
-      </div>
-      <span class="issues-count" id="issue-count">{issues.length} issues</span>
-    </div>
-
-    <!-- Magazine Rack Display -->
-    <div class="rack">
-      <div class="rack__shelf" id="issue-grid">
-        {issueCards.map((card) => (
-          <article
-            class="rack__item"
-            data-filter-item
-            data-publication={card.publication.id}
-            style={`--tilt: ${card.tilt}deg; --accent: ${card.publication.data.accent}`}
-          >
-            <IssueCoverCard issue={card.issue} publication={card.publication} coverLines={card.coverLines} showStatus />
-            <div class="rack__shadow"></div>
-          </article>
-        ))}
-      </div>
-    </div>
-
-    <!-- Empty State -->
-    <div class="issues-empty" id="empty-state" style="display: none;">
-      <p class="issues-empty__text">No issues match that filter</p>
-      <button class="issues-empty__btn" id="clear-filter">Show All</button>
-    </div>
-  </div>
-
-  <script is:inline>
-    const select = document.getElementById('pub-filter');
-    const items = document.querySelectorAll('[data-filter-item]');
-    const countEl = document.getElementById('issue-count');
-    const emptyState = document.getElementById('empty-state');
-    const clearBtn = document.getElementById('clear-filter');
-    const rack = document.querySelector('.rack');
-
-    function updateDisplay() {
-      const visible = [...items].filter(item => item.style.display !== 'none').length;
-      if (countEl) countEl.textContent = `${visible} issue${visible !== 1 ? 's' : ''}`;
-      if (emptyState) emptyState.style.display = visible === 0 ? 'flex' : 'none';
-      if (rack) rack.style.display = visible === 0 ? 'none' : '';
-    }
-
-    if (select) {
-      select.addEventListener('change', (e) => {
-        const value = e.target.value;
-        items.forEach((item) => {
-          if (!value || item.dataset.publication === value) {
-            item.style.display = '';
-          } else {
-            item.style.display = 'none';
-          }
-        });
-        updateDisplay();
-      });
-    }
-
-    if (clearBtn) {
-      clearBtn.addEventListener('click', () => {
-        if (select) select.value = '';
-        items.forEach((item) => item.style.display = '');
-        updateDisplay();
-      });
-    }
-  </script>
-</Layout>
+<BaseLayout title="Every issue" description="Every issue of every publication on The Rack.">
+  <Awning />
+  <Container>
+    <PageHero
+      title="The whole"
+      highlight="rack."
+      lede={`${issueCount} ${issueCount === 1 ? "issue" : "issues"} across ${shelves.length} publications. Hover to pull one out, click to open it.`}
+    />
+    <RackFrame>
+      {
+        shelves.map(({ publication, items }) => (
+          <Shelf
+            id={publication.id}
+            label={publication.name}
+            note={publication.kicker}
+            items={items}
+            moreHref={urls.publication(publication.id)}
+          />
+        ))
+      }
+    </RackFrame>
+  </Container>
+</BaseLayout>

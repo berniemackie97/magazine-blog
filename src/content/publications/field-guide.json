@@ -1,33 +1,31 @@
 {
-  "id": "field-guide",
   "name": "Field Guide",
   "description": "Adventurous engineering and trail-side dev stories.",
+  "kicker": "trail-side dev stories",
   "accent": "#1f7a8c",
-  "displayFont": "display-wide",
+  "paperAccent": "#17616f",
+  "featured": true,
   "sections": [
     { "id": "trail", "label": "Trail" },
     { "id": "build", "label": "Build" },
     { "id": "lab", "label": "Lab" },
     { "id": "dispatch", "label": "Dispatch" }
   ],
-  "isFeatured": true,
-  "defaultCoverSpec": {
+  "cover": {
     "template": "field-notes",
-    "theme": {
-      "paper": "#f4efe4",
-      "ink": "#2d3a3a",
-      "accent": "#1f7a8c",
-      "alt": "#bfae9f"
-    }
+    "paper": "#f4efe4",
+    "ink": "#2d3a3a",
+    "accent": "#1f7a8c",
+    "spine": "#2d3a3a"
   },
-  "pageTheme": {
-    "template": "field-notes",
+  "theme": {
+    "scheme": "light",
     "background": "#f4efe4",
     "surface": "#fffdf8",
     "text": "#2d3a3a",
-    "textMuted": "#5a6363",
-    "accent": "#1f7a8c",
-    "accentAlt": "#bfae9f",
+    "textMuted": "#55605f",
+    "accent": "#17616f",
+    "accentAlt": "#8a6f5a",
     "border": "#d4cfc5",
     "headingFont": "hand",
     "bodyFont": "body"

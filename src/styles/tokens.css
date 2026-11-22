@@ -1,0 +1,58 @@
+/* Design tokens. Components read these; nothing else defines raw values. */
+:root {
+  /* Shop */
+  --wall: #e4d9c6;
+  --wall-seam: rgb(0 0 0 / 0.035);
+  --wood-dark: #2b1d14;
+  --wood: #3b281b;
+  --wood-edge: #5a3d28;
+  --wood-highlight: #7a5638;
+  --counter: #3b281b;
+  --kraft: #b89468;
+
+  /* Paper & ink */
+  --ink: #1a1815;
+  --ink-soft: #3d3833;
+  --paper: #faf7f2;
+  --note: #fff8e7;
+  --newsprint: #f2ede2;
+  --newsprint-edge: #d8cfbe;
+
+  /* Pops */
+  --coral: #ff6b6b;
+  --coral-ink: #b8361f;
+  --lemon: #ffd43b;
+  --tape: rgb(255 212 59 / 0.78);
+
+  /* Type */
+  --font-display: "Archivo Black", "Arial Black", Impact, sans-serif;
+  --font-body: "DM Sans Variable", "DM Sans", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, monospace;
+  --font-hand: "Caveat", "Comic Sans MS", cursive;
+
+  /* Layout */
+  --page-max: 1240px;
+  --gutter: clamp(1rem, 3vw, 1.5rem);
+  --tap: 44px;
+
+  /* Motion */
+  --ease-lift: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dur-lift: 350ms;
+
+  /* Page theme defaults (publication pages override these inline) */
+  --page-bg: var(--wall);
+  --page-surface: var(--paper);
+  --page-text: var(--ink);
+  --page-muted: var(--ink-soft);
+  --page-accent: var(--coral-ink);
+  --page-accent-alt: var(--coral);
+  --page-border: #cfc4b0;
+  --page-heading-font: var(--font-display);
+  --page-body-font: var(--font-body);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-lift: 0ms;
+  }
+}

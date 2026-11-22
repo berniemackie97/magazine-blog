@@ -1,0 +1,91 @@
+---
+import { formatDate } from "../../lib/dates";
+import { sectionLabel } from "../../lib/content/publications";
+import type { Issue, Post, Publication } from "../../lib/content/types";
+import { urls } from "../../lib/urls";
+
+interface Props {
+  post: Post;
+  publication: Publication;
+  issue?: Issue;
+}
+
+const { post, publication, issue } = Astro.props;
+const difficulty = post.difficulty === "all" ? "All levels" : post.difficulty;
+---
+
+<div class="running-head mono-label">
+  <span>
+    <a href={urls.publication(publication.id)}>{publication.name}</a>
+    {issue && (<> · <a href={urls.issue(publication.id, issue.slug)}>{issue.title}</a></>)}
+  </span>
+  <span>{post.format.replace("-", " ")} · {sectionLabel(publication, post.section)}</span>
+</div>
+
+<header class="opener">
+  <h1>{post.headline}</h1>
+  <div class="aside">
+    <p class="dek">{post.dek}</p>
+    <p class="meta mono-label">
+      <time datetime={post.publishedAt}>{formatDate(post.publishedAt, "short")}</time>
+      · {post.readingMinutes} min · {difficulty}
+    </p>
+  </div>
+</header>
+
+<style>
+  .running-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--page-border);
+    font-size: 0.6875rem;
+    color: var(--page-muted);
+  }
+
+  .running-head a {
+    text-decoration: none;
+  }
+
+  .running-head a:hover {
+    color: var(--page-accent);
+  }
+
+  .opener {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 24px 48px;
+    padding: 48px 0 40px;
+    border-bottom: 4px solid var(--page-text);
+  }
+
+  h1 {
+    flex: 999 1 520px;
+    margin: 0;
+    font-family: var(--page-heading-font);
+    font-weight: 400;
+    font-size: clamp(2.75rem, 7vw, 6rem);
+    line-height: 0.92;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  .aside {
+    flex: 1 1 240px;
+  }
+
+  .dek {
+    margin: 0;
+    font-size: 1.1875rem;
+    line-height: 1.5;
+  }
+
+  .meta {
+    margin: 10px 0 0;
+    font-size: 0.6875rem;
+    color: var(--page-accent-alt);
+  }
+</style>
