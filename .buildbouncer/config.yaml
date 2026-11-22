@@ -11,13 +11,11 @@ checks:
       source: detector:node-scripts
       name: check
       run: npm run check
-      shell: cmd
       requires: npm
     - id: detector:node-scripts:0caa52acc7b3
       source: detector:node-scripts
       name: build
       run: npm run build
-      shell: cmd
       requires: npm
 insults:
     mode: snarky
