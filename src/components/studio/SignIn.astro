@@ -1,0 +1,53 @@
+---
+interface Props {
+  error: string;
+  configured: boolean;
+}
+const { error, configured } = Astro.props;
+---
+
+<main class="login-shell">
+  <a class="studio-brand" href="/"
+    ><span class="brand-icon">R.</span><span
+      >The Rack<small>EDITORIAL STUDIO</small></span
+    ></a
+  >
+  <div class="login-card">
+    <span class="eyebrow">BEHIND THE NEWSSTAND</span>
+    <h1>A desk for your next great story.</h1>
+    <p>
+      Write articles, assemble issues, and prepare the next edition of The Rack.
+    </p>
+    {
+      error && (
+        <p role="alert" class="notice error">
+          {error}
+        </p>
+      )
+    }
+    {
+      !error && configured && (
+        <a class="button primary" href="/api/studio/auth/login">
+          Continue with GitHub →
+        </a>
+      )
+    }
+    {
+      !error && !configured && (
+        <div>
+          <>
+            <p>
+              Hosted sign-in needs the repository’s GitHub OAuth configuration.
+              For the local editorial workspace, run <code>npm run studio</code>{" "}
+              and open <code>http://127.0.0.1:4321/studio</code>.
+            </p>
+            <p class="muted">
+              Deployment setup is documented in <code>docs/studio.md</code>.
+            </p>
+          </>
+        </div>
+      )
+    }
+  </div>
+  <a href="/">← Back to the newsstand</a>
+</main>

@@ -1,0 +1,168 @@
+---
+import Cover from "../../components/cover/Cover.astro";
+import ContentsList from "../../components/issue/ContentsList.astro";
+import EditorLetter from "../../components/issue/EditorLetter.astro";
+import Folio from "../../components/issue/Folio.astro";
+import IssueSpread from "../../components/issue/IssueSpread.astro";
+import Container from "../../components/site/Container.astro";
+import HandLink from "../../components/site/HandLink.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { formatDate } from "../../lib/dates";
+import { startPages } from "../../lib/content/folio";
+import { issueLabel } from "../../lib/content/issues";
+
+import type { Issue, Publication, Post } from "../../lib/content/types";
+import { urls } from "../../lib/urls";
+
+interface Props {
+  issue: Issue;
+  publication: Publication;
+  posts: Post[];
+  preview?: boolean;
+}
+const { issue, publication, posts, preview = false } = Astro.props;
+const pages = startPages(posts);
+const firstPost = posts[0];
+const description =
+  issue.editorNote ??
+  `${publication.name}, ${issueLabel(issue)}: ${issue.title}.`;
+---
+
+<BaseLayout
+  title={`${issue.title} · ${publication.name}`}
+  description={description}
+  publication={publication}
+  backdrop="counter"
+  preview={preview}
+>
+  <Container>
+    <HandLink href={urls.publication(publication.id)}
+      >← back to {publication.name}</HandLink
+    >
+
+    <IssueSpread>
+      <Fragment slot="left">
+        <div class="running-head mono-label">
+          <span>{publication.name}</span>
+          <span>{issueLabel(issue)} · {formatDate(issue.date, "short")}</span>
+        </div>
+        <h1>
+          Contents <span class="visually-hidden">of {issue.title}</span>
+        </h1>
+        <ContentsList
+          posts={posts}
+          publication={publication}
+          startPages={pages}
+        />
+        {issue.editorNote && <EditorLetter note={issue.editorNote} />}
+        <Folio page={2} side="left" />
+      </Fragment>
+
+      <Fragment slot="right">
+        <div class="cover-page">
+          <div class="cover">
+            <Cover item={{ issue, publication, posts }} />
+          </div>
+          {
+            firstPost ? (
+              <a class="start" href={urls.post(firstPost.id)}>
+                Start reading →
+              </a>
+            ) : (
+              <p class="pending">Still at the printer. Check back soon.</p>
+            )
+          }
+        </div>
+        <Folio page={3} side="right" label={issue.title} />
+      </Fragment>
+    </IssueSpread>
+
+    <div class="after">
+      <HandLink href={urls.home()}>grab another off the rack</HandLink>
+      <a class="feed mono-label" href={urls.publicationFeed(publication.id)}
+        >Subscribe via RSS</a
+      >
+    </div>
+  </Container>
+</BaseLayout>
+
+<style>
+  .running-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--page-border);
+    font-size: 0.6875rem;
+    color: var(--page-muted);
+  }
+
+  h1 {
+    margin: 28px 0 0;
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(3.25rem, 7vw, 5.75rem);
+    line-height: 0.9;
+    text-transform: uppercase;
+  }
+
+  .cover-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
+    height: 100%;
+    justify-content: center;
+  }
+
+  .cover {
+    width: min(100%, 420px);
+    box-shadow: 10px 10px 0 rgb(0 0 0 / 0.35);
+  }
+
+  .start {
+    display: inline-flex;
+    align-items: center;
+    min-height: 52px;
+    padding: 0 22px;
+    background: var(--page-accent);
+    color: var(--page-bg);
+    font-family: var(--font-display);
+    font-size: 1.125rem;
+    text-decoration: none;
+    box-shadow: 4px 4px 0 var(--page-text);
+    transition:
+      transform 150ms,
+      box-shadow 150ms;
+  }
+
+  .start:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 var(--page-text);
+  }
+
+  .pending {
+    margin: 0;
+    font-family: var(--font-hand);
+    font-size: 1.5rem;
+    color: var(--page-muted);
+  }
+
+  .after {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-top: 48px;
+  }
+
+  .feed {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+    color: var(--lemon);
+    font-size: 0.8125rem;
+  }
+</style>

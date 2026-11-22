@@ -1,0 +1,62 @@
+---
+import { identity, configured } from "../../lib/studio/auth";
+import Workspace from "../../components/studio/Workspace.astro";
+import SignIn from "../../components/studio/SignIn.astro";
+import "@fontsource-variable/dm-sans";
+import "@fontsource-variable/jetbrains-mono";
+import "../../styles/studio.css";
+export const prerender = false;
+let user;
+let accessError = "";
+try {
+  user = identity(Astro);
+} catch (error) {
+  accessError =
+    error instanceof Error
+      ? error.message
+      : "Studio is unavailable on this origin.";
+}
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="color-scheme" content="light" />
+    <title>Studio · The Rack</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <a class="studio-skip" href="#workspace">Skip to workspace</a>
+    {
+      user ? (
+        <Workspace user={user} />
+      ) : (
+        <SignIn error={accessError} configured={configured()} />
+      )
+    }
+    <dialog id="studio-dialog" aria-labelledby="dialog-title">
+      <form id="dialog-form">
+        <div class="section-heading">
+          <h2 id="dialog-title">Content block</h2><button
+            type="button"
+            id="close-dialog"
+            class="text-button"
+            aria-label="Close dialog">✕</button>
+        </div>
+        <div id="dialog-body"></div>
+        <div class="dialog-actions">
+          <button type="button" id="cancel-dialog" class="button secondary"
+            >Cancel</button
+          ><button type="submit" id="dialog-submit" class="button primary"
+            >Insert block</button>
+        </div>
+      </form>
+    </dialog>
+    <script>
+      import "../../scripts/studio/client";
+    </script>
+  </body>
+</html>

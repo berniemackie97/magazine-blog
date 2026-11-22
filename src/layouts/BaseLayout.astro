@@ -15,6 +15,7 @@ interface Props {
   /** Surface behind the page: the shop wall or the wooden reading counter. */
   backdrop?: "wall" | "counter";
   ogType?: "website" | "article";
+  preview?: boolean;
 }
 
 const {
@@ -23,11 +24,16 @@ const {
   publication,
   backdrop = "wall",
   ogType = "website",
+  preview = false,
 } = Astro.props;
 
-const fullTitle = title ? `${title} · ${site.name}` : `${site.name} · ${site.tagline}`;
-const canonical = new URL(Astro.url.pathname, Astro.site);
-const themeStyle = publication ? toStyle(pageThemeVars(publication)) : undefined;
+const fullTitle = title
+  ? `${title} · ${site.name}`
+  : `${site.name} · ${site.tagline}`;
+const canonical = preview ? undefined : new URL(Astro.url.pathname, Astro.site);
+const themeStyle = publication
+  ? toStyle(pageThemeVars(publication))
+  : undefined;
 const scheme = publication?.theme.scheme ?? "light";
 ---
 
@@ -38,9 +44,15 @@ const scheme = publication?.theme.scheme ?? "light";
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonical} />
+    {!preview && <link rel="canonical" href={canonical} />}
+    {preview && <meta name="robots" content="noindex,nofollow" />}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="alternate" type="application/rss+xml" title={site.name} href="/rss.xml" />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={site.name}
+      href="/rss.xml"
+    />
     <link rel="sitemap" href="/sitemap-index.xml" />
     <meta name="color-scheme" content={scheme} />
     <meta name="theme-color" content="#1a1815" />
@@ -59,21 +71,33 @@ const scheme = publication?.theme.scheme ?? "light";
       <slot />
     </main>
     <SiteFooter />
-    <Analytics />
+    {!preview && <Analytics />}
   </body>
 </html>
 
 <style>
   html[data-backdrop="wall"] body {
     background-color: var(--wall);
-    background-image: repeating-linear-gradient(90deg, var(--wall-seam) 0 1px, transparent 1px 120px);
+    background-image: repeating-linear-gradient(
+      90deg,
+      var(--wall-seam) 0 1px,
+      transparent 1px 120px
+    );
   }
 
   html[data-backdrop="counter"] body {
     background-color: var(--counter);
     background-image:
-      repeating-linear-gradient(92deg, rgb(255 255 255 / 0.025) 0 3px, transparent 3px 22px),
-      repeating-linear-gradient(88deg, rgb(0 0 0 / 0.08) 0 1px, transparent 1px 47px);
+      repeating-linear-gradient(
+        92deg,
+        rgb(255 255 255 / 0.025) 0 3px,
+        transparent 3px 22px
+      ),
+      repeating-linear-gradient(
+        88deg,
+        rgb(0 0 0 / 0.08) 0 1px,
+        transparent 1px 47px
+      );
   }
 
   main {

@@ -1,0 +1,183 @@
+---
+import ArticleDocument from "../../components/article/ArticleDocument.astro";
+import IssueDocument from "../../components/issue/IssueDocument.astro";
+import PublicationCard from "../../components/publication/PublicationCard.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Container from "../../components/site/Container.astro";
+import { mdxComponents } from "../../components/mdx";
+import { requireIdentity } from "../../lib/studio/auth";
+import { storeFor } from "../../lib/studio/service";
+import {
+  library,
+  assertRevision,
+  StudioError,
+  type Entry,
+} from "../../lib/studio/content";
+import {
+  compilePreview,
+  issueModel,
+  postModel,
+  publicationModel,
+} from "../../lib/studio/preview";
+export const prerender = false;
+Astro.response.headers.set("Cache-Control", "private, no-store");
+Astro.response.headers.set("X-Robots-Tag", "noindex, nofollow");
+let error = "";
+let entry: Entry | undefined;
+let entries: Entry[] = [];
+try {
+  const user = requireIdentity(Astro);
+  const snapshot = await storeFor(user).snapshot();
+  const expected = Astro.url.searchParams.get("revision");
+  if (expected) assertRevision(snapshot.revision, expected);
+  entries = library(snapshot).entries;
+  entry = entries.find(
+    (e) =>
+      e.id === Astro.url.searchParams.get("id") &&
+      e.collection === Astro.url.searchParams.get("collection"),
+  );
+  if (!entry)
+    throw new StudioError(
+      404,
+      "This content no longer exists. Refresh the workspace.",
+    );
+} catch (cause) {
+  Astro.response.status = cause instanceof StudioError ? cause.status : 500;
+  error =
+    cause instanceof Error ? cause.message : "Preview could not be loaded.";
+}
+const publicationEntry =
+  entry &&
+  entries.find(
+    (e) =>
+      e.collection === "publications" &&
+      e.id ===
+        (entry.collection === "publications"
+          ? entry.id
+          : entry.data.publication),
+  );
+const publication = publicationEntry
+  ? publicationModel(publicationEntry)
+  : undefined;
+const issueEntry =
+  entry &&
+  (entry.collection === "issues"
+    ? entry
+    : entries.find(
+        (e) =>
+          e.collection === "issues" &&
+          e.data.publication === entry?.data.publication &&
+          e.data.slug === entry?.data.issue,
+      ));
+const issue = issueEntry ? issueModel(issueEntry) : undefined;
+const post = entry?.collection === "posts" ? postModel(entry) : undefined;
+const posts = issue
+  ? entries
+      .filter(
+        (e) =>
+          e.collection === "posts" &&
+          e.data.publication === issue.publicationId &&
+          e.data.issue === issue.slug,
+      )
+      .map(postModel)
+      .sort(
+        (a, b) =>
+          a.order - b.order || b.publishedAt.localeCompare(a.publishedAt),
+      )
+  : [];
+let compiled;
+if (post && entry) {
+  try {
+    compiled = await compilePreview(entry.body);
+  } catch (cause) {
+    error = cause instanceof Error ? cause.message : "Article preview failed.";
+    Astro.response.status = 422;
+  }
+}
+const Content = compiled?.Content;
+---
+
+{
+  error ? (
+    <html lang="en">
+      <>
+        <head>
+          <>
+            <title>Preview unavailable</title>
+            <meta name="robots" content="noindex,nofollow" />
+          </>
+        </head>
+        <body>
+          <>
+            <h1>Preview unavailable</h1>
+            <p>{error}</p>
+            <a href="/studio" target="_top">
+              Return to Studio
+            </a>
+          </>
+        </body>
+      </>
+    </html>
+  ) : post && publication && Content ? (
+    <ArticleDocument
+      post={post}
+      publication={publication}
+      issue={issue}
+      siblings={posts}
+      headings={compiled?.headings ?? []}
+      preview
+    >
+      <Content components={mdxComponents} />
+    </ArticleDocument>
+  ) : issue && publication ? (
+    <IssueDocument
+      issue={issue}
+      publication={publication}
+      posts={posts}
+      preview
+    />
+  ) : publication ? (
+    <BaseLayout
+      title={`${publication.name} preview`}
+      publication={publication}
+      preview
+    >
+      <Container>
+        <PublicationCard
+          shelf={{
+            publication,
+            items: entries
+              .filter(
+                (e) =>
+                  e.collection === "issues" &&
+                  e.data.publication === publication.id,
+              )
+              .map((e) => {
+                const issue = issueModel(e);
+                return {
+                  issue,
+                  publication,
+                  posts: entries
+                    .filter(
+                      (p) =>
+                        p.collection === "posts" &&
+                        p.data.publication === publication.id &&
+                        p.data.issue === issue.slug,
+                    )
+                    .map(postModel),
+                };
+              }),
+          }}
+        />
+      </Container>
+    </BaseLayout>
+  ) : null
+}
+<script>
+  // Draft media is served through the authenticated workspace, not the production asset directory.
+  for (const image of document.querySelectorAll<HTMLImageElement>("img")) {
+    const path = new URL(image.src).pathname;
+    if (/^\/(media|images)\//.test(path))
+      image.src = `/api/studio/media?path=${encodeURIComponent("public" + path)}`;
+  }
+</script>

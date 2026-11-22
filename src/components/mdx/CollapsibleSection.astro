@@ -1,11 +1,6 @@
 ---
-interface Props {
-  title: string;
-  subtitle?: string;
-  label?: string;
-  open?: boolean;
-  id?: string;
-}
+import type { ComponentProps } from "../../lib/content/component-schema";
+type Props = ComponentProps<"CollapsibleSection">;
 
 const { title, subtitle, label, open = false, id } = Astro.props;
 ---

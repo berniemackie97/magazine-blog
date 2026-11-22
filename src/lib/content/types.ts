@@ -34,6 +34,7 @@ export interface Post {
   dek: string;
   summary: string;
   tags: string[];
+  order: number;
   coverPriority: number;
   readingMinutes: number;
   entry: PostEntry;

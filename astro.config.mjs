@@ -1,3 +1,4 @@
+import { mdxPolicy } from "./src/lib/studio/mdx-policy.ts";
 import mdx from "@astrojs/mdx";
 import sitemap from "@astrojs/sitemap";
 import vercel from "@astrojs/vercel";
@@ -8,7 +9,7 @@ export default defineConfig({
   output: "static",
   trailingSlash: "never",
   adapter: vercel(),
-  integrations: [mdx(), sitemap()],
+  integrations: [mdx({ remarkPlugins: [mdxPolicy] }), sitemap()],
   markdown: {
     shikiConfig: { theme: "github-dark" },
   },

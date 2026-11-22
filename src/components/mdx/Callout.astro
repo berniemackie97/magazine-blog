@@ -1,10 +1,7 @@
 ---
 /** A note taped into the page. With `checklist`, items render as tickable boxes. */
-interface Props {
-  title?: string;
-  checklist?: boolean;
-  items?: string[];
-}
+import type { ComponentProps } from "../../lib/content/component-schema";
+type Props = ComponentProps<"Callout">;
 
 const { title, checklist = false, items = [] } = Astro.props;
 ---
@@ -29,7 +26,9 @@ const { title, checklist = false, items = [] } = Astro.props;
         )}
       </ul>
     ) : (
-      <div class="body"><slot /></div>
+      <div class="body">
+        <slot />
+      </div>
     )
   }
 </aside>
