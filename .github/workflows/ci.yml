@@ -39,8 +39,6 @@ jobs:
         run: npm test
       - name: Build
         run: npm run build
-      - name: Inspect built routes
-        run: find .vercel/output/functions -name "*.mjs" | head -60
       - name: Production CMS integration
         run: npm run test:production
       - name: Install browser

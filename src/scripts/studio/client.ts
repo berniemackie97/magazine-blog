@@ -53,6 +53,7 @@ let workspace: Workspace;
 let view: View = "posts";
 let current: Entry | undefined;
 let creating = false;
+let manualRecovery = false;
 let dirty = false;
 let generation = 0;
 let saving: Promise<boolean> | undefined;
@@ -113,7 +114,7 @@ function changed(): void {
   recoverable();
   status("Unsaved changes");
   clearTimeout(autosave);
-  autosave = setTimeout(() => void save(false), 1600);
+  if (!manualRecovery) autosave = setTimeout(() => void save(false), 1600);
   $("editor-title").textContent = String(
     current.data.headline ||
       current.data.title ||
@@ -140,6 +141,12 @@ async function load(): Promise<void> {
   $("connection").textContent =
     data.mode === "local" ? "● Local workspace" : "● Connected to GitHub";
   renderList();
+  input("new-entry").disabled = false;
+  document
+    .querySelectorAll<HTMLButtonElement>("[data-view]")
+    .forEach((button) => {
+      button.disabled = false;
+    });
 }
 function draft(entry: Entry): boolean {
   return entry.collection === "posts"
@@ -248,6 +255,13 @@ function renderList(): void {
 }
 async function leave(): Promise<boolean> {
   clearTimeout(autosave);
+  if (manualRecovery && dirty) {
+    notice(
+      "Review and save the recovered edits before leaving this entry.",
+      true,
+    );
+    return false;
+  }
   if (dirty && !(await save(true))) return false;
   return true;
 }
@@ -518,6 +532,7 @@ function renderIssueArticles(): void {
 async function openEntry(entry: Entry, isNew = false): Promise<void> {
   if (!(await leave())) return;
   current = clone(entry);
+  manualRecovery = false;
   view = entry.collection;
   $("view-title").textContent = plural[view];
   document
@@ -585,6 +600,8 @@ async function save(manual: boolean): Promise<boolean> {
     const saved = await saving;
     return saved && dirty ? save(manual) : saved;
   }
+  if (manualRecovery && !manual) return false;
+  if (manual) manualRecovery = false;
   const captured = clone(current);
   const version = generation;
   const create = creating;
@@ -1064,6 +1081,11 @@ async function refreshRelease(): Promise<void> {
   }
 }
 async function refresh(): Promise<void> {
+  if (!workspace) {
+    await load();
+    return;
+  }
+  if (saving) await saving;
   if (
     dirty &&
     !confirm(
@@ -1136,6 +1158,7 @@ function wire(): void {
     current.data = clone(restored.entry.data);
     current.body = restored.entry.body;
     restored = undefined;
+    manualRecovery = true;
     $("recovery").hidden = true;
     renderFields();
     $<HTMLTextAreaElement>("article-body").value = current.body;
@@ -1289,6 +1312,12 @@ function wire(): void {
   });
 }
 if ($("studio")) {
+  input("new-entry").disabled = true;
+  document
+    .querySelectorAll<HTMLButtonElement>("[data-view]")
+    .forEach((button) => {
+      button.disabled = true;
+    });
   wire();
   void load().catch((error) => {
     $("connection").textContent = "Connection failed";

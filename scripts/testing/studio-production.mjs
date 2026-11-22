@@ -3,7 +3,6 @@ import { createCipheriv, createHash, randomBytes } from "node:crypto";
 import { readdir, readFile } from "node:fs/promises";
 import { pathToFileURL } from "node:url";
 import { resolve } from "node:path";
-import { experimental_AstroContainer } from "astro/container";
 
 // Exercise the built serverless code without opening a network listener.
 const root = process.cwd();
@@ -176,10 +175,11 @@ globalThis.fetch = async (input, init = {}) => {
   throw new Error(`Unhandled GitHub fixture: ${path}`);
 };
 try {
-  const { page: apiPage } = await import(
-    pathToFileURL(resolve(server, "pages/api/studio/_---path_.astro.mjs"))
+  const { default: app } = await import(
+    pathToFileURL(resolve(server, "entry.mjs"))
   );
-  const endpoint = apiPage().ALL;
+  assert.equal(typeof app.fetch, "function");
+  const endpoint = (context) => app.fetch(context.request);
   const context = (action, body, authenticated = true) => {
     const url = new URL(`https://the-rack.vercel.app/api/studio/${action}`);
     return {
@@ -189,7 +189,11 @@ try {
       cookies: { get: () => (authenticated ? { value: cookie } : undefined) },
       request: new Request(url, {
         method: body ? "POST" : "GET",
-        headers: { origin: url.origin, "Content-Type": "application/json" },
+        headers: {
+          origin: url.origin,
+          "Content-Type": "application/json",
+          ...(authenticated ? { cookie: `__Host-rack_studio=${cookie}` } : {}),
+        },
         body: body ? JSON.stringify(body) : undefined,
       }),
     };
@@ -294,41 +298,33 @@ try {
   assert.equal(status.ready, true);
   const published = await endpoint(context("publish", { revision }));
   assert.equal(published.status, 200);
-  const { page } = await import(
-    pathToFileURL(resolve(server, "pages/studio.astro.mjs"))
-  );
-  const container = await experimental_AstroContainer.create();
-  const html = await container.renderToString(page().default, {
-    request: new Request("https://the-rack.vercel.app/studio", {
-      headers: { cookie: `__Host-rack_studio=${cookie}` },
-    }),
-  });
+  const html = await (
+    await app.fetch(
+      new Request("https://the-rack.vercel.app/studio", {
+        headers: { cookie: `__Host-rack_studio=${cookie}` },
+      }),
+    )
+  ).text();
   assert.ok(html.includes('id="studio"'));
   assert.ok(html.includes('id="release-panel"'));
-  const { page: previewPage } = await import(
-    pathToFileURL(resolve(server, "pages/studio/preview.astro.mjs"))
-  );
-  const { renderers } = await import(
-    pathToFileURL(resolve(server, "renderers.mjs"))
-  );
-  const previewContainer = await experimental_AstroContainer.create({
-    renderers,
-    astroConfig: { site: "https://the-rack.vercel.app" },
-  });
+  for (const path of ["/_image", "/%5Fimage"]) {
+    assert.equal(
+      (await app.fetch(new Request("https://the-rack.vercel.app" + path)))
+        .status,
+      404,
+    );
+  }
   for (const collection of ["posts", "issues", "publications"]) {
     const entry = updated.entries.find(
       (e) =>
         e.collection === collection &&
         (collection !== "posts" || e.id === article.id),
     );
-    const result = await previewContainer.renderToResponse(
-      previewPage().default,
-      {
-        request: new Request(
-          `https://the-rack.vercel.app/studio/preview?collection=${collection}&id=${entry.id}`,
-          { headers: { cookie: `__Host-rack_studio=${cookie}` } },
-        ),
-      },
+    const result = await app.fetch(
+      new Request(
+        `https://the-rack.vercel.app/studio/preview?collection=${collection}&id=${entry.id}`,
+        { headers: { cookie: `__Host-rack_studio=${cookie}` } },
+      ),
     );
     const preview = await result.text();
     assert.equal(result.status, 200, preview.slice(0, 1000));
