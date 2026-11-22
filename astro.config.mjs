@@ -1,3 +1,4 @@
+import { unified } from "@astrojs/markdown-remark";
 import { mdxPolicy } from "./src/lib/studio/mdx-policy.ts";
 import mdx from "@astrojs/mdx";
 import sitemap from "@astrojs/sitemap";
@@ -7,10 +8,12 @@ import { defineConfig } from "astro/config";
 export default defineConfig({
   site: "https://the-rack.vercel.app",
   output: "static",
+  compressHTML: true,
   trailingSlash: "never",
   adapter: vercel(),
   integrations: [mdx({ remarkPlugins: [mdxPolicy] }), sitemap()],
   markdown: {
+    processor: unified(),
     shikiConfig: { theme: "github-dark" },
   },
   vite: {

@@ -40,7 +40,7 @@ export const entryInput = z
   .object({
     collection: z.enum(collections),
     id: slug,
-    data: z.record(z.unknown()),
+    data: z.record(z.string(), z.unknown()),
     body: z.string().max(1_000_000).default(""),
     revision: z.string(),
   })

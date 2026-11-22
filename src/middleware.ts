@@ -1,6 +1,6 @@
-import { defineMiddleware } from "astro:middleware";
-export const onRequest = defineMiddleware(async (context, next) => {
-  if (context.url.pathname === "/_image")
+import type { MiddlewareHandler } from "astro";
+export const onRequest: MiddlewareHandler = async (context, next) => {
+  if (context.routePattern === "/_image" || context.url.pathname === "/_image")
     return new Response("Not found", {
       status: 404,
       headers: { "Cache-Control": "no-store" },
@@ -17,4 +17,4 @@ export const onRequest = defineMiddleware(async (context, next) => {
     response.headers.set("X-Content-Type-Options", "nosniff");
   }
   return response;
-});
+};

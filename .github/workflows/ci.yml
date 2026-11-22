@@ -21,12 +21,18 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - name: Resolve image dependency lock
+      - name: Resolve maintained runtime dependencies
         run: |
           cp package-lock.json /tmp/rack-original-lock.json
           npm install --package-lock-only --ignore-scripts --legacy-peer-deps
+          npm audit fix --package-lock-only --ignore-scripts --legacy-peer-deps || true
           node -e 'const fs=require("fs");const before=JSON.parse(fs.readFileSync("/tmp/rack-original-lock.json"));const after=JSON.parse(fs.readFileSync("package-lock.json"));const changed=Object.fromEntries(Object.entries(after.packages).filter(([key,value])=>JSON.stringify(before.packages[key])!==JSON.stringify(value)));const removed=Object.keys(before.packages).filter(key=>!(key in after.packages));console.log("RACK_LOCK_UPDATE="+JSON.stringify({changed,removed}));'
       - run: npm ci
+      - name: Inspect remaining advisories
+        run: |
+          npm audit --json > /tmp/rack-audit.json || true
+          node -e 'const a=require("/tmp/rack-audit.json");console.log("RACK_AUDIT_UPDATE="+JSON.stringify({metadata:a.metadata,vulnerabilities:a.vulnerabilities}));'
+
       - name: Type and content check
         run: npm run check
       - name: Unit tests

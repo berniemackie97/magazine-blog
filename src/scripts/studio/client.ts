@@ -569,6 +569,8 @@ async function openEntry(entry: Entry, isNew = false): Promise<void> {
   } catch {
     /* Storage may be disabled by the browser. */
   }
+  $("editor-title").tabIndex = -1;
+  $("editor-title").focus();
   window.scrollTo({ top: 0 });
 }
 async function save(manual: boolean): Promise<boolean> {
