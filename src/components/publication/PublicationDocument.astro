@@ -1,0 +1,79 @@
+---
+import ArticleList from "../../components/articles/ArticleList.astro";
+import Newsprint from "../../components/paper/Newsprint.astro";
+import PinnedNote from "../../components/paper/PinnedNote.astro";
+import RackFrame from "../../components/rack/RackFrame.astro";
+import Shelf from "../../components/rack/Shelf.astro";
+import Awning from "../../components/site/Awning.astro";
+import Container from "../../components/site/Container.astro";
+import PageHero from "../../components/site/PageHero.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import type { PostListing } from "../../lib/content/listings";
+
+import type { Shelf as ShelfModel } from "../../lib/content/rack";
+import type { Publication } from "../../lib/content/types";
+import { urls } from "../../lib/urls";
+
+interface Props {
+  publication: Publication;
+  shelf: ShelfModel;
+  listings: PostListing[];
+  preview?: boolean;
+}
+const { publication, shelf, listings, preview = false } = Astro.props;
+---
+
+<BaseLayout
+  title={publication.name}
+  description={publication.description}
+  preview={preview}
+>
+  <Fragment slot="head">
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={publication.name}
+      href={urls.publicationFeed(publication.id)}
+    />
+  </Fragment>
+  <Awning />
+  <Container>
+    <PageHero title={publication.name} lede={publication.description}>
+      <PinnedNote tilt={-2}>
+        Get new issues the day they drop: <a
+          href={urls.publicationFeed(publication.id)}>RSS feed</a
+        >
+      </PinnedNote>
+    </PageHero>
+
+    <RackFrame>
+      <Shelf
+        id={publication.id}
+        label="The whole run"
+        note={publication.kicker}
+        tone="lemon"
+        items={shelf.items}
+      />
+    </RackFrame>
+
+    {
+      listings.length > 0 && (
+        <div class="articles">
+          <Newsprint
+            id="articles"
+            title={`${publication.name} articles`}
+            subtitle="Every story filed, newest first"
+          >
+            <ArticleList listings={listings} />
+          </Newsprint>
+        </div>
+      )
+    }
+  </Container>
+</BaseLayout>
+
+<style>
+  .articles {
+    margin-top: 72px;
+  }
+</style>

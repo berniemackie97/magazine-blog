@@ -26,6 +26,7 @@ test("writes, previews, edits, compares history, and deletes a draft", async ({
       .getByRole("button", { name: "Create draft", exact: true })
       .click();
     await page.locator('[name="headline"]').fill("Browser acceptance story");
+    await page.locator('[name="issue"]').selectOption("trail-circuits");
     await page
       .locator("#article-body")
       .fill(
@@ -42,6 +43,25 @@ test("writes, previews, edits, compares history, and deletes a draft", async ({
       }),
     ).toBeVisible();
     await expect(preview.getByText("A saved note.")).toBeVisible();
+    const backToIssue = preview.getByRole("link", {
+      name: /back to Trail Circuits contents/,
+    });
+    await expect(backToIssue).toHaveAttribute("href", /studio\/preview/);
+    await backToIssue.click();
+    await expect(
+      preview.getByRole("heading", { name: /Contents/ }),
+    ).toBeVisible();
+    const articleLink = preview.getByRole("link", {
+      name: /Browser acceptance story/,
+    });
+    await expect(articleLink).toHaveAttribute("href", /studio\/preview/);
+    await articleLink.click();
+    await expect(
+      preview.getByRole("heading", {
+        name: "Browser acceptance story",
+        exact: true,
+      }),
+    ).toBeVisible();
     await page.locator("#close-dialog").click();
     await page
       .locator('[name="headline"]')

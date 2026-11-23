@@ -65,3 +65,33 @@ export async function compilePreview(body: string) {
   // Astro's JSX renderer accepts the evaluated MDX component and registered Astro components.
   return { Content: result.default, headings };
 }
+
+export function publicationContext(entries: Entry[], publication: Publication) {
+  const issues = entries
+    .filter(
+      (e) => e.collection === "issues" && e.data.publication === publication.id,
+    )
+    .map(issueModel)
+    .sort((a, b) => b.date.localeCompare(a.date));
+  const posts = entries
+    .filter(
+      (e) => e.collection === "posts" && e.data.publication === publication.id,
+    )
+    .map(postModel)
+    .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
+  return {
+    shelf: {
+      publication,
+      items: issues.map((issue) => ({
+        issue,
+        publication,
+        posts: posts.filter((post) => post.issueSlug === issue.slug),
+      })),
+    },
+    listings: posts.map((post) => ({
+      post,
+      publication,
+      issueTitle: issues.find((issue) => issue.slug === post.issueSlug)?.title,
+    })),
+  };
+}

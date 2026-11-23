@@ -1,9 +1,7 @@
 ---
 import ArticleDocument from "../../components/article/ArticleDocument.astro";
 import IssueDocument from "../../components/issue/IssueDocument.astro";
-import PublicationCard from "../../components/publication/PublicationCard.astro";
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import Container from "../../components/site/Container.astro";
+import PublicationDocument from "../../components/publication/PublicationDocument.astro";
 import { mdxComponents } from "../../components/mdx";
 import { requireIdentity } from "../../lib/studio/auth";
 import { storeFor } from "../../lib/studio/service";
@@ -18,6 +16,7 @@ import {
   issueModel,
   postModel,
   publicationModel,
+  publicationContext,
 } from "../../lib/studio/preview";
 export const prerender = false;
 Astro.response.headers.set("Cache-Control", "private, no-store");
@@ -33,8 +32,15 @@ try {
   entries = library(snapshot).entries;
   entry = entries.find(
     (e) =>
-      e.id === Astro.url.searchParams.get("id") &&
-      e.collection === Astro.url.searchParams.get("collection"),
+      (e.id === Astro.url.searchParams.get("id") &&
+        e.collection === Astro.url.searchParams.get("collection")) ||
+      (Astro.url.searchParams.has("path") &&
+        Astro.url.searchParams.get("path") ===
+          (e.collection === "posts"
+            ? `/posts/${e.id}`
+            : e.collection === "issues"
+              ? `/issues/${e.data.publication}/${e.data.slug}`
+              : `/publications/${e.id}`)),
   );
   if (!entry)
     throw new StudioError(
@@ -95,6 +101,10 @@ if (post && entry) {
   }
 }
 const Content = compiled?.Content;
+const publicationData =
+  publication && entry?.collection === "publications"
+    ? publicationContext(entries, publication)
+    : undefined;
 ---
 
 {
@@ -136,44 +146,31 @@ const Content = compiled?.Content;
       posts={posts}
       preview
     />
-  ) : publication ? (
-    <BaseLayout
-      title={`${publication.name} preview`}
+  ) : publication && publicationData ? (
+    <PublicationDocument
       publication={publication}
+      {...publicationData}
       preview
-    >
-      <Container>
-        <PublicationCard
-          shelf={{
-            publication,
-            items: entries
-              .filter(
-                (e) =>
-                  e.collection === "issues" &&
-                  e.data.publication === publication.id,
-              )
-              .map((e) => {
-                const issue = issueModel(e);
-                return {
-                  issue,
-                  publication,
-                  posts: entries
-                    .filter(
-                      (p) =>
-                        p.collection === "posts" &&
-                        p.data.publication === publication.id &&
-                        p.data.issue === issue.slug,
-                    )
-                    .map(postModel),
-                };
-              }),
-          }}
-        />
-      </Container>
-    </BaseLayout>
+    />
   ) : null
 }
 <script>
+  const current = new URL(location.href);
+  for (const link of document.querySelectorAll<HTMLAnchorElement>("a[href]")) {
+    const target = new URL(link.href, current);
+    if (
+      target.origin !== current.origin ||
+      !/^\/(posts|issues|publications)\/[^/]+/.test(target.pathname) ||
+      target.pathname.endsWith("/rss.xml")
+    )
+      continue;
+    const preview = new URL("/studio/preview", current);
+    preview.searchParams.set("path", target.pathname);
+    const revision = current.searchParams.get("revision");
+    if (revision) preview.searchParams.set("revision", revision);
+    preview.hash = target.hash;
+    link.href = preview.href;
+  }
   // Draft media is served through the authenticated workspace, not the production asset directory.
   for (const image of document.querySelectorAll<HTMLImageElement>("img")) {
     const path = new URL(image.src).pathname;
