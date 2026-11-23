@@ -76,6 +76,8 @@ export function origin(
   context: Pick<APIContext, "url" | "clientAddress">,
 ): string {
   if (localAccess(context)) return context.url.origin;
+  if (process.env.CMS_ENABLED !== "true")
+    throw new StudioError(404, "Not found");
   const configuredOrigin = process.env.CMS_ORIGIN;
   if (!configuredOrigin || !/^https:\/\/[^/]+$/.test(configuredOrigin))
     throw new StudioError(

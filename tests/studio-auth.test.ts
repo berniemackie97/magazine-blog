@@ -1,5 +1,11 @@
 import { describe, expect, it, afterEach, vi } from "vitest";
-import { seal, unseal, identity, verifyOrigin } from "../src/lib/studio/auth";
+import {
+  seal,
+  unseal,
+  identity,
+  verifyOrigin,
+  localAccess,
+} from "../src/lib/studio/auth";
 import type { APIContext } from "astro";
 const valid = () => ({
   login: "berniemackie97",
@@ -24,6 +30,29 @@ function context(
 }
 afterEach(() => vi.unstubAllEnvs());
 describe("editor access", () => {
+  it("requires an explicit local launch and loopback hostname and client", () => {
+    const local = {
+      url: new URL("http://127.0.0.1:4321/studio"),
+      clientAddress: "127.0.0.1",
+    };
+    vi.stubEnv("RACK_STUDIO_LOCAL", "0");
+    expect(localAccess(local)).toBe(false);
+    vi.stubEnv("RACK_STUDIO_LOCAL", "1");
+    expect(localAccess(local)).toBe(true);
+    expect(localAccess({ ...local, clientAddress: "203.0.113.1" })).toBe(false);
+    expect(
+      localAccess({ ...local, url: new URL("http://example.test/studio") }),
+    ).toBe(false);
+  });
+  it("disables hosted access unless explicitly enabled, even with a valid session", () => {
+    vi.stubEnv(
+      "CMS_SESSION_SECRET",
+      "a-test-secret-at-least-32-characters-long",
+    );
+    vi.stubEnv("CMS_ORIGIN", "https://the-rack.vercel.app");
+    vi.stubEnv("CMS_ENABLED", "false");
+    expect(() => identity(context(seal(valid())))).toThrow("Not found");
+  });
   it("encrypts sessions and rejects tampering", () => {
     vi.stubEnv(
       "CMS_SESSION_SECRET",
@@ -42,6 +71,7 @@ describe("editor access", () => {
       "CMS_SESSION_SECRET",
       "a-test-secret-at-least-32-characters-long",
     );
+    vi.stubEnv("CMS_ENABLED", "true");
     vi.stubEnv("CMS_ORIGIN", "https://the-rack.vercel.app");
     expect(identity(context(seal({ ...valid(), expires: 0 })))).toBeUndefined();
     expect(
@@ -50,6 +80,7 @@ describe("editor access", () => {
     expect(identity(context(seal(valid())))?.login).toBe("berniemackie97");
   });
   it("rejects cross-origin writes and unconfigured hosting origins", () => {
+    vi.stubEnv("CMS_ENABLED", "true");
     vi.stubEnv("CMS_ORIGIN", "https://the-rack.vercel.app");
     expect(() =>
       verifyOrigin(context("", undefined, "https://evil.test")),

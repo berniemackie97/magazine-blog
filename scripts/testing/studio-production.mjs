@@ -34,6 +34,7 @@ let merged = false;
 const trees = new Map([[revision, tree]]);
 const commits = new Map();
 let verified = false;
+process.env.CMS_ENABLED = "true";
 process.env.CMS_ORIGIN = "https://the-rack.vercel.app";
 process.env.CMS_SESSION_SECRET =
   "production-integration-test-secret-at-least-32-chars";
@@ -219,6 +220,33 @@ try {
       }),
     };
   };
+  process.env.CMS_ENABLED = "false";
+  for (const path of [
+    "/studio",
+    "/studio/preview",
+    "/api/studio/library",
+    "/api/studio/auth/login",
+  ]) {
+    const hidden = await app.fetch(
+      new Request(`https://the-rack.vercel.app${path}`, {
+        headers: { cookie: `__Host-rack_studio=${cookie}` },
+      }),
+    );
+    assert.equal(hidden.status, 404, `Disabled Studio exposed ${path}`);
+    assert.equal(await hidden.text(), "Not found");
+  }
+  process.env.CMS_ENABLED = "true";
+  const anonymous = await app.fetch(
+    new Request("https://the-rack.vercel.app/studio"),
+  );
+  assert.equal(anonymous.status, 404);
+  assert.equal(await anonymous.text(), "Not found");
+  const alternate = await app.fetch(
+    new Request("https://preview.example/studio", {
+      headers: { cookie: `__Host-rack_studio=${cookie}` },
+    }),
+  );
+  assert.equal(alternate.status, 404);
   const denied = await endpoint(context("library", undefined, false));
   assert.equal(denied.status, 401);
   const initialResponse = await endpoint(context("library"));

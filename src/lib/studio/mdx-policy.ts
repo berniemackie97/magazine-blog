@@ -3,6 +3,7 @@ import { safeUrl } from "../content/links";
 export { safeUrl } from "../content/links";
 interface Node {
   type: string;
+  position?: { start: { line: number; column: number } };
   name?: string;
   value?: unknown;
   url?: string;
@@ -120,11 +121,15 @@ function literalValue(node: Node): unknown {
   throw new Error("Unsupported expression.");
 }
 
+function fail(node: Node, message: string): never {
+  throw Object.assign(new Error(message), node.position?.start);
+}
 export function mdxPolicy() {
   return (tree: Node): void => {
     function visit(node: Node): void {
       if (node.type === "mdxjsEsm")
-        throw new Error(
+        fail(
+          node,
           "Use the site's registered components; imports and exports are not supported in articles.",
         );
       if (
@@ -133,7 +138,8 @@ export function mdxPolicy() {
         node.type === "mdxJsxAttributeValueExpression"
       ) {
         if (!node.data?.estree || !literal(node.data.estree))
-          throw new Error(
+          fail(
+            node,
             "MDX expressions must contain literal values, arrays, or objects.",
           );
       }
@@ -142,7 +148,7 @@ export function mdxPolicy() {
         node.type === "mdxJsxTextElement"
       ) {
         if (node.name && !components.has(node.name) && !html.has(node.name))
-          throw new Error(`Unsupported component: ${node.name}.`);
+          fail(node, `Unsupported component: ${node.name}.`);
         for (const attr of node.attributes ?? []) {
           if (
             attr.type !== "mdxJsxAttribute" ||
@@ -157,12 +163,12 @@ export function mdxPolicy() {
             ].includes(attr.name) ||
             attr.name.includes(":")
           )
-            throw new Error("Executable MDX attributes are not supported.");
+            fail(node, "Executable MDX attributes are not supported.");
           if (
             ["href", "src", "poster", "action"].includes(attr.name) &&
             (typeof attr.value !== "string" || !safeUrl(attr.value))
           )
-            throw new Error("Use a safe, literal URL.");
+            fail(node, "Use a safe, literal URL.");
           if (attr.value && typeof attr.value === "object")
             visit(attr.value as Node);
         }
@@ -182,13 +188,14 @@ export function mdxPolicy() {
               node.name as keyof typeof componentSchemas
             ].safeParse(props);
           if (!result.success)
-            throw new Error(
+            fail(
+              node,
               `${node.name}: ${result.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ")}`,
             );
         }
       }
       if (node.url && !safeUrl(node.url))
-        throw new Error("Unsupported link or image URL.");
+        fail(node, "Unsupported link or image URL.");
       for (const child of node.children ?? []) visit(child);
     }
     visit(tree);

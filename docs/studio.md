@@ -28,6 +28,7 @@ Configure these **server-side** environment variables in Vercel and redeploy:
 
 | Variable                   | Value                                                                                 |
 | -------------------------- | ------------------------------------------------------------------------------------- |
+| `CMS_ENABLED`              | `true` to opt in to hosted editing; omitted or any other value returns 404            |
 | `CMS_ORIGIN`               | `https://the-rack.vercel.app` without a trailing slash                                |
 | `CMS_GITHUB_CLIENT_ID`     | The OAuth app's client ID                                                             |
 | `CMS_GITHUB_CLIENT_SECRET` | The OAuth app's client secret                                                         |
@@ -38,11 +39,11 @@ Configure these **server-side** environment variables in Vercel and redeploy:
 
 Never prefix secrets with `PUBLIC_` or commit them. Rotating `CMS_SESSION_SECRET` signs out every editor. Each permitted editor also needs GitHub write access to the repository. This OAuth setup requests `public_repo` and `read:user`; it supports this public repository. Keep allowed users limited to trusted content maintainers. Anyone authorized to edit source content can change what this site publishes.
 
-Sign-in uses a one-time OAuth state cookie with a ten-minute lifetime. GitHub tokens are encrypted into a host-only, Secure, HttpOnly, SameSite=Lax session cookie with an eight-hour lifetime. Tokens never enter browser JavaScript or local storage. Mutations require the configured Origin; authorization is checked on every API/preview request. Hosted Studio is disabled on other domains, including arbitrary Vercel preview domains. Sign out ends the Studio browser session; revoke the app in GitHub's authorized applications settings to revoke its GitHub access.
+Sign-in uses a one-time OAuth state cookie with a ten-minute lifetime. GitHub tokens are encrypted into a host-only, Secure, HttpOnly, SameSite=Lax session cookie with an eight-hour lifetime. Tokens never enter browser JavaScript or local storage. Mutations require the configured Origin; authorization is checked on every API/preview request. Hosted Studio is disabled by default. All editor, API, login, and preview routes return 404 unless `CMS_ENABLED=true` and the origin matches. Other domains, including arbitrary Vercel preview domains, remain disabled. The public site contains no Studio navigation; editor responses are uncached and marked noindex. Routes and source are visible in the public repository, so route obscurity is not an access control. Sign out ends the Studio browser session; revoke the app in GitHub's authorized applications settings to revoke its GitHub access.
 
 ### Hosted workflow
 
-1. Open `/studio` and sign in with GitHub.
+1. Bookmark `/api/studio/auth/login` to sign in with GitHub. Successful sign-in opens `/studio`. Anonymous visits to `/studio` and its preview return a plain 404 without the editor shell.
 2. Create or edit articles, publications, and issues. Saves commit only managed content or image files to `cms/editorial`.
 3. Preview saved content through the actual site components, including draft issues and articles.
 4. Use **Refresh** to merge production changes into the editorial branch. GitHub conflicts stop synchronization; resolve those on the branch before continuing.
@@ -58,7 +59,10 @@ The completion message distinguishes a merged/pushed release from a deployed sit
 
 - Slugs are stable file identifiers selected when creating content. Article URLs use their file identifier; issue URLs use publication + issue slug. Existing identifiers are not renamed through the editor.
 - Article templates cover features, columns, briefs, field notes, postmortems, and tool drops.
-- The editor preserves MDX source, offers standard formatting and component forms, and previews saved content. It is a source editor, not a rich-text document conversion layer.
+- CodeMirror provides Markdown/JSX and fenced-code highlighting, line numbers, folding, bracket matching and closing, two-space indentation, undo/redo, and find/replace. Component names and properties autocomplete from the shared component contracts. Use Ctrl + Space for suggestions; component snippets include editable placeholders. Tab indents and Shift + Tab outdents; Escape then Tab leaves the editor for keyboard navigation.
+- **Format** (Cmd/Ctrl + Shift + F) uses the MDX 3 parser and remark serializer, with Prettier for literal property arrays and objects, and creates an undoable edit. Comments remain MDX comments. The result is validated before replacing the document. Formatting refuses to replace writing that changed while it ran. It does not run automatically on save.
+- A background worker checks MDX syntax and the site's component rules after a short pause, showing errors inline. It never evaluates article expressions. Analysis results from earlier edits are discarded. Server validation remains authoritative for saving, content relationships, and publishing.
+- Component forms insert the site's magazine blocks without requiring their markup to be typed. Saved content previews through the actual site components.
 - All seven existing magazine components are available. Literal strings, numbers, booleans, arrays, and objects are supported in component props. Imports, exports, executable expressions, event attributes, spread props, and unsafe URLs are rejected in both CMS validation and site builds.
 - Component props share contracts with the Astro components. Invalid array/object shapes are rejected before they can break rendering.
 - Autosave waits for a valid document. While syntax or metadata is incomplete, browser recovery retains edits and the editor reports the validation error. Save failures never clear the recovery copy.

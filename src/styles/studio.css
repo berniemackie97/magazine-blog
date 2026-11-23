@@ -620,19 +620,70 @@ h3 {
   margin-left: auto;
 }
 #article-body {
-  display: block;
-  width: 100%;
-  border: 0;
-  resize: vertical;
+  min-width: 0;
+  background: #fff;
+}
+#article-body .cm-editor {
+  font-size: 13px;
+  outline-offset: -2px;
+}
+#article-body .cm-scroller {
   min-height: 440px;
-  padding: 28px 30px;
+  max-height: 72vh;
+  overflow: auto;
   font-family: "JetBrains Mono Variable", monospace;
-  font-size: 12px;
-  line-height: 1.95;
-  color: #38463d;
-  tab-size: 2;
-  outline-offset: -4px;
-  border-radius: 0;
+  line-height: 1.85;
+}
+#article-body .cm-content {
+  padding: 22px 0;
+  caret-color: var(--green);
+}
+#article-body .cm-line {
+  padding: 0 22px;
+}
+#article-body .cm-gutters {
+  background: #f7f9f4;
+  color: #778378;
+  border-right: 1px solid var(--line);
+}
+#article-body .cm-activeLine,
+#article-body .cm-activeLineGutter {
+  background: #eff4ec;
+}
+#article-body .cm-tooltip {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: #252b29;
+  border-radius: 6px;
+  overflow: hidden;
+}
+#article-body .cm-tooltip-autocomplete ul li[aria-selected] {
+  background: #1d5142;
+  color: #fff;
+}
+#article-body .cm-search {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px;
+}
+#article-body .cm-search input {
+  width: 180px;
+  min-width: 0;
+}
+#article-body .cm-search input[type="checkbox"] {
+  width: auto;
+}
+.editor-diagnostic {
+  padding: 10px 16px;
+  font-size: 11px;
+  color: var(--muted);
+  border-top: 1px solid var(--line);
+  overflow-wrap: anywhere;
+}
+.editor-diagnostic.error {
+  color: #a22e22;
+  background: #fff6f2;
 }
 .writing-footer {
   display: flex;
@@ -1078,9 +1129,11 @@ dialog h2 {
   .editor-heading h2 {
     font-size: 27px;
   }
-  #article-body {
-    padding: 20px;
+  #article-body .cm-editor {
     font-size: 12px;
+  }
+  #article-body .cm-line {
+    padding: 0 12px;
   }
   .word-count {
     padding: 5px;
