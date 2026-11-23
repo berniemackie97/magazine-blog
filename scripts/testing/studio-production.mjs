@@ -419,6 +419,25 @@ try {
       }),
     )
   ).text();
+  const redirected = await app.fetch(
+    new Request("https://the-rack.vercel.app/studio", {
+      headers: {
+        cookie: `__Host-rack_studio=${cookie}`,
+        "sec-fetch-site": "cross-site",
+        "sec-fetch-mode": "navigate",
+        "sec-fetch-dest": "document",
+      },
+    }),
+  );
+  assert.equal(
+    redirected.status,
+    200,
+    "The OAuth redirect must open the authenticated editor.",
+  );
+  const crossSiteApi = context("library");
+  crossSiteApi.request.headers.set("sec-fetch-site", "cross-site");
+  crossSiteApi.request.headers.set("sec-fetch-mode", "cors");
+  assert.equal((await endpoint(crossSiteApi)).status, 403);
   assert.ok(html.includes('id="studio"'));
   assert.ok(html.includes('id="release-panel"'));
   for (const path of ["/_image", "/%5Fimage"]) {
