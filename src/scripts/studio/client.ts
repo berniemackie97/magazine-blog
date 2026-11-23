@@ -22,6 +22,7 @@ interface Workspace extends Library {
   mode: "local" | "github";
   login: string;
   publishingBranch: string;
+  checkoutBranch?: string;
 }
 type View = Collection | "media" | "release";
 const $ = <T extends HTMLElement = HTMLElement>(id: string) =>
@@ -142,6 +143,10 @@ async function load(): Promise<void> {
   accept(data);
   $("connection").textContent =
     data.mode === "local" ? "● Local workspace" : "● Connected to GitHub";
+  $("publishing-context").textContent =
+    data.mode === "local"
+      ? "Local drafts. Saving here does not change the live site. Use the Release desk to validate and publish."
+      : "Editorial drafts. Saving here does not change the live site. Review and publish a release when ready.";
   renderList();
   input("new-entry").disabled = false;
   document
@@ -312,7 +317,9 @@ async function showView(next: View): Promise<void> {
     renderReleaseSummary();
     $("release-explanation").textContent =
       workspace.mode === "local"
-        ? `Runs checks, tests, and a production build before committing content and pushing to ${workspace.publishingBranch}.`
+        ? workspace.checkoutBranch !== workspace.publishingBranch
+          ? `Your drafts are saved locally. Publishing requires the ${workspace.publishingBranch} branch; this checkout is ${workspace.checkoutBranch || "detached"}. Save your work and switch to ${workspace.publishingBranch}, then restart Studio. No content has been published.`
+          : `Checks, tests, and builds the site, then commits content and pushes to ${workspace.publishingBranch}. Vercel deploys that push to the live site.`
         : `Opens a content release against ${workspace.publishingBranch}. Publishing stays blocked until validation passes.`;
     await refreshRelease();
   }
@@ -1066,7 +1073,12 @@ function renderRelease(value: Release): void {
   link.hidden = !value.url;
   if (value.url) link.href = value.url;
   $("publish-release").hidden = !value.ready;
-  input("submit-release").disabled = value.state === "running";
+  input("submit-release").disabled =
+    value.state === "running" ||
+    (workspace.mode === "local" &&
+      workspace.checkoutBranch !== workspace.publishingBranch);
+  $("submit-release").textContent =
+    workspace.mode === "local" ? "Publish to live site" : "Prepare release";
   clearTimeout(poll);
   if (value.state === "running" && view === "release")
     poll = setTimeout(() => void refreshRelease(), 8000);

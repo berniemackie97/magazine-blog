@@ -21,6 +21,7 @@ import {
 } from "./content";
 import {
   localReleaseStatus,
+  localPublishingBranch,
   startLocalRelease,
   submitRelease,
   remoteReleaseStatus,
@@ -118,6 +119,10 @@ export async function handle(context: APIContext): Promise<Response> {
         mode: user.local ? "local" : "github",
         login: user.login,
         publishingBranch: baseBranch(),
+        checkoutBranch:
+          store instanceof LocalStore
+            ? await localPublishingBranch(store)
+            : undefined,
       });
     if (action === "history") {
       const path = entryPath(

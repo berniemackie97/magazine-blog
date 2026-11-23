@@ -138,8 +138,18 @@ test("keeps the library and release controls usable on a narrow screen", async (
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
   ).toBe(true);
-  await page.locator('[data-view="release"]').click();
+  await page.locator('.studio-nav [data-view="release"]').click();
   await expect(page.locator("#validate")).toBeVisible();
+  await expect(page.locator("#publishing-context")).toContainText(
+    "does not change the live site",
+  );
+  const context = await (await page.request.get("/api/studio/library")).json();
+  if (context.checkoutBranch !== context.publishingBranch) {
+    await expect(page.locator("#submit-release")).toBeDisabled();
+    await expect(page.locator("#release-explanation")).toContainText(
+      "Publishing requires",
+    );
+  }
   await page.locator("#validate").click();
   await expect(page.locator("#notice")).toContainText(
     "Workspace validation passed",
@@ -308,6 +318,12 @@ test("completes magazine components, indents, searches, formats, and undoes", as
       "ResourceCard",
     );
     await expect(page.locator(".cm-lintRange-error")).toBeVisible();
+    await page.setViewportSize({ width: 390, height: 844 });
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
     await page.screenshot({
       path: "test-results/studio-source-editor.png",
       fullPage: true,

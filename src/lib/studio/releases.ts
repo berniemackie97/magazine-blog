@@ -28,6 +28,11 @@ const git = async (root: string, args: string[]) =>
       maxBuffer: 1_000_000,
     })
   ).stdout.trimEnd();
+export async function localPublishingBranch(
+  store: LocalStore,
+): Promise<string> {
+  return git(store.root, ["branch", "--show-current"]);
+}
 export function localReleaseStatus(): Release {
   return localRelease;
 }
@@ -45,7 +50,7 @@ export async function startLocalRelease(
       422,
       "Start Studio with npm run studio to enable local publishing.",
     );
-  const branch = await git(store.root, ["branch", "--show-current"]);
+  const branch = await localPublishingBranch(store);
   const target = baseBranch();
   if (branch !== target)
     throw new StudioError(

@@ -184,6 +184,19 @@ try {
     !publicHtml.includes("EDITORIAL STUDIO"),
     "Studio must not be rendered into public pages.",
   );
+  for (const file of await readdir(".vercel/output/static")) {
+    if (file.startsWith("sitemap") && file.endsWith(".xml")) {
+      const sitemap = await readFile(`.vercel/output/static/${file}`, "utf8");
+      assert.ok(
+        !sitemap.includes("/studio"),
+        "Studio must not appear in public sitemaps.",
+      );
+    }
+  }
+  assert.ok(
+    !/href=["'][^"']*\/studio(?:["'/?#])/.test(publicHtml),
+    "Public pages must not link to Studio.",
+  );
   const inlineScripts = [
     ...publicHtml.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi),
   ].filter(

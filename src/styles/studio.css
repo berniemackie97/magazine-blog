@@ -1229,3 +1229,27 @@ dialog h2 {
     grid-template-columns: 1fr;
   }
 }
+
+.publishing-context {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 20px;
+  margin: 0 36px 16px;
+  padding: 14px 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #edf3ed;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.publishing-context p {
+  margin: 0;
+  flex: 1 1 320px;
+}
+@media (max-width: 700px) {
+  .publishing-context {
+    margin-inline: 16px;
+  }
+}

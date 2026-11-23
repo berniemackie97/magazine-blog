@@ -1,0 +1,3 @@
+
+# Studio formats MDX 3; Prettier targets MDX 1.
+src/content/**/*.mdx

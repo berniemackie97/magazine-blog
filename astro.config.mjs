@@ -13,7 +13,13 @@ export default defineConfig({
   devToolbar: { enabled: process.env.RACK_STUDIO_LOCAL !== "1" },
   trailingSlash: "never",
   adapter: vercel(),
-  integrations: [mdx(), sitemap()],
+  integrations: [
+    mdx(),
+    sitemap({
+      filter: (page) =>
+        !/^\/(?:studio|api\/studio)(?:\/|$)/.test(new URL(page).pathname),
+    }),
+  ],
   markdown: {
     processor: unified({ remarkPlugins: [mdxPolicy] }),
     shikiConfig: { theme: "github-dark" },
