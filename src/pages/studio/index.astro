@@ -1,21 +1,11 @@
 ---
-import { identity, configured } from "../../lib/studio/auth";
+import { requireIdentity } from "../../lib/studio/auth";
 import Workspace from "../../components/studio/Workspace.astro";
-import SignIn from "../../components/studio/SignIn.astro";
 import "@fontsource-variable/dm-sans";
 import "@fontsource-variable/jetbrains-mono";
 import "../../styles/studio.css";
 export const prerender = false;
-let user;
-let accessError = "";
-try {
-  user = identity(Astro);
-} catch (error) {
-  accessError =
-    error instanceof Error
-      ? error.message
-      : "Studio is unavailable on this origin.";
-}
+const user = requireIdentity(Astro);
 ---
 
 <!doctype html>
@@ -30,13 +20,7 @@ try {
   </head>
   <body>
     <a class="studio-skip" href="#workspace">Skip to workspace</a>
-    {
-      user ? (
-        <Workspace user={user} />
-      ) : (
-        <SignIn error={accessError} configured={configured()} />
-      )
-    }
+    <Workspace user={user} />
     <dialog id="studio-dialog" aria-labelledby="dialog-title">
       <form id="dialog-form">
         <div class="section-heading">
@@ -44,14 +28,16 @@ try {
             type="button"
             id="close-dialog"
             class="text-button"
-            aria-label="Close dialog">✕</button>
+            aria-label="Close dialog">✕</button
+          >
         </div>
         <div id="dialog-body"></div>
         <div class="dialog-actions">
           <button type="button" id="cancel-dialog" class="button secondary"
             >Cancel</button
           ><button type="submit" id="dialog-submit" class="button primary"
-            >Insert block</button>
+            >Insert block</button
+          >
         </div>
       </form>
     </dialog>

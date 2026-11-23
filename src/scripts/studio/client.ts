@@ -1,3 +1,4 @@
+import { SourceEditor } from "./editor";
 import type {
   Collection,
   Entry,
@@ -49,6 +50,7 @@ const plural = {
   media: "Media library",
   release: "Release desk",
 };
+let sourceEditor: SourceEditor;
 let workspace: Workspace;
 let view: View = "posts";
 let current: Entry | undefined;
@@ -562,7 +564,7 @@ async function openEntry(entry: Entry, isNew = false): Promise<void> {
   $("history").hidden = isNew;
   $("delete-entry").hidden = isNew;
   renderFields();
-  $<HTMLTextAreaElement>("article-body").value = entry.body;
+  sourceEditor.load(entry.body);
   wordCount();
   status(isNew ? "New draft" : "All changes saved");
   notice("");
@@ -725,23 +727,12 @@ function createEntry(): void {
     );
 }
 function wordCount(): void {
-  const words = $<HTMLTextAreaElement>("article-body")
-    .value.trim()
-    .split(/\s+/)
-    .filter(Boolean).length;
+  const words = sourceEditor.value.trim().split(/\s+/).filter(Boolean).length;
   $("word-count").textContent =
     `${words.toLocaleString()} words · ${Math.max(1, Math.ceil(words / 200))} min`;
 }
 function insert(text: string, wrap?: string): void {
-  const body = $<HTMLTextAreaElement>("article-body");
-  const start = body.selectionStart;
-  const end = body.selectionEnd;
-  const selected = body.value.slice(start, end);
-  const inserted =
-    wrap !== undefined ? text + (selected || "text") + wrap : text;
-  body.setRangeText(inserted, start, end, "end");
-  body.focus();
-  body.dispatchEvent(new Event("input"));
+  sourceEditor.insert(text, wrap);
 }
 function attribute(value: unknown): string {
   return `"${String(value).replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")}"`;
@@ -1155,11 +1146,22 @@ function wire(): void {
     event.preventDefault();
     void save(true);
   });
-  $("article-body").addEventListener("input", () => {
-    if (current) current.body = $<HTMLTextAreaElement>("article-body").value;
-    changed();
-    wordCount();
-  });
+  sourceEditor = new SourceEditor(
+    $("article-body"),
+    (source) => {
+      if (current) current.body = source;
+      changed();
+      wordCount();
+    },
+    notice,
+  );
+  $("format-source").addEventListener(
+    "click",
+    () => void busy($("format-source"), () => sourceEditor.format()),
+  );
+  $("undo-source").addEventListener("click", () => sourceEditor.undo());
+  $("redo-source").addEventListener("click", () => sourceEditor.redo());
+  $("search-source").addEventListener("click", () => sourceEditor.search());
   $("recover").addEventListener("click", () => {
     if (!restored || !current) return;
     current.data = clone(restored.entry.data);
@@ -1168,7 +1170,7 @@ function wire(): void {
     manualRecovery = true;
     $("recovery").hidden = true;
     renderFields();
-    $<HTMLTextAreaElement>("article-body").value = current.body;
+    sourceEditor.load(current.body);
     wordCount();
     changed();
     notice("Recovered edits. Review them, then save.");

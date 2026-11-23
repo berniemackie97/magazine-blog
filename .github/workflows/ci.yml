@@ -21,6 +21,11 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - name: Resolve editor dependencies
+        run: |
+          cp package-lock.json /tmp/rack-original-lock.json
+          npm install --package-lock-only --ignore-scripts --legacy-peer-deps
+          node -e 'const fs=require("fs");const a=JSON.parse(fs.readFileSync("/tmp/rack-original-lock.json"));const b=JSON.parse(fs.readFileSync("package-lock.json"));console.log("RACK_LOCK_UPDATE="+JSON.stringify({changed:Object.fromEntries(Object.entries(b.packages).filter(([k,v])=>JSON.stringify(a.packages[k])!==JSON.stringify(v))),removed:Object.keys(a.packages).filter(k=>!(k in b.packages))}))'
       - run: npm ci
       - name: Dependency audit
         run: npm audit --audit-level=high

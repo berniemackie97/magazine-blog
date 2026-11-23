@@ -73,7 +73,8 @@ const { user } = Astro.props;
         ><button id="refresh" class="button secondary" type="button"
           >Refresh</button
         ><button id="new-entry" class="button primary" type="button"
-          >+ New article</button>
+          >+ New article</button
+        >
       </div>
     </header>
     <div id="notice" class="notice" role="status" hidden></div>
@@ -107,7 +108,8 @@ const { user } = Astro.props;
               ><option value="date">Newest first</option><option value="title"
                 >Title A–Z</option
               ></select
-            ></label>
+            ></label
+          >
         </div>
         <div id="entry-list" class="entry-list" aria-live="polite">
           <p class="empty-state">Loading your content…</p>
@@ -125,7 +127,8 @@ const { user } = Astro.props;
             ><button id="preview" class="button secondary" type="button"
               >Preview ↗</button
             ><button id="save" class="button primary" type="button"
-              >Save changes</button>
+              >Save changes</button
+            >
           </div>
         </div>
         <div id="recovery" class="recovery" hidden>
@@ -134,7 +137,8 @@ const { user } = Astro.props;
             id="recover"
             class="button secondary">Recover edits</button
           ><button type="button" id="discard-recovery" class="text-button"
-            >Discard recovery</button>
+            >Discard recovery</button
+          >
         </div>
         <form id="entry-form" novalidate>
           <div class="editor-heading">
@@ -164,19 +168,37 @@ const { user } = Astro.props;
                 class="toolbar-divider"></span><button
                 type="button"
                 id="insert-component">+ Content block</button
-              ><button type="button" id="insert-image">+ Image</button><span
-                id="word-count"
-                class="word-count">0 words</span>
+              ><button type="button" id="insert-image">+ Image</button>
+              <span class="toolbar-divider"></span>
+              <button type="button" id="undo-source" title="Undo (⌘ / Ctrl + Z)"
+                >Undo</button
+              >
+              <button
+                type="button"
+                id="redo-source"
+                title="Redo (⌘ / Ctrl + Shift + Z)">Redo</button
+              >
+              <button type="button" id="search-source">Find</button>
+              <button
+                type="button"
+                id="format-source"
+                title="Format document (⌘ / Ctrl + Shift + F)">Format</button
+              ><span id="word-count" class="word-count">0 words</span>
             </div>
-            <label for="article-body" class="visually-hidden"
-              >Article body in Markdown and MDX</label
-            ><textarea
-              id="article-body"
-              spellcheck="true"
-              placeholder="Start with something worth sharing…"></textarea>
-            <div class="writing-footer">
-              <span>Markdown + your magazine components</span><span
-                >⌘ / Ctrl + S to save</span>
+            <div id="article-body"></div>
+            <div class="writing-footer" id="source-help">
+              <span
+                >Tab to indent · Escape then Tab to leave · Ctrl + Space for
+                components</span
+              >
+              <span>⌘ / Ctrl + S to save</span>
+            </div>
+            <div
+              id="editor-diagnostic"
+              class="editor-diagnostic"
+              role="status"
+              aria-live="polite"
+            >
             </div>
           </section>
           <div id="issue-articles" class="issue-articles" hidden></div>
@@ -186,7 +208,8 @@ const { user } = Astro.props;
             </p><button
               id="delete-entry"
               class="text-button danger"
-              type="button">Delete entry</button>
+              type="button">Delete entry</button
+            >
           </div>
         </form>
       </section>
@@ -203,7 +226,8 @@ const { user } = Astro.props;
               accept="image/png,image/jpeg,image/webp"
               multiple
               hidden
-            /></label>
+            /></label
+          >
         </div><p class="muted">
           Up to 8 MB per image. Images are resized to at most 2400 pixels wide
           and saved as WebP.
@@ -225,7 +249,8 @@ const { user } = Astro.props;
               Validate article syntax, publication sections, and issue
               relationships.
             </p><button type="button" id="validate" class="button secondary"
-              >Validate workspace</button>
+              >Validate workspace</button
+            >
           </div><div class="release-card">
             <span class="eyebrow">02 / RELEASE</span><h3>
               Give this release a name
@@ -239,14 +264,16 @@ const { user } = Astro.props;
             ><p id="release-explanation"></p><button
               id="submit-release"
               type="button"
-              class="button primary">Prepare release</button>
+              class="button primary">Prepare release</button
+            >
           </div>
         </div><section class="release-status">
           <div class="section-heading">
             <h3>Release status</h3><button
               type="button"
               id="refresh-release"
-              class="text-button">Refresh status</button>
+              class="text-button">Refresh status</button
+            >
           </div><p id="release-message">No release submitted.</p><ul
             id="release-checks"
           >
@@ -260,13 +287,15 @@ const { user } = Astro.props;
             id="publish-release"
             class="button primary"
             type="button"
-            hidden>Publish reviewed release</button>
+            hidden>Publish reviewed release</button
+          >
         </section><div id="release-summary"></div>
       </section>
     </main>
     <footer class="studio-footer">
       <span>Made for The Rack.</span><span id="workspace-detail"
-        >Your words. Your files. Your publication.</span>
+        >Your words. Your files. Your publication.</span
+      >
     </footer>
   </div>
 </div>

@@ -28,10 +28,17 @@ test("writes, previews, edits, compares history, and deletes a draft", async ({
     await page.locator('[name="headline"]').fill("Browser acceptance story");
     await page.locator('[name="issue"]').selectOption("trail-circuits");
     await page
-      .locator("#article-body")
+      .locator("#article-body .cm-content")
       .fill(
         '## An actual draft\n\nA **formatted** paragraph.\n\n<Callout title="Verified">A saved note.</Callout>\n',
       );
+    await expect(page.locator("#editor-diagnostic")).toHaveText("MDX checked");
+    await expect(
+      page.locator("#article-body .cm-line span").first(),
+    ).toBeVisible();
+    await page.locator("#format-source").click();
+    await expect(page.locator("#notice")).toContainText("Document formatted");
+    await expect(page.locator("#editor-diagnostic")).toHaveText("MDX checked");
     await page.locator("#save").click();
     await expect(page.locator("#save-status")).toHaveText("All changes saved");
     await page.locator("#preview").click();
@@ -195,7 +202,10 @@ test("recovers interrupted edits without autosaving over a newer version", async
     ).toBe("Newer saved writing");
     await page.locator("#save").click();
     await expect(page.locator("#save-status")).toHaveText("All changes saved");
-    await page.locator("#article-body").fill("A broken <Callout");
+    await page.locator("#article-body .cm-content").fill("A broken <Callout");
+    await expect(page.locator("#editor-diagnostic")).not.toHaveText(
+      "MDX checked",
+    );
     await page.locator("#save").click();
     await expect(page.locator("#save-status")).toContainText("Not saved");
     await page.locator("#history").click();
@@ -224,5 +234,76 @@ test("recovers interrupted edits without autosaving over a newer version", async
       });
       expect(removed.ok()).toBe(true);
     }
+  }
+});
+
+test("completes magazine components, indents, searches, formats, and undoes", async ({
+  page,
+  request,
+}) => {
+  const headers = { Origin: "http://127.0.0.1:4322" };
+  const editorId = "studio-editor-acceptance";
+  const initial = await (await request.get("/api/studio/library")).json();
+  const source = initial.entries.find(
+    (entry: { collection: string }) => entry.collection === "posts",
+  );
+  const created = await request.post("/api/studio/create", {
+    headers,
+    data: {
+      ...source,
+      id: editorId,
+      revision: initial.revision,
+      data: { ...source.data, headline: "Editor acceptance", draft: true },
+      body: "",
+    },
+  });
+  expect(created.ok()).toBe(true);
+  try {
+    await page.goto("/studio");
+    await page.getByRole("button", { name: /Editor acceptance/ }).click();
+    const body = page.locator("#article-body .cm-content");
+    await body.fill("<Call");
+    await body.press("Control+Space");
+    await expect(page.getByRole("option", { name: /Callout/ })).toBeVisible();
+    await body.press("Enter");
+    await expect(body).toHaveText("<Callout");
+    await body.press("Space");
+    await body.press("Control+Space");
+    await expect(page.getByRole("option", { name: /title/ })).toBeVisible();
+    await body.press("Escape");
+    await body.fill('<Callout title="A note">A paragraph.</Callout>');
+    await page.locator("#format-source").click();
+    await expect(page.locator("#notice")).toContainText("Document formatted");
+    await expect(page.locator("#editor-diagnostic")).toHaveText("MDX checked");
+    await body.fill("A paragraph.");
+    await body.press("Home");
+    await body.press("Tab");
+    await expect(body).toHaveText("  A paragraph.");
+    await page.locator("#undo-source").click();
+    await expect(body).toHaveText("A paragraph.");
+    await page.locator("#redo-source").click();
+    await expect(body).toHaveText("  A paragraph.");
+    await page.locator("#search-source").click();
+    await expect(page.locator(".cm-search input[name=search]")).toBeVisible();
+    await body.fill(
+      '<ResourceCard title="Valid title" href="https://example.com" tone="invalid" />',
+    );
+    await expect(page.locator("#editor-diagnostic")).toContainText(
+      "ResourceCard",
+    );
+    await expect(page.locator(".cm-lintRange-error")).toBeVisible();
+    await page.screenshot({
+      path: "test-results/studio-source-editor.png",
+      fullPage: true,
+    });
+    await body.fill("A valid draft.");
+    await page.locator("#save").click();
+    await expect(page.locator("#save-status")).toHaveText("All changes saved");
+  } finally {
+    const latest = await (await request.get("/api/studio/library")).json();
+    await request.post("/api/studio/delete", {
+      headers,
+      data: { collection: "posts", id: editorId, revision: latest.revision },
+    });
   }
 });

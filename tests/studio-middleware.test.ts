@@ -1,7 +1,42 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi, afterEach } from "vitest";
 import { onRequest } from "../src/middleware";
 import type { APIContext } from "astro";
+afterEach(() => vi.unstubAllEnvs());
 describe("editorial response boundaries", () => {
+  it.each([
+    "/studio",
+    "/studio/preview",
+    "/api/studio/library",
+    "/api/studio/auth/login",
+  ])("hides disabled hosted routes at %s", async (path) => {
+    vi.stubEnv("CMS_ENABLED", "false");
+    const next = vi.fn(async () => new Response("private"));
+    const response = await onRequest(
+      {
+        url: new URL("https://example.test" + path),
+        clientAddress: "203.0.113.1",
+      } as APIContext,
+      next,
+    );
+    expect(response!.status).toBe(404);
+    expect(await response!.text()).toBe("Not found");
+    expect(next).not.toHaveBeenCalled();
+  });
+  it("hides the editor shell from anonymous visitors on the enabled origin", async () => {
+    vi.stubEnv("CMS_ENABLED", "true");
+    vi.stubEnv("CMS_ORIGIN", "https://example.test");
+    const next = vi.fn(async () => new Response("private"));
+    const response = await onRequest(
+      {
+        url: new URL("https://example.test/studio"),
+        clientAddress: "203.0.113.1",
+        cookies: { get: () => undefined },
+      } as unknown as APIContext,
+      next,
+    );
+    expect(response!.status).toBe(404);
+    expect(next).not.toHaveBeenCalled();
+  });
   it.each(["/_image", "/%5Fimage"])(
     "disables the unused image transformer at %s",
     async (path) => {
