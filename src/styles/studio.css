@@ -1129,9 +1129,11 @@ dialog h2 {
   .editor-heading h2 {
     font-size: 27px;
   }
-  #article-body {
-    padding: 20px;
+  #article-body .cm-editor {
     font-size: 12px;
+  }
+  #article-body .cm-line {
+    padding: 0 12px;
   }
   .word-count {
     padding: 5px;

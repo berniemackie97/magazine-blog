@@ -5,7 +5,7 @@ import { indentWithTab, undo, redo } from "@codemirror/commands";
 import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
 import { javascript } from "@codemirror/lang-javascript";
 import { languages } from "@codemirror/language-data";
-import { indentUnit } from "@codemirror/language";
+import { indentUnit, syntaxTree } from "@codemirror/language";
 import {
   autocompletion,
   type CompletionContext,
@@ -17,6 +17,13 @@ import { componentSchemas } from "../../lib/content/component-schema";
 import { blocks } from "./fields";
 
 function complete(context: CompletionContext) {
+  for (
+    let node = syntaxTree(context.state).resolveInner(context.pos, -1);
+    node;
+    node = node.parent!
+  ) {
+    if (/^(FencedCode|CodeBlock)$/.test(node.name)) return null;
+  }
   const tag = context.matchBefore(/<\/?[A-Z][\w]*$/);
   if (tag)
     return {
@@ -66,6 +73,7 @@ function complete(context: CompletionContext) {
 
 interface Result {
   id: number;
+  ready?: boolean;
   source?: string;
   error?: string;
   line?: number;
@@ -79,6 +87,13 @@ export class SourceEditor {
     { type: "module" },
   );
   private readonly pending = new Map<number, (result: Result) => void>();
+  private ready = false;
+  private readonly queue: {
+    id: number;
+    action: "lint" | "format";
+    source: string;
+  }[] = [];
+  private failed = false;
   private serial = 0;
   private timer?: ReturnType<typeof setTimeout>;
   private documentVersion = 0;
@@ -129,10 +144,18 @@ export class SourceEditor {
       state: EditorState.create({ extensions: this.extensions }),
     });
     this.worker.onmessage = ({ data }: MessageEvent<Result>) => {
+      if (data.ready) {
+        this.ready = true;
+        for (const message of this.queue.splice(0))
+          this.worker.postMessage(message);
+        return;
+      }
       this.pending.get(data.id)?.(data);
       this.pending.delete(data.id);
     };
     this.worker.onerror = () => {
+      this.failed = true;
+      this.queue.length = 0;
       for (const [id, resolve] of this.pending)
         resolve({
           id,
@@ -178,9 +201,17 @@ export class SourceEditor {
   }
   private request(action: "lint" | "format", source: string): Promise<Result> {
     const id = ++this.serial;
+    if (this.failed)
+      return Promise.resolve({
+        id,
+        error:
+          "Editor analysis is unavailable. Reload Studio to restart it. Your writing is preserved.",
+      });
     return new Promise((resolve) => {
       this.pending.set(id, resolve);
-      this.worker.postMessage({ id, action, source });
+      const message = { id, action, source };
+      if (this.ready) this.worker.postMessage(message);
+      else this.queue.push(message);
     });
   }
   private scheduleLint(): void {

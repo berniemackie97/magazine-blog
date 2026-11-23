@@ -43,3 +43,5 @@ self.onmessage = async ({
     });
   }
 };
+
+self.postMessage({ ready: true });

@@ -7,6 +7,9 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
       headers: { "Cache-Control": "no-store" },
     });
   const privateRoute =
+    context.routePattern === "/studio" ||
+    context.routePattern?.startsWith("/studio/") ||
+    context.routePattern?.startsWith("/api/studio/") ||
     context.url.pathname === "/studio" ||
     context.url.pathname.startsWith("/studio/") ||
     context.url.pathname === "/api/studio" ||
@@ -35,11 +38,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
       });
   }
   const response = await next();
-  if (
-    context.url.pathname === "/studio" ||
-    context.url.pathname.startsWith("/studio/") ||
-    context.url.pathname.startsWith("/api/studio/")
-  ) {
+  if (privateRoute) {
     response.headers.set("Cache-Control", "private, no-store");
     response.headers.set("X-Robots-Tag", "noindex, nofollow");
     response.headers.set("Referrer-Policy", "no-referrer");

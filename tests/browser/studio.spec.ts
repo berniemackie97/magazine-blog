@@ -1,5 +1,21 @@
 import { expect, test } from "@playwright/test";
 const id = "studio-browser-acceptance";
+test.beforeEach(({ page }) => {
+  page.on("pageerror", (error) =>
+    console.error("BROWSER_PAGE_ERROR", error.message),
+  );
+  page.on("console", (message) => {
+    if (message.type() === "error")
+      console.error("BROWSER_CONSOLE_ERROR", message.text());
+  });
+  page.on("requestfailed", (request) =>
+    console.error(
+      "BROWSER_REQUEST_FAILED",
+      request.url(),
+      request.failure()?.errorText,
+    ),
+  );
+});
 test("writes, previews, edits, compares history, and deletes a draft", async ({
   page,
   request,
@@ -265,7 +281,7 @@ test("completes magazine components, indents, searches, formats, and undoes", as
     await body.fill("<Call");
     await body.press("Control+Space");
     await expect(page.getByRole("option", { name: /Callout/ })).toBeVisible();
-    await body.press("Enter");
+    await page.getByRole("option", { name: /Callout/ }).click();
     await expect(body).toHaveText("<Callout");
     await body.press("Space");
     await body.press("Control+Space");
