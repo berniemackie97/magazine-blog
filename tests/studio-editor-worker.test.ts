@@ -45,6 +45,18 @@ describe("article analysis worker", () => {
       ).toBeUndefined();
     }
   });
+  it("formats property arrays and preserves MDX comments", async () => {
+    const result = await processDocument(
+      "format",
+      '{/* A private editorial comment. */}\n\n<Callout title="Checklist" items={["One","Two"]} />',
+    );
+    expect(result.error).toBeUndefined();
+    expect(result.source).toContain("{/* A private editorial comment. */}");
+    expect(result.source).toMatch(/items=\{\["One", "Two"\]\}/);
+    expect(
+      (await processDocument("lint", result.source!)).error,
+    ).toBeUndefined();
+  });
   it("reports component errors on their actual source line", async () => {
     const result = await processDocument(
       "lint",

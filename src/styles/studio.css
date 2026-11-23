@@ -653,7 +653,7 @@ h3 {
 #article-body .cm-tooltip {
   border: 1px solid var(--line);
   background: #fff;
-  color: var(--ink);
+  color: #252b29;
   border-radius: 6px;
   overflow: hidden;
 }
