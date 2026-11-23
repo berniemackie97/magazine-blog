@@ -1,15 +1,27 @@
 {
-  "name": "Red Ops Review",
+  "name": "Conquer Online",
   "description": "Reverse engineering and offensive tooling, in print-inspired form.",
   "kicker": "reverse engineering",
   "accent": "#ff6b6b",
   "paperAccent": "#b8361f",
   "featured": true,
   "sections": [
-    { "id": "tools", "label": "Tools" },
-    { "id": "dev", "label": "Development" },
-    { "id": "sec", "label": "Security" },
-    { "id": "lab", "label": "Lab Notes" }
+    {
+      "id": "tools",
+      "label": "Tools"
+    },
+    {
+      "id": "dev",
+      "label": "Development"
+    },
+    {
+      "id": "sec",
+      "label": "Security"
+    },
+    {
+      "id": "lab",
+      "label": "Lab Notes"
+    }
   ],
   "cover": {
     "template": "tech-mono",
