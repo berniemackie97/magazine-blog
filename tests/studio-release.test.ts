@@ -7,6 +7,7 @@ import { join } from "node:path";
 import { LocalStore } from "../src/lib/studio/store";
 import {
   localReleaseStatus,
+  localPublishingBranch,
   startLocalRelease,
 } from "../src/lib/studio/releases";
 const execute = promisify(execFile);
@@ -86,6 +87,7 @@ describe("local publishing", () => {
   it("refuses to publish from a feature branch", async () => {
     await git("switch", "-c", "feature/test");
     const store = new LocalStore(root);
+    expect(await localPublishingBranch(store)).toBe("feature/test");
     await expect(
       startLocalRelease(
         store,

@@ -43,8 +43,10 @@ const { user } = Astro.props;
       >
     </nav>
     <div class="sidebar-bottom">
-      <a href="/" target="_blank" rel="noopener noreferrer"
-        >Visit the newsstand ↗</a
+      <a
+        href="https://the-rack.vercel.app/"
+        target="_blank"
+        rel="noopener noreferrer">Visit the newsstand ↗</a
       ><div class="identity">
         <span class="avatar">{user.login.slice(0, 1).toUpperCase()}</span><span
           >{user.login}<small
@@ -77,6 +79,12 @@ const { user } = Astro.props;
         >
       </div>
     </header>
+    <div class="publishing-context">
+      <p id="publishing-context">Loading publishing information…</p>
+      <button type="button" data-view="release" class="text-button"
+        >Open release desk →</button
+      >
+    </div>
     <div id="notice" class="notice" role="status" hidden></div>
     <main id="workspace" tabindex="-1">
       <section id="listing" aria-label="Content library">
