@@ -282,10 +282,9 @@ const { user } = Astro.props;
               id="refresh-release"
               class="text-button">Refresh status</button
             >
-          </div><p id="release-message">No release submitted.</p><ul
-            id="release-checks"
-          >
-          </ul><a
+          </div><p id="release-message" role="status" aria-live="polite">
+            No release submitted.
+          </p><ul id="release-checks"></ul><a
             id="release-link"
             class="button secondary"
             target="_blank"

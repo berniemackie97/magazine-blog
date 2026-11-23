@@ -66,6 +66,14 @@ test("writes, previews, edits, compares history, and deletes a draft", async ({
       }),
     ).toBeVisible();
     await expect(preview.getByText("A saved note.")).toBeVisible();
+    const frameBounds = await page
+      .locator('iframe[title="Content preview"]')
+      .boundingBox();
+    const dialogBounds = await page.locator("#studio-dialog").boundingBox();
+    expect(frameBounds!.height).toBeGreaterThan(dialogBounds!.height * 0.65);
+    await expect(
+      page.getByRole("link", { name: "Open full page" }),
+    ).toHaveAttribute("target", "_blank");
     const backToIssue = preview.getByRole("link", {
       name: /back to Trail Circuits contents/,
     });
@@ -86,6 +94,7 @@ test("writes, previews, edits, compares history, and deletes a draft", async ({
       }),
     ).toBeVisible();
     await page.locator("#close-dialog").click();
+    await expect(page.locator("#studio-dialog")).not.toBeVisible();
     await page
       .locator('[name="headline"]')
       .fill("Revised browser acceptance story");
@@ -358,4 +367,112 @@ test("keeps draft editing available when publishing cannot read Git", async ({
   await page.locator('.studio-nav [data-view="posts"]').click();
   await page.locator(".entry-card").first().click();
   await expect(page.locator("#article-body .cm-content")).toBeEditable();
+});
+
+test("confirms hosted releases, reports failures, and publishes the reviewed SHA", async ({
+  page,
+  request,
+}) => {
+  const initial = await (await request.get("/api/studio/library")).json();
+  await page.route("**/api/studio/library", (route) =>
+    route.fulfill({
+      json: {
+        ...initial,
+        mode: "github",
+        login: "acceptance-editor",
+        publishingBranch: "main",
+      },
+    }),
+  );
+  let attempts = 0;
+  let prepared = false;
+  let ready = false;
+  let finishPrepare: (() => void) | undefined;
+  const sha = "a".repeat(40);
+  await page.route("**/api/studio/release", async (route) => {
+    if (route.request().method() === "POST") {
+      attempts++;
+      expect(route.request().postDataJSON().revision).toBe(initial.revision);
+      if (attempts === 1) {
+        await new Promise<void>((resolve) => {
+          finishPrepare = resolve;
+        });
+        await route.fulfill({
+          status: 503,
+          json: {
+            error: "GitHub is temporarily unavailable. Retry the release.",
+          },
+        });
+        return;
+      }
+      prepared = true;
+    }
+    await route.fulfill({
+      json: prepared
+        ? {
+            state: "running",
+            stage: ready
+              ? "Checks passed. Review then publish."
+              : "Waiting for checks.",
+            number: 99,
+            sha,
+            ready,
+            url: "https://github.com/berniemackie97/magazine-blog/pull/99",
+          }
+        : { state: "idle", stage: "No release submitted." },
+    });
+  });
+  let published = false;
+  await page.route("**/api/studio/publish", async (route) => {
+    expect(route.request().postDataJSON()).toEqual({ revision: sha });
+    published = true;
+    await route.fulfill({
+      json: {
+        state: "complete",
+        stage: "Release merged. Deployment is starting.",
+        sha,
+      },
+    });
+  });
+  await page.goto("/studio");
+  await page.locator('.studio-nav [data-view="release"]').click();
+  await page.locator("#submit-release").click();
+  await expect(
+    page.getByRole("heading", { name: "Prepare this release?" }),
+  ).toBeVisible();
+  expect(attempts).toBe(0);
+  await page.locator("#dialog-submit").click();
+  await expect(page.locator("#submit-release")).toBeDisabled();
+  await expect(page.locator("#submit-release")).toHaveText(
+    "Preparing release…",
+  );
+  await expect(page.locator("#release-message")).toContainText(
+    "Validating and preparing",
+  );
+  await expect.poll(() => !!finishPrepare).toBe(true);
+  finishPrepare!();
+  await expect(page.locator("#release-message")).toContainText(
+    "GitHub is temporarily unavailable",
+  );
+  await expect(page.locator("#submit-release")).toBeEnabled();
+  await page.locator("#submit-release").click();
+  await page.locator("#dialog-submit").click();
+  await expect(page.locator("#release-message")).toHaveText(
+    "Waiting for checks.",
+  );
+  await expect(page.locator("#submit-release")).toBeDisabled();
+  ready = true;
+  await page.locator("#refresh-release").click();
+  await expect(page.locator("#publish-release")).toBeVisible();
+  await page.locator("#publish-release").click();
+  await expect(
+    page.getByRole("heading", { name: "Publish the reviewed release?" }),
+  ).toBeVisible();
+  expect(published).toBe(false);
+  await page.locator("#dialog-submit").click();
+  await expect(page.locator("#release-message")).toContainText(
+    "Release merged",
+  );
+  expect(published).toBe(true);
+  await expect(page.locator("#studio-dialog")).not.toBeVisible();
 });

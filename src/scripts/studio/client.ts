@@ -62,6 +62,8 @@ let generation = 0;
 let saving: Promise<boolean> | undefined;
 let autosave: ReturnType<typeof setTimeout> | undefined;
 let release: Release | undefined;
+let releaseAction = false;
+let releaseEpoch = 0;
 let poll: ReturnType<typeof setTimeout> | undefined;
 let restored: { entry: Entry; saved: number } | undefined;
 const dialog = $<HTMLDialogElement>("studio-dialog");
@@ -1055,10 +1057,24 @@ async function preview(): Promise<void> {
   const url = `/studio/preview?collection=${current.collection}&id=${encodeURIComponent(current.id)}&revision=${workspace.revision}`;
   modal("Saved content preview", "", undefined);
   dialog.classList.add("preview-dialog");
+  const tools = el("div", undefined, "preview-tools");
+  const state = el("span", "Loading saved preview…");
+  state.setAttribute("role", "status");
+  const fullPage = el("a", "Open full page ↗", "button secondary");
+  fullPage.href = url;
+  fullPage.target = "_blank";
+  fullPage.rel = "noopener noreferrer";
+  tools.append(state, fullPage);
   const frame = el("iframe");
-  frame.src = url;
   frame.title = "Content preview";
-  $("dialog-body").append(frame);
+  frame.addEventListener("load", () => {
+    state.textContent =
+      frame.contentDocument?.title === "Preview unavailable"
+        ? "Preview unavailable. Open the full page to read the error."
+        : "Saved preview · not published";
+  });
+  frame.src = url;
+  $("dialog-body").append(tools, frame);
 }
 function renderReleaseSummary(): void {
   const node = $("release-summary");
@@ -1085,21 +1101,85 @@ function renderRelease(value: Release): void {
   if (value.url) link.href = value.url;
   $("publish-release").hidden = !value.ready;
   input("submit-release").disabled =
+    releaseAction ||
     value.state === "running" ||
     (workspace.mode === "local" &&
       workspace.checkoutBranch !== workspace.publishingBranch);
-  $("submit-release").textContent =
-    workspace.mode === "local" ? "Publish to live site" : "Prepare release";
+  $("submit-release").textContent = releaseAction
+    ? "Preparing release…"
+    : workspace.mode === "local"
+      ? "Publish to live site"
+      : "Prepare release";
   clearTimeout(poll);
-  if (value.state === "running" && view === "release")
+  if (value.state === "running" && view === "release" && !releaseAction)
     poll = setTimeout(() => void refreshRelease(), 8000);
 }
 async function refreshRelease(): Promise<void> {
+  const epoch = releaseEpoch;
   try {
-    renderRelease(await api<Release>("release"));
+    const value = await api<Release>("release");
+    if (epoch === releaseEpoch && !releaseAction) renderRelease(value);
   } catch (error) {
     failure(error);
   }
+}
+async function performRelease(action: "release" | "publish"): Promise<void> {
+  if (releaseAction) return;
+  releaseAction = true;
+  releaseEpoch++;
+  notice("");
+  const payload =
+    action === "publish"
+      ? { revision: release?.sha }
+      : { revision: workspace.revision, title: input("release-title").value };
+  renderRelease({
+    state: "running",
+    stage:
+      action === "publish"
+        ? "Publishing the reviewed release…"
+        : "Validating and preparing the release…",
+  });
+  try {
+    const result = await api<Release>(action, payload);
+    renderRelease(result);
+    if (action === "publish") await load();
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "The release failed. Your saved content is retained.";
+    renderRelease({ state: "failed", stage: message });
+    failure(error);
+  } finally {
+    releaseAction = false;
+    renderRelease(release!);
+  }
+}
+function confirmRelease(action: "release" | "publish"): void {
+  if (releaseAction) return;
+  const local = workspace.mode === "local";
+  modal(
+    action === "publish"
+      ? "Publish the reviewed release?"
+      : local
+        ? "Publish content to the live site?"
+        : "Prepare this release?",
+    action === "publish" || local ? "Publish release" : "Prepare release",
+    async () => {
+      dialog.close();
+      await performRelease(action);
+    },
+  );
+  $("dialog-body").append(
+    el(
+      "p",
+      action === "publish"
+        ? "This merges the checked editorial release. Vercel then builds and deploys it. Articles and issues marked as drafts remain unpublished."
+        : local
+          ? "Studio will check the workspace, run tests and a production build, then commit and push your content. Vercel deploys the release."
+          : "Studio will validate the saved workspace and open a release for review. Preparing a release does not publish it. Drafts remain unpublished.",
+    ),
+  );
 }
 async function refresh(): Promise<void> {
   if (!workspace) {
@@ -1271,6 +1351,13 @@ function wire(): void {
         upload.value = "";
       });
   });
+  dialog.addEventListener("close", () => {
+    if (!dialog.open) {
+      dialog.classList.remove("preview-dialog", "compare-dialog");
+      $("dialog-body").replaceChildren();
+      dialogSubmit = undefined;
+    }
+  });
   for (const id of ["close-dialog", "cancel-dialog"])
     $(id).addEventListener("click", () => dialog.close());
   $("dialog-form").addEventListener("submit", (event) => {
@@ -1289,40 +1376,16 @@ function wire(): void {
         );
       }),
   );
-  $("submit-release").addEventListener("click", () => {
-    if (
-      !confirm(
-        workspace.mode === "local"
-          ? `Validate, commit, and push this content to ${workspace.publishingBranch}?`
-          : "Submit the complete editorial workspace for review?",
-      )
-    )
-      return;
-    void busy($("submit-release"), async () =>
-      renderRelease(
-        await api<Release>("release", {
-          revision: workspace.revision,
-          title: input("release-title").value,
-        }),
-      ),
-    );
-  });
+  $("submit-release").addEventListener("click", () =>
+    confirmRelease("release"),
+  );
   $("refresh-release").addEventListener(
     "click",
     () => void busy($("refresh-release"), refreshRelease),
   );
-  $("publish-release").addEventListener("click", () => {
-    if (
-      !confirm(
-        "Publish the reviewed release? This merges its content into the production branch.",
-      )
-    )
-      return;
-    void busy($("publish-release"), async () => {
-      renderRelease(await api<Release>("publish", { revision: release?.sha }));
-      await load();
-    });
-  });
+  $("publish-release").addEventListener("click", () =>
+    confirmRelease("publish"),
+  );
   document.addEventListener("keydown", (event) => {
     if (
       (event.metaKey || event.ctrlKey) &&
