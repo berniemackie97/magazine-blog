@@ -8,7 +8,7 @@ import {
   StudioError,
 } from "./content";
 import { GitHubStore, LocalStore } from "./store";
-import { baseBranch, editorialBranch } from "./github";
+import { baseBranch, editorialBranch, repository } from "./github";
 const execute = promisify(execFile);
 export interface Release {
   state: "idle" | "running" | "failed" | "complete";
@@ -187,15 +187,25 @@ export async function startLocalRelease(
 interface Pull {
   number: number;
   html_url: string;
-  head: { sha: string };
+  head: { sha: string; ref: string; repo: { full_name: string } | null };
+  base: { ref: string; repo: { full_name: string } | null };
   mergeable: boolean | null;
   mergeable_state: string;
 }
+function isEditorialPull(pull: Pull): boolean {
+  const repo = repository().toLowerCase();
+  return (
+    pull.head.ref === editorialBranch &&
+    pull.base.ref === baseBranch() &&
+    pull.head.repo?.full_name.toLowerCase() === repo &&
+    pull.base.repo?.full_name.toLowerCase() === repo
+  );
+}
 async function currentPull(store: GitHubStore): Promise<Pull | undefined> {
   const rows = await store.github.repo<Pull[]>(
-    `/pulls?state=open&base=${encodeURIComponent(baseBranch())}&head=${encodeURIComponent(editorialBranch)}`,
+    `/pulls?state=open&base=${encodeURIComponent(baseBranch())}&head=${encodeURIComponent(`${repository().split("/")[0]}:${editorialBranch}`)}`,
   );
-  return rows[0];
+  return rows.find(isEditorialPull);
 }
 export async function submitRelease(
   store: GitHubStore,
@@ -214,6 +224,11 @@ export async function submitRelease(
         body: "Content release prepared in The Rack Studio.\n\nReview the article and issue changes and the private Studio previews before publishing.",
       }),
     });
+  if (!isEditorialPull(pull))
+    throw new StudioError(
+      409,
+      "The release does not match the editorial repository and publishing branch.",
+    );
   return {
     state: "running",
     stage:
@@ -229,6 +244,11 @@ export async function remoteReleaseStatus(
   const open = await currentPull(store);
   if (!open) return { state: "idle", stage: "No release submitted." };
   const pull = await store.github.repo<Pull>(`/pulls/${open.number}`);
+  if (!isEditorialPull(pull))
+    throw new StudioError(
+      409,
+      "The release target changed. Prepare a release against the configured publishing branch.",
+    );
   const checks = await store.github.repo<{
     total_count: number;
     check_runs: {

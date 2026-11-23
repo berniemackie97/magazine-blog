@@ -34,6 +34,8 @@ let merged = false;
 const trees = new Map([[revision, tree]]);
 const commits = new Map();
 let verified = false;
+let editorialPullOpen = false;
+let releaseRetargeted = false;
 process.env.CMS_ENABLED = "true";
 process.env.CMS_ORIGIN = "https://the-rack.vercel.app";
 process.env.CMS_SESSION_SECRET =
@@ -155,21 +157,42 @@ globalThis.fetch = async (input, init = {}) => {
     tree = trees.get(commit.tree);
     return Response.json({ object: { sha: revision } });
   }
-  if (path === "/pulls")
+  const editorialPull = {
+    number: 1,
+    html_url: "https://github.com/berniemackie97/magazine-blog/pull/1",
+    head: {
+      sha: revision,
+      ref: "cms/editorial",
+      repo: { full_name: "berniemackie97/magazine-blog" },
+    },
+    base: { ref: "main", repo: { full_name: "berniemackie97/magazine-blog" } },
+    mergeable: true,
+    mergeable_state: "clean",
+  };
+  if (path === "/pulls") {
+    if (init.method === "POST") {
+      assert.equal(body.head, "cms/editorial");
+      assert.equal(body.base, "main");
+      editorialPullOpen = true;
+      return Response.json(editorialPull);
+    }
+    assert.equal(url.searchParams.get("head"), "berniemackie97:cms/editorial");
     return Response.json([
       {
-        number: 1,
-        html_url: "https://github.com/berniemackie97/magazine-blog/pull/1",
-        head: { sha: revision },
+        ...editorialPull,
+        number: 99,
+        head: { ...editorialPull.head, ref: "feature/application" },
       },
+      ...(editorialPullOpen ? [editorialPull] : []),
     ]);
+  }
   if (path === "/pulls/1")
     return Response.json({
-      number: 1,
-      html_url: "https://github.com/berniemackie97/magazine-blog/pull/1",
-      head: { sha: revision },
-      mergeable: true,
-      mergeable_state: "clean",
+      ...editorialPull,
+      base: {
+        ...editorialPull.base,
+        ref: releaseRetargeted ? "feature/other" : "main",
+      },
     });
   if (path === "/pulls/1/merge") {
     merged = true;
@@ -367,9 +390,24 @@ try {
     context("delete-media", { path: uploaded.path, revision }),
   );
   assert.equal(deletedImage.status, 200);
+  const prepared = await endpoint(
+    context("release", { revision, title: "Checked production release" }),
+  );
+  assert.equal(prepared.status, 200);
+  assert.equal(
+    (await prepared.json()).number,
+    1,
+    "An unrelated application PR must never be selected.",
+  );
+  assert.equal(editorialPullOpen, true);
   const blocked = await endpoint(context("publish", { revision }));
   assert.equal(blocked.status, 409);
   verified = true;
+  releaseRetargeted = true;
+  const retargeted = await endpoint(context("publish", { revision }));
+  assert.equal(retargeted.status, 409);
+  assert.equal(merged, false);
+  releaseRetargeted = false;
   const status = await (await endpoint(context("release"))).json();
   assert.equal(status.ready, true);
   const published = await endpoint(context("publish", { revision }));
