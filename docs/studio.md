@@ -11,7 +11,7 @@ npm ci
 npm run studio
 ```
 
-Open `http://127.0.0.1:4321/studio`. Local access is available only in development, with the Studio launch flag, a loopback hostname, and a loopback client address. `npm run dev` does not enable this access. Keep the server bound to `127.0.0.1`.
+Open `http://127.0.0.1:4321/studio`. Local access is available only in development, with the Studio launch flag, a loopback hostname, and a loopback client address. `npm run dev` does not enable this access. Keep the server bound to `127.0.0.1`. Studio authoring disables development hot reload so saving content does not refresh the editor; ordinary `npm run dev` retains hot reload.
 
 Local saves update content files in this checkout. Each successful write retains the previous file under `.studio/history/`; that directory is ignored by Git. Browser recovery retains unsaved edits for seven days, scoped to the editor and entry. It supplements file history; it is not a backup of the repository. Keep normal repository backups.
 

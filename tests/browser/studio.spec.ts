@@ -4,6 +4,10 @@ test("writes, previews, edits, compares history, and deletes a draft", async ({
   page,
   request,
 }) => {
+  let navigations = 0;
+  page.on("framenavigated", (frame) => {
+    if (frame === page.mainFrame()) navigations++;
+  });
   const initial = await (await request.get("/api/studio/library")).json();
   expect(initial.entries.some((entry: { id: string }) => entry.id === id)).toBe(
     false,
@@ -63,6 +67,7 @@ test("writes, previews, edits, compares history, and deletes a draft", async ({
       path: "test-results/studio-desktop.png",
       fullPage: true,
     });
+    expect(navigations).toBe(1);
     await page.locator(".entry-card").click();
     page.once("dialog", (dialog) => dialog.accept());
     await page.locator("#delete-entry").click();

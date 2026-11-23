@@ -17,6 +17,7 @@ export default defineConfig({
     shikiConfig: { theme: "github-dark" },
   },
   vite: {
+    server: { hmr: process.env.RACK_STUDIO_LOCAL === "1" ? false : undefined },
     build: {
       // Never inline scripts: keeps the Content-Security-Policy free of 'unsafe-inline' for scripts.
       assetsInlineLimit: 0,
