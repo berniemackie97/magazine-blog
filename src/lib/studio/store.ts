@@ -216,11 +216,10 @@ let blobCacheBytes = 0;
 export class GitHubStore implements Store {
   constructor(readonly github: GitHub) {}
   private async branchHead(branch: string): Promise<Head> {
-    const row = await this.github.repo<{
-      sha: string;
-      commit: { tree: { sha: string } };
-    }>(`/commits/${encodeURIComponent(branch)}`);
-    return { sha: row.sha, tree: row.commit.tree };
+    const ref = await this.github.repo<{ object: { sha: string } }>(
+      `/git/ref/heads/${branch}`,
+    );
+    return this.github.repo<Head>(`/git/commits/${ref.object.sha}`);
   }
   private async head(): Promise<Head> {
     const base = await this.branchHead(baseBranch());

@@ -85,6 +85,27 @@ describe("editor access", () => {
     ).toBeUndefined();
     expect(identity(context(seal(valid())))?.login).toBe("berniemackie97");
   });
+  it.each([
+    { method: "GET", mode: "navigate", dest: "document", allowed: true },
+    { method: "GET", mode: "cors", dest: "empty", allowed: false },
+    { method: "GET", mode: "navigate", dest: "iframe", allowed: false },
+    { method: "POST", mode: "navigate", dest: "document", allowed: false },
+  ])(
+    "handles cross-site $method / $mode / $dest navigation safely",
+    ({ method, mode, dest, allowed }) => {
+      vi.stubEnv("CMS_ENABLED", "true");
+      vi.stubEnv("CMS_ORIGIN", "https://the-rack.vercel.app");
+      const ctx = context("", undefined, undefined, method);
+      for (const [key, value] of Object.entries({
+        "sec-fetch-site": "cross-site",
+        "sec-fetch-mode": mode,
+        "sec-fetch-dest": dest,
+      }))
+        ctx.request.headers.set(key, value);
+      if (allowed) expect(() => verifyOrigin(ctx)).not.toThrow();
+      else expect(() => verifyOrigin(ctx)).toThrow("Cross-site requests");
+    },
+  );
   it("rejects cross-origin writes and unconfigured hosting origins", () => {
     vi.stubEnv("CMS_ENABLED", "true");
     vi.stubEnv("CMS_ORIGIN", "https://the-rack.vercel.app");

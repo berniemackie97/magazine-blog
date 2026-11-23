@@ -93,7 +93,14 @@ export function verifyOrigin(context: APIContext): void {
   const requestOrigin = context.request.headers.get("origin");
   if (context.request.method !== "GET" && requestOrigin !== expected)
     throw new StudioError(403, "This request did not come from Studio.");
-  if (context.request.headers.get("sec-fetch-site") === "cross-site")
+  const navigation =
+    context.request.method === "GET" &&
+    context.request.headers.get("sec-fetch-mode") === "navigate" &&
+    context.request.headers.get("sec-fetch-dest") === "document";
+  if (
+    context.request.headers.get("sec-fetch-site") === "cross-site" &&
+    !navigation
+  )
     throw new StudioError(403, "Cross-site requests are not allowed.");
 }
 export function identity(context: APIContext): Identity | undefined {
