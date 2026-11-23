@@ -29,8 +29,8 @@ export function localAccess(
 }
 export function configured(): boolean {
   return !!(
-    process.env.CMS_GITHUB_CLIENT_ID &&
-    process.env.CMS_GITHUB_CLIENT_SECRET &&
+    process.env.CMS_GITHUB_CLIENT_ID?.trim() &&
+    process.env.CMS_GITHUB_CLIENT_SECRET?.trim() &&
     process.env.CMS_SESSION_SECRET &&
     process.env.CMS_ORIGIN
   );
@@ -145,7 +145,7 @@ export function login(context: APIContext): Response {
   );
   const url = new URL("https://github.com/login/oauth/authorize");
   url.search = new URLSearchParams({
-    client_id: process.env.CMS_GITHUB_CLIENT_ID!,
+    client_id: process.env.CMS_GITHUB_CLIENT_ID!.trim(),
     redirect_uri: callback,
     scope: "public_repo read:user",
     state,
@@ -178,8 +178,8 @@ export async function callback(context: APIContext): Promise<Response> {
     signal: AbortSignal.timeout(20_000),
     headers: { Accept: "application/json", "Content-Type": "application/json" },
     body: JSON.stringify({
-      client_id: process.env.CMS_GITHUB_CLIENT_ID,
-      client_secret: process.env.CMS_GITHUB_CLIENT_SECRET,
+      client_id: process.env.CMS_GITHUB_CLIENT_ID?.trim(),
+      client_secret: process.env.CMS_GITHUB_CLIENT_SECRET?.trim(),
       code,
       redirect_uri: `${expectedOrigin}/api/studio/auth/callback`,
     }),

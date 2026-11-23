@@ -6,6 +6,8 @@ import {
   verifyOrigin,
   localAccess,
   callback,
+  login,
+  configured,
 } from "../src/lib/studio/auth";
 import type { APIContext } from "astro";
 const valid = () => ({
@@ -104,8 +106,8 @@ describe("GitHub sign-in callback", () => {
       "CMS_SESSION_SECRET",
       "a-test-secret-at-least-32-characters-long",
     );
-    vi.stubEnv("CMS_GITHUB_CLIENT_ID", "fixture-client");
-    vi.stubEnv("CMS_GITHUB_CLIENT_SECRET", "fixture-secret");
+    vi.stubEnv("CMS_GITHUB_CLIENT_ID", "  fixture-client \n");
+    vi.stubEnv("CMS_GITHUB_CLIENT_SECRET", " fixture-secret \n");
     const ctx = context(
       seal({ state: "a".repeat(64), expires: Date.now() + 60_000 }),
       undefined,
@@ -121,6 +123,15 @@ describe("GitHub sign-in callback", () => {
     Object.assign(ctx.cookies, { set, delete: remove });
     return { ctx, set, remove };
   }
+  it("normalizes pasted OAuth settings before redirecting and rejects empty values", () => {
+    const { ctx } = callbackContext();
+    const response = login(ctx);
+    expect(
+      new URL(response.headers.get("Location")!).searchParams.get("client_id"),
+    ).toBe("fixture-client");
+    vi.stubEnv("CMS_GITHUB_CLIENT_SECRET", " \n ");
+    expect(configured()).toBe(false);
+  });
   it("rejects malformed state before exchanging a code", async () => {
     const { ctx, remove } = callbackContext("é".repeat(64));
     const fetch = vi.fn();
@@ -139,17 +150,25 @@ describe("GitHub sign-in callback", () => {
     "requires an allowed account and repository write access: $login / $push",
     async ({ login, push, accepted }) => {
       const { ctx, set, remove } = callbackContext();
-      const fetch = vi.fn().mockImplementation(async (input: string) => {
-        if (input === "https://github.com/login/oauth/access_token")
-          return Response.json({ access_token: "fixture-access-token" });
-        if (input === "https://api.github.com/user")
-          return Response.json({ login });
-        if (
-          input === "https://api.github.com/repos/berniemackie97/magazine-blog"
-        )
-          return Response.json({ permissions: { push } });
-        throw new Error("Unexpected authentication request");
-      });
+      const fetch = vi
+        .fn()
+        .mockImplementation(async (input: string, init: RequestInit = {}) => {
+          if (input === "https://github.com/login/oauth/access_token") {
+            expect(JSON.parse(init.body as string)).toMatchObject({
+              client_id: "fixture-client",
+              client_secret: "fixture-secret",
+            });
+            return Response.json({ access_token: "fixture-access-token" });
+          }
+          if (input === "https://api.github.com/user")
+            return Response.json({ login });
+          if (
+            input ===
+            "https://api.github.com/repos/berniemackie97/magazine-blog"
+          )
+            return Response.json({ permissions: { push } });
+          throw new Error("Unexpected authentication request");
+        });
       vi.stubGlobal("fetch", fetch);
       if (accepted) {
         const result = await callback(ctx);
