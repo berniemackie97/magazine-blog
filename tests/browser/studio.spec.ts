@@ -101,3 +101,103 @@ test("keeps the library and release controls usable on a narrow screen", async (
     fullPage: true,
   });
 });
+test("recovers interrupted edits without autosaving over a newer version", async ({
+  page,
+  request,
+}) => {
+  const recoveryId = "studio-recovery-acceptance";
+  const headers = { Origin: "http://127.0.0.1:4322" };
+  const initial = await (await request.get("/api/studio/library")).json();
+  expect(
+    initial.entries.some((entry: { id: string }) => entry.id === recoveryId),
+  ).toBe(false);
+  const source = initial.entries.find(
+    (entry: { collection: string }) => entry.collection === "posts",
+  );
+  let created = false;
+  page.on("dialog", (dialog) => dialog.accept());
+  try {
+    const response = await request.post("/api/studio/create", {
+      headers,
+      data: {
+        ...source,
+        id: recoveryId,
+        data: {
+          ...source.data,
+          headline: "Recovery acceptance draft",
+          draft: true,
+        },
+        revision: initial.revision,
+      },
+    });
+    expect(response.ok()).toBe(true);
+    created = true;
+    await page.goto("/studio");
+    await page
+      .getByRole("button", { name: /Recovery acceptance draft/ })
+      .click();
+    await page.route("**/api/studio/save", (route) => route.abort("failed"));
+    await page.locator('[name="headline"]').fill("Recovered writing");
+    await page.locator("#save").click();
+    await expect(page.locator("#save-status")).toContainText("Not saved");
+    await page.unroute("**/api/studio/save");
+    const latest = await (await request.get("/api/studio/library")).json();
+    const entry = latest.entries.find(
+      (entry: { id: string }) => entry.id === recoveryId,
+    );
+    const newer = await request.post("/api/studio/save", {
+      headers,
+      data: {
+        ...entry,
+        data: { ...entry.data, headline: "Newer saved writing" },
+        revision: latest.revision,
+      },
+    });
+    expect(newer.ok()).toBe(true);
+    await page.goto("/studio");
+    await page.getByRole("button", { name: /Newer saved writing/ }).click();
+    await expect(page.locator("#recovery")).toBeVisible();
+    await page.locator("#recover").click();
+    await expect(page.locator('[name="headline"]')).toHaveValue(
+      "Recovered writing",
+    );
+    // Wait beyond the autosave debounce to verify recovery requires an explicit save.
+    await page.waitForTimeout(2200);
+    const untouched = await (await request.get("/api/studio/library")).json();
+    expect(
+      untouched.entries.find((entry: { id: string }) => entry.id === recoveryId)
+        .data.headline,
+    ).toBe("Newer saved writing");
+    await page.locator("#save").click();
+    await expect(page.locator("#save-status")).toHaveText("All changes saved");
+    await page.locator("#article-body").fill("A broken <Callout");
+    await page.locator("#save").click();
+    await expect(page.locator("#save-status")).toContainText("Not saved");
+    await page.locator("#history").click();
+    await expect(
+      page
+        .getByRole("button", { name: "Restore as draft", exact: true })
+        .first(),
+    ).toBeVisible();
+    await page
+      .getByRole("button", { name: "Restore as draft", exact: true })
+      .first()
+      .click();
+    await expect(page.locator("#notice")).toContainText(
+      "Revision restored as a draft",
+    );
+  } finally {
+    if (created) {
+      const latest = await (await request.get("/api/studio/library")).json();
+      const removed = await request.post("/api/studio/delete", {
+        headers,
+        data: {
+          collection: "posts",
+          id: recoveryId,
+          revision: latest.revision,
+        },
+      });
+      expect(removed.ok()).toBe(true);
+    }
+  }
+});

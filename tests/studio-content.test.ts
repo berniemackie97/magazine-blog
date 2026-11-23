@@ -1,4 +1,6 @@
 import { describe, it, expect } from "vitest";
+import { parseFrontmatter } from "@astrojs/markdown-remark";
+import { postsSchema } from "../src/lib/content/schema";
 import { compile } from "@mdx-js/mdx";
 import { readFile } from "node:fs/promises";
 import {
@@ -15,7 +17,11 @@ describe("editorial content", () => {
   it("round-trips the real component-rich article without altering its body", async () => {
     const source = await readFile(article, "utf8");
     const entry = decode(article, source);
-    const roundtrip = decode(article, encode(entry));
+    const serialized = encode(entry);
+    const astroData = parseFrontmatter(serialized).frontmatter;
+    expect(typeof astroData.publishedAt).toBe("string");
+    expect(postsSchema.parse(astroData)).toEqual(entry.data);
+    const roundtrip = decode(article, serialized);
     expect(roundtrip.body).toBe(entry.body);
     expect(roundtrip.data).toEqual(entry.data);
     await expect(

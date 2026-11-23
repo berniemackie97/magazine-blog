@@ -627,6 +627,7 @@ async function save(manual: boolean): Promise<boolean> {
         autosave = setTimeout(() => void save(false), 500);
       }
       if (manual) notice("Changes saved to your workspace.");
+      else if ($("notice").classList.contains("error")) notice("");
       return true;
     } catch (error) {
       recoverable();
@@ -948,8 +949,11 @@ async function uploadFiles(files: FileList | null): Promise<string[]> {
   return paths;
 }
 async function history(): Promise<void> {
-  if (!current || !(await save(true))) return;
-  const entry = current;
+  if (!current || creating) return;
+  clearTimeout(autosave);
+  if (saving) await saving;
+  if (dirty) recoverable();
+  const entry = clone(current);
   const rows = await api<{ id: string; date: string; message: string }[]>(
     `history?collection=${entry.collection}&id=${entry.id}`,
   );
@@ -969,7 +973,7 @@ async function history(): Promise<void> {
     restore.addEventListener("click", () => {
       if (
         !confirm(
-          "Restore this revision? Your current content will be retained in revision history.",
+          "Restore this revision? Saved content stays in revision history. Unsaved edits stay in browser recovery.",
         )
       )
         return;
@@ -983,6 +987,9 @@ async function history(): Promise<void> {
         .then(async (result) => {
           accept(result);
           dialog.close();
+          dirty = false;
+          manualRecovery = false;
+          clearTimeout(autosave);
           await openEntry(
             result.entries.find(
               (e) => e.collection === entry.collection && e.id === entry.id,

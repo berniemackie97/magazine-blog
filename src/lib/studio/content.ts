@@ -99,7 +99,7 @@ export function encode(
 ): string {
   const data = schemas[entry.collection].parse(entry.data);
   return entry.collection === "posts"
-    ? `---\n${stringify(data, { lineWidth: 0 })}---\n${entry.body}`
+    ? `---\n${stringify(data, { lineWidth: 0, defaultStringType: "QUOTE_DOUBLE" })}---\n${entry.body}`
     : `${JSON.stringify(data, null, 2)}\n`;
 }
 export function library(snapshot: Snapshot): Library {
