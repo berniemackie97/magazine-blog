@@ -22,7 +22,7 @@ interface Workspace extends Library {
   mode: "local" | "github";
   login: string;
   publishingBranch: string;
-  checkoutBranch?: string;
+  checkoutBranch?: string | null;
 }
 type View = Collection | "media" | "release";
 const $ = <T extends HTMLElement = HTMLElement>(id: string) =>
@@ -315,11 +315,22 @@ async function showView(next: View): Promise<void> {
   if (next === "media") renderMedia();
   if (next === "release") {
     renderReleaseSummary();
+    if (workspace.mode === "local") {
+      try {
+        workspace.checkoutBranch = (
+          await api<{ checkoutBranch: string | null }>("publishing")
+        ).checkoutBranch;
+      } catch {
+        workspace.checkoutBranch = null;
+      }
+    }
     $("release-explanation").textContent =
       workspace.mode === "local"
-        ? workspace.checkoutBranch !== workspace.publishingBranch
-          ? `Your drafts are saved locally. Publishing requires the ${workspace.publishingBranch} branch; this checkout is ${workspace.checkoutBranch || "detached"}. Save your work and switch to ${workspace.publishingBranch}, then restart Studio. No content has been published.`
-          : `Checks, tests, and builds the site, then commits content and pushes to ${workspace.publishingBranch}. Vercel deploys that push to the live site.`
+        ? workspace.checkoutBranch === null
+          ? "Git is unavailable. You can keep editing drafts; publishing requires a Git checkout."
+          : workspace.checkoutBranch !== workspace.publishingBranch
+            ? `Your drafts are saved locally. Publishing requires the ${workspace.publishingBranch} branch; this checkout is ${workspace.checkoutBranch || "detached"}. Save your work and switch to ${workspace.publishingBranch}, then restart Studio. No content has been published.`
+            : `Checks, tests, and builds the site, then commits content and pushes to ${workspace.publishingBranch}. Vercel deploys that push to the live site.`
         : `Opens a content release against ${workspace.publishingBranch}. Publishing stays blocked until validation passes.`;
     await refreshRelease();
   }

@@ -143,8 +143,10 @@ test("keeps the library and release controls usable on a narrow screen", async (
   await expect(page.locator("#publishing-context")).toContainText(
     "does not change the live site",
   );
-  const context = await (await page.request.get("/api/studio/library")).json();
-  if (context.checkoutBranch !== context.publishingBranch) {
+  const context = await (
+    await page.request.get("/api/studio/publishing")
+  ).json();
+  if (context.checkoutBranch !== "main") {
     await expect(page.locator("#submit-release")).toBeDisabled();
     await expect(page.locator("#release-explanation")).toContainText(
       "Publishing requires",
@@ -338,4 +340,22 @@ test("completes magazine components, indents, searches, formats, and undoes", as
       data: { collection: "posts", id: editorId, revision: latest.revision },
     });
   }
+});
+
+test("keeps draft editing available when publishing cannot read Git", async ({
+  page,
+}) => {
+  await page.route("**/api/studio/publishing", (route) =>
+    route.fulfill({ json: { checkoutBranch: null } }),
+  );
+  await page.goto("/studio");
+  await expect(page.locator(".entry-card").first()).toBeVisible();
+  await page.locator('.studio-nav [data-view="release"]').click();
+  await expect(page.locator("#release-explanation")).toContainText(
+    "Git is unavailable",
+  );
+  await expect(page.locator("#submit-release")).toBeDisabled();
+  await page.locator('.studio-nav [data-view="posts"]').click();
+  await page.locator(".entry-card").first().click();
+  await expect(page.locator("#article-body .cm-content")).toBeEditable();
 });

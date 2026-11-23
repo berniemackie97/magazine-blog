@@ -179,37 +179,50 @@ globalThis.fetch = async (input, init = {}) => {
   throw new Error(`Unhandled GitHub fixture: ${path}`);
 };
 try {
-  const publicHtml = await readFile(".vercel/output/static/index.html", "utf8");
-  assert.ok(
-    !publicHtml.includes("EDITORIAL STUDIO"),
-    "Studio must not be rendered into public pages.",
+  const output = ".vercel/output/static";
+  const generated = await readdir(output, { recursive: true });
+  const sitemaps = generated.filter(
+    (file) => file.startsWith("sitemap") && file.endsWith(".xml"),
   );
-  for (const file of await readdir(".vercel/output/static")) {
-    if (file.startsWith("sitemap") && file.endsWith(".xml")) {
-      const sitemap = await readFile(`.vercel/output/static/${file}`, "utf8");
-      assert.ok(
-        !sitemap.includes("/studio"),
-        "Studio must not appear in public sitemaps.",
-      );
-    }
+  assert.ok(
+    sitemaps.length > 0,
+    "The production build must generate a sitemap.",
+  );
+  for (const file of sitemaps) {
+    assert.ok(
+      !(await readFile(`${output}/${file}`, "utf8")).includes("/studio"),
+      "Studio must not appear in public sitemaps.",
+    );
   }
+  const pages = generated.filter((file) => file.endsWith(".html"));
   assert.ok(
-    !/href=["'][^"']*\/studio(?:["'/?#])/.test(publicHtml),
-    "Public pages must not link to Studio.",
+    pages.length > 0,
+    "The production build must generate public HTML.",
   );
-  const inlineScripts = [
-    ...publicHtml.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi),
-  ].filter(
-    (match) =>
-      !/\bsrc=/.test(match[1]) &&
-      !/application\/(?:ld\+)?json/.test(match[1]) &&
-      match[2].trim(),
-  );
-  assert.equal(
-    inlineScripts.length,
-    0,
-    "Public executable scripts must respect the site's CSP.",
-  );
+  for (const file of pages) {
+    const html = await readFile(`${output}/${file}`, "utf8");
+    assert.ok(
+      !html.includes("EDITORIAL STUDIO"),
+      `Studio rendered in public page ${file}`,
+    );
+    assert.ok(
+      !/href=["'][^"']*\/studio(?:["'/?#])/.test(html),
+      `Studio link in public page ${file}`,
+    );
+    const inlineScripts = [
+      ...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi),
+    ].filter(
+      (match) =>
+        !/\bsrc=/.test(match[1]) &&
+        !/application\/(?:ld\+)?json/.test(match[1]) &&
+        match[2].trim(),
+    );
+    assert.equal(
+      inlineScripts.length,
+      0,
+      `Executable inline script in public page ${file}`,
+    );
+  }
   const { default: app } = await import(
     pathToFileURL(resolve(server, "entry.mjs"))
   );
