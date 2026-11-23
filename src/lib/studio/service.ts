@@ -119,6 +119,9 @@ export async function handle(context: APIContext): Promise<Response> {
         mode: user.local ? "local" : "github",
         login: user.login,
         publishingBranch: baseBranch(),
+      });
+    if (action === "publishing")
+      return json({
         checkoutBranch:
           store instanceof LocalStore
             ? await localPublishingBranch(store)

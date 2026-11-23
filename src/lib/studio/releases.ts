@@ -30,8 +30,46 @@ const git = async (root: string, args: string[]) =>
   ).stdout.trimEnd();
 export async function localPublishingBranch(
   store: LocalStore,
-): Promise<string> {
-  return git(store.root, ["branch", "--show-current"]);
+): Promise<string | null> {
+  try {
+    return (
+      await execute("git", ["branch", "--show-current"], {
+        cwd: store.root,
+        timeout: 3000,
+        maxBuffer: 10000,
+      })
+    ).stdout.trimEnd();
+  } catch {
+    return null;
+  }
+}
+async function assertCheckout(
+  root: string,
+  branch: string,
+  head: string,
+): Promise<void> {
+  if (
+    (await git(root, ["branch", "--show-current"])) !== branch ||
+    (await git(root, ["rev-parse", "HEAD"])) !== head
+  )
+    throw new StudioError(
+      409,
+      "The checkout changed during publishing. No release was pushed. Review your branch and saved content before trying again.",
+    );
+}
+async function assertContentChanges(
+  root: string,
+  base: string,
+  head: string,
+): Promise<void> {
+  const changed = (await git(root, ["diff", "--name-only", "-z", base, head]))
+    .split("\0")
+    .filter(Boolean);
+  if (changed.some((path) => !isContentPath(path) && !isMediaPath(path)))
+    throw new StudioError(
+      409,
+      "The release includes application changes. Publish application commits separately before releasing content.",
+    );
 }
 export function localReleaseStatus(): Release {
   return localRelease;
@@ -52,6 +90,11 @@ export async function startLocalRelease(
     );
   const branch = await localPublishingBranch(store);
   const target = baseBranch();
+  if (branch === null)
+    throw new StudioError(
+      422,
+      "Git is unavailable for this workspace. Draft editing remains available; publishing requires a Git checkout.",
+    );
   if (branch !== target)
     throw new StudioError(
       422,
@@ -85,6 +128,7 @@ export async function startLocalRelease(
             "Sync application commits with the publishing branch before releasing content.",
           );
       }
+      await assertContentChanges(store.root, upstream, head);
       for (const script of ["check", "test", "build"]) {
         localRelease.stage = `Running ${script}…`;
         await execute(process.execPath, [npmCli, "run", script], {
@@ -95,14 +139,30 @@ export async function startLocalRelease(
         });
       }
       assertRevision((await store.snapshot()).revision, expected);
+      await assertCheckout(store.root, target, head);
       if (paths.length) {
         localRelease.stage = "Committing validated content…";
         await git(store.root, ["add", "--", ...paths]);
         await git(store.root, ["commit", "-m", `[studio] ${title}`]);
       }
-      localRelease.sha = await git(store.root, ["rev-parse", "HEAD"]);
+      const releaseHead = await git(store.root, ["rev-parse", "HEAD"]);
+      if (
+        paths.length &&
+        (await git(store.root, ["rev-parse", `${releaseHead}^`])) !== head
+      )
+        throw new StudioError(
+          409,
+          "The checkout changed while committing. No release was pushed. Review the retained commit before trying again.",
+        );
+      await assertCheckout(store.root, target, releaseHead);
+      await assertContentChanges(store.root, upstream, releaseHead);
+      localRelease.sha = releaseHead;
       localRelease.stage = "Pushing release…";
-      await git(store.root, ["push", "origin", `HEAD:refs/heads/${target}`]);
+      await git(store.root, [
+        "push",
+        "origin",
+        `${releaseHead}:refs/heads/${target}`,
+      ]);
       localRelease = {
         ...localRelease,
         state: "complete",
