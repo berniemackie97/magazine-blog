@@ -35,6 +35,37 @@ describe("editorial content", () => {
     const post = decode(article, await readFile(article, "utf8"));
     expect(() => validateLibrary([post])).toThrow("existing publication");
   });
+  it("allows unused section removal and explains references that block removal or ID changes", async () => {
+    const publicationPath = "src/content/publications/field-guide.json";
+    const postPath = "src/content/posts/ridge-beacon.mdx";
+    const publication = decode(
+      publicationPath,
+      await readFile(publicationPath, "utf8"),
+    );
+    const post = decode(postPath, await readFile(postPath, "utf8"));
+    delete post.data.issue;
+    post.data.draft = true;
+    const sections = publication.data.sections as {
+      id: string;
+      label: string;
+    }[];
+    publication.data.sections = sections.filter((s) => s.id !== "lab");
+    expect(() => validateLibrary([publication, post])).not.toThrow();
+
+    for (const removed of [true, false]) {
+      publication.data.sections = removed
+        ? sections.filter((s) => s.id !== post.data.section)
+        : sections.map((s) =>
+            s.id === post.data.section ? { ...s, id: "renamed" } : s,
+          );
+      expect(() => validateLibrary([publication, post])).toThrow(
+        `Article "${post.data.headline}" (${post.id}) uses section "dispatch" in publication "Field Guide". Restore that section, or move the article to an existing section and save it before removing the section or changing its ID.`,
+      );
+    }
+
+    post.data.section = "trail";
+    expect(() => validateLibrary([publication, post])).not.toThrow();
+  });
   it.each(["../../package", "hello/world", "Foo", "a%2fb", "a\\b", "a\u0000"])(
     "rejects unsafe slugs: %s",
     (slug) => expect(() => entryPath("posts", slug)).toThrow(),

@@ -16,6 +16,76 @@ test.beforeEach(({ page }) => {
     ),
   );
 });
+test("protects sections used by articles and saves unused section removal", async ({
+  page,
+  request,
+}) => {
+  const workspace = await (await request.get("/api/studio/library")).json();
+  const publication = workspace.entries.find(
+    (entry: { collection: string; id: string }) =>
+      entry.collection === "publications" && entry.id === "field-guide",
+  );
+  const article = workspace.entries.find(
+    (entry: { id: string }) => entry.id === "ridge-beacon",
+  );
+  workspace.entries.push({
+    ...article,
+    id: "draft-section-reference",
+    data: {
+      ...article.data,
+      headline: "Draft section reference",
+      section: "trail",
+      draft: true,
+    },
+  });
+  workspace.entries.push({
+    ...article,
+    id: "other-publication-reference",
+    data: { ...article.data, publication: "red-ops", section: "lab" },
+  });
+  await page.route("**/api/studio/library", (route) =>
+    route.fulfill({ json: workspace }),
+  );
+  let savedSections: { id: string; label: string }[] | undefined;
+  await page.route("**/api/studio/save", async (route) => {
+    const saved = route.request().postDataJSON();
+    savedSections = saved.data.sections;
+    publication.data = saved.data;
+    await route.fulfill({ json: workspace });
+  });
+
+  await page.goto("/studio");
+  await expect(page.locator("#connection")).toContainText("Local workspace");
+  await page.locator('.studio-nav [data-view="publications"]').click();
+  await page.locator(".entry-card").filter({ hasText: "Field Guide" }).click();
+  const used = page.locator(".section-row").filter({
+    has: page.getByRole("textbox", { name: "Section 4 id", exact: true }),
+  });
+  await expect(used.getByRole("button", { name: "Remove" })).toBeDisabled();
+  await expect(used.getByRole("textbox").first()).toHaveAttribute("readonly");
+  await expect(used.getByRole("textbox").nth(1)).toBeEditable();
+  const draftSection = page.locator(".section-row").filter({
+    has: page.getByRole("textbox", { name: "Section 1 id", exact: true }),
+  });
+  await expect(
+    draftSection.getByRole("button", { name: "Remove" }),
+  ).toBeDisabled();
+  await expect(page.locator("#fields")).toContainText(
+    "Used by: Draft section reference. Move these articles to another section",
+  );
+  const unused = page.locator(".section-row").filter({
+    has: page.getByRole("textbox", { name: "Section 3 id", exact: true }),
+  });
+  await expect(unused.getByRole("textbox").first()).toBeEditable();
+  await unused.getByRole("button", { name: "Remove" }).click();
+  await page.locator("#save").click();
+  await expect(page.locator("#save-status")).toHaveText("All changes saved");
+  expect(savedSections?.map((section) => section.id)).toEqual([
+    "trail",
+    "build",
+    "dispatch",
+  ]);
+});
 test("writes, previews, edits, compares history, and deletes a draft", async ({
   page,
   request,

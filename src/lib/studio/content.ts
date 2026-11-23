@@ -137,7 +137,7 @@ export function validateLibrary(entries: Entry[]): void {
       if (!sections.some((s) => s.id === entry.data.section))
         throw new StudioError(
           422,
-          `${entry.id}: section does not belong to this publication.`,
+          `Article "${entry.data.headline}" (${entry.id}) uses section "${entry.data.section}" in publication "${publication.data.name}". Restore that section, or move the article to an existing section and save it before removing the section or changing its ID.`,
         );
       if (
         entry.data.issue &&

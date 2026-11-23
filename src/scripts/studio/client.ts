@@ -468,12 +468,19 @@ function renderFields(): void {
     sections.append(el("span", "Publication sections"));
     const rows = current.data.sections as { id: string; label: string }[];
     rows.forEach((section, index) => {
+      const articles = workspace.entries.filter(
+        (entry) =>
+          entry.collection === "posts" &&
+          entry.data.publication === current!.id &&
+          entry.data.section === section.id,
+      );
       const row = el("div", undefined, "section-row");
       for (const key of ["id", "label"] as const) {
         const control = el("input");
         control.value = section[key];
         control.placeholder = key === "id" ? "section-id" : "Section name";
         control.setAttribute("aria-label", `Section ${index + 1} ${key}`);
+        control.readOnly = key === "id" && articles.length > 0;
         control.addEventListener("input", () => {
           section[key] = control.value;
           changed();
@@ -482,7 +489,7 @@ function renderFields(): void {
       }
       const remove = el("button", "Remove", "text-button danger");
       remove.type = "button";
-      remove.disabled = rows.length <= 1;
+      remove.disabled = rows.length <= 1 || articles.length > 0;
       remove.addEventListener("click", () => {
         rows.splice(index, 1);
         changed();
@@ -490,6 +497,13 @@ function renderFields(): void {
       });
       row.append(remove);
       sections.append(row);
+      if (articles.length)
+        sections.append(
+          el(
+            "small",
+            `Used by: ${articles.map(title).join(", ")}. Move these articles to another section and save them before removing this section or changing its ID.`,
+          ),
+        );
     });
     const add = el("button", "+ Add section", "text-button");
     add.type = "button";
