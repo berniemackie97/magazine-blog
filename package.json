@@ -41,7 +41,8 @@
     "@codemirror/lint": "^6.0.0",
     "@codemirror/lang-markdown": "^6.0.0",
     "@codemirror/lang-javascript": "^6.0.0",
-    "@codemirror/language-data": "^6.0.0"
+    "@codemirror/language-data": "^6.0.0",
+    "decode-named-character-reference": "1.2.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.6",
