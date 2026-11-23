@@ -1,13 +1,12 @@
 import { spawn } from "node:child_process";
+import { readFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
+const packageUrl = new URL(import.meta.resolve("astro/package.json"));
+const { bin } = JSON.parse(await readFile(packageUrl, "utf8"));
+const cli = fileURLToPath(new URL(bin.astro, packageUrl));
 const child = spawn(
   process.execPath,
-  [
-    "node_modules/astro/astro.js",
-    "dev",
-    "--host",
-    "127.0.0.1",
-    ...process.argv.slice(2),
-  ],
+  [cli, "dev", "--host", "127.0.0.1", ...process.argv.slice(2)],
   {
     stdio: "inherit",
     env: { ...process.env, RACK_STUDIO_LOCAL: "1" },

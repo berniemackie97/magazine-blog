@@ -4,6 +4,8 @@ Studio manages the site's existing MDX articles and JSON publications/issues. Pu
 
 ## Start locally
 
+Use Node.js 22.23.4 or later. The runtime and official integrations are updated together to Astro 7.
+
 ```sh
 npm ci
 npm run studio
@@ -83,9 +85,12 @@ npm run check
 npm test
 npm run build
 npm run test:production
+npx playwright install chromium
 npm run test:browser
 ```
 
 The production integration command exercises the built Vercel serverless modules with an isolated GitHub API fixture. It verifies authorization, writes, conflict rejection, unsafe-MDX rejection, cross-origin protection, release gating, publishing, and article/issue/publication preview rendering without a network listener or real repository mutation. CI runs it after the production build.
+
+The browser suite creates and removes a reserved acceptance-test draft in the local checkout. It exercises writing, previews, history, deletion, and a narrow viewport. CI retains browser reports and screenshots.
 
 Real OAuth sign-in, GitHub branch protections, and the production deployment still require a configured environment and an end-to-end acceptance pass. An integration fixture is not evidence that production credentials or Vercel settings have been configured.

@@ -69,4 +69,4 @@ Pages never query collections directly; they go through `src/lib/content`. Globa
 
 ## Security
 
-Response headers live in `vercel.json`: a strict Content-Security-Policy (no inline scripts; Vite's asset inlining is disabled so this holds), HSTS, `nosniff`, a locked-down Permissions-Policy, and frame denial. Fonts are self-hosted. Video embeds accept YouTube (privacy-enhanced domain), Vimeo, and same-site files only.
+Response headers live in `vercel.json`: a strict Content-Security-Policy (no inline scripts; Vite's asset inlining is disabled so this holds), HSTS, `nosniff`, a locked-down Permissions-Policy, and framing restrictions (same-origin framing is allowed only for private Studio previews). Fonts are self-hosted. Video embeds accept YouTube (privacy-enhanced domain), Vimeo, and same-site files only.

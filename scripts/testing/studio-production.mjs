@@ -178,6 +178,24 @@ globalThis.fetch = async (input, init = {}) => {
   throw new Error(`Unhandled GitHub fixture: ${path}`);
 };
 try {
+  const publicHtml = await readFile(".vercel/output/static/index.html", "utf8");
+  assert.ok(
+    !publicHtml.includes("EDITORIAL STUDIO"),
+    "Studio must not be rendered into public pages.",
+  );
+  const inlineScripts = [
+    ...publicHtml.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi),
+  ].filter(
+    (match) =>
+      !/\bsrc=/.test(match[1]) &&
+      !/application\/(?:ld\+)?json/.test(match[1]) &&
+      match[2].trim(),
+  );
+  assert.equal(
+    inlineScripts.length,
+    0,
+    "Public executable scripts must respect the site's CSP.",
+  );
   const { default: app } = await import(
     pathToFileURL(resolve(server, "entry.mjs"))
   );

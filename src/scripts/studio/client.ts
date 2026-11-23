@@ -236,7 +236,7 @@ function renderList(): void {
             ? "Ready"
             : entry.data.status === "open"
               ? "In progress"
-              : "Published",
+              : "Ready",
         "badge" + (draft(entry) ? "" : " ready"),
       ),
     );
