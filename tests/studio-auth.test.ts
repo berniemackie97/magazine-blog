@@ -5,6 +5,7 @@ import {
   identity,
   verifyOrigin,
   localAccess,
+  callback,
 } from "../src/lib/studio/auth";
 import type { APIContext } from "astro";
 const valid = () => ({
@@ -28,7 +29,10 @@ function context(
     clientAddress: "203.0.113.1",
   } as unknown as APIContext;
 }
-afterEach(() => vi.unstubAllEnvs());
+afterEach(() => {
+  vi.unstubAllEnvs();
+  vi.unstubAllGlobals();
+});
 describe("editor access", () => {
   it("requires an explicit local launch and loopback hostname and client", () => {
     const local = {
@@ -90,4 +94,85 @@ describe("editor access", () => {
     );
     expect(() => verifyOrigin(context(""))).not.toThrow();
   });
+});
+
+describe("GitHub sign-in callback", () => {
+  function callbackContext(state = "a".repeat(64)) {
+    vi.stubEnv("CMS_ENABLED", "true");
+    vi.stubEnv("CMS_ORIGIN", "https://the-rack.vercel.app");
+    vi.stubEnv(
+      "CMS_SESSION_SECRET",
+      "a-test-secret-at-least-32-characters-long",
+    );
+    vi.stubEnv("CMS_GITHUB_CLIENT_ID", "fixture-client");
+    vi.stubEnv("CMS_GITHUB_CLIENT_SECRET", "fixture-secret");
+    const ctx = context(
+      seal({ state: "a".repeat(64), expires: Date.now() + 60_000 }),
+      undefined,
+      undefined,
+      "GET",
+    );
+    ctx.url.searchParams.set("state", state);
+    ctx.url.searchParams.set("code", "fixture-code");
+    ctx.redirect = (location, status = 302) =>
+      new Response(null, { status, headers: { Location: location } });
+    const set = vi.fn();
+    const remove = vi.fn();
+    Object.assign(ctx.cookies, { set, delete: remove });
+    return { ctx, set, remove };
+  }
+  it("rejects malformed state before exchanging a code", async () => {
+    const { ctx, remove } = callbackContext("é".repeat(64));
+    const fetch = vi.fn();
+    vi.stubGlobal("fetch", fetch);
+    await expect(callback(ctx)).rejects.toMatchObject({ status: 403 });
+    expect(fetch).not.toHaveBeenCalled();
+    expect(remove).toHaveBeenCalledWith("__Host-rack_studio_oauth", {
+      path: "/",
+    });
+  });
+  it.each([
+    { login: "berniemackie97", push: true, accepted: true },
+    { login: "someone-else", push: true, accepted: false },
+    { login: "berniemackie97", push: false, accepted: false },
+  ])(
+    "requires an allowed account and repository write access: $login / $push",
+    async ({ login, push, accepted }) => {
+      const { ctx, set, remove } = callbackContext();
+      const fetch = vi.fn().mockImplementation(async (input: string) => {
+        if (input === "https://github.com/login/oauth/access_token")
+          return Response.json({ access_token: "fixture-access-token" });
+        if (input === "https://api.github.com/user")
+          return Response.json({ login });
+        if (
+          input === "https://api.github.com/repos/berniemackie97/magazine-blog"
+        )
+          return Response.json({ permissions: { push } });
+        throw new Error("Unexpected authentication request");
+      });
+      vi.stubGlobal("fetch", fetch);
+      if (accepted) {
+        const result = await callback(ctx);
+        expect(result.status).toBe(303);
+        expect(result.headers.get("Location")).toBe("/studio");
+        expect(set.mock.calls[0]![0]).toBe("__Host-rack_studio");
+        expect(set.mock.calls[0]![2]).toMatchObject({
+          secure: true,
+          httpOnly: true,
+          sameSite: "lax",
+          path: "/",
+        });
+        expect(unseal(set.mock.calls[0]![1])).toMatchObject({
+          login,
+          token: "fixture-access-token",
+        });
+      } else {
+        await expect(callback(ctx)).rejects.toMatchObject({ status: 403 });
+        expect(set).not.toHaveBeenCalled();
+      }
+      expect(remove).toHaveBeenCalledWith("__Host-rack_studio_oauth", {
+        path: "/",
+      });
+    },
+  );
 });

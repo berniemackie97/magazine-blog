@@ -164,6 +164,7 @@ export async function callback(context: APIContext): Promise<Response> {
   if (
     !record ||
     record.expires < Date.now() ||
+    !/^[a-f0-9]{64}$/.test(state) ||
     state.length !== record.state.length ||
     !timingSafeEqual(Buffer.from(state), Buffer.from(record.state)) ||
     !code
