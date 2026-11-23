@@ -87,9 +87,22 @@ globalThis.fetch = async (input, init = {}) => {
   if (path.startsWith("/commits/")) {
     const branch = decodeURIComponent(path.slice("/commits/".length));
     if (branch === "cms/editorial" && !draftExists)
-      return Response.json({}, { status: 404 });
+      return Response.json(
+        { message: "No commit found for SHA: cms/editorial" },
+        { status: 422 },
+      );
     const head = branch === "main" ? baseRevision : revision;
     return Response.json({ sha: head, commit: { tree: { sha: head } } });
+  }
+  if (path === "/git/ref/heads/main")
+    return Response.json({ object: { sha: baseRevision } });
+  if (path.startsWith("/git/commits/")) {
+    const id = path.split("/").pop();
+    assert.ok(trees.has(id), "Unknown immutable commit");
+    return Response.json({
+      sha: id,
+      tree: { sha: commits.get(id)?.tree ?? id },
+    });
   }
   if (path.startsWith("/compare/"))
     return Response.json({ ahead_by: merged ? 0 : 1, behind_by: 0 });
