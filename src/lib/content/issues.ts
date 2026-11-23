@@ -9,18 +9,29 @@ function toIssue(entry: IssueEntry): Issue {
 
 /** All issues, newest first. */
 export async function getIssues(): Promise<Issue[]> {
-  const entries = await getCollection("issues");
-  const issues = entries.map(toIssue).sort((a, b) => compareIsoDatesDesc(a.date, b.date));
+  const entries = await getCollection(
+    "issues",
+    ({ data }) => data.visibility === "public",
+  );
+  const issues = entries
+    .map(toIssue)
+    .sort((a, b) => compareIsoDatesDesc(a.date, b.date));
   assertUniqueSlugs(issues);
   return issues;
 }
 
-export async function getIssuesForPublication(publicationId: string): Promise<Issue[]> {
+export async function getIssuesForPublication(
+  publicationId: string,
+): Promise<Issue[]> {
   return (await getIssues()).filter((i) => i.publicationId === publicationId);
 }
 
-export async function getLatestPublishedIssues(limit: number): Promise<Issue[]> {
-  return (await getIssues()).filter((i) => i.status === "locked").slice(0, limit);
+export async function getLatestPublishedIssues(
+  limit: number,
+): Promise<Issue[]> {
+  return (await getIssues())
+    .filter((i) => i.status === "locked")
+    .slice(0, limit);
 }
 
 export async function findIssue(

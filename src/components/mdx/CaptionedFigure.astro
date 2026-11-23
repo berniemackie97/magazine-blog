@@ -1,16 +1,19 @@
 ---
-interface Props {
-  src: string;
-  alt: string;
-  width?: number;
-  height?: number;
-}
+import type { ComponentProps } from "../../lib/content/component-schema";
+type Props = ComponentProps<"CaptionedFigure">;
 
 const { src, alt, width, height } = Astro.props;
 ---
 
 <figure class="figure">
-  <img src={src} alt={alt} width={width} height={height} loading="lazy" decoding="async" />
+  <img
+    src={src}
+    alt={alt}
+    width={width}
+    height={height}
+    loading="lazy"
+    decoding="async"
+  />
   <figcaption><slot /></figcaption>
 </figure>
 

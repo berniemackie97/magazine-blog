@@ -17,3 +17,8 @@ pnpm-debug.log*
 .vscode
 coverage
 .env
+
+.studio
+
+playwright-report
+test-results

@@ -4,28 +4,33 @@
 
 Guides, writeups, and experiments published as virtual magazines. Live at [the-rack.vercel.app](https://the-rack.vercel.app).
 
-Built with Astro (static output), MDX, and zero client-side frameworks.
+Built with Astro, MDX, and zero client-side frameworks. Public reading pages are static; Studio uses authenticated server-rendered routes.
 
 ## Commands
 
-| Command          | What it does                              |
-| ---------------- | ----------------------------------------- |
-| `npm run dev`    | Local dev server at `localhost:4321`      |
-| `npm run check`  | Type-check and validate content schemas   |
-| `npm test`       | Unit tests (Vitest)                       |
-| `npm run build`  | Production build                          |
+| Command         | What it does                            |
+| --------------- | --------------------------------------- |
+| `npm run dev`   | Local dev server at `localhost:4321`    |
+| `npm run check` | Type-check and validate content schemas |
+| `npm test`      | Unit tests (Vitest)                     |
+| `npm run build` | Production build                        |
+
+## Editorial Studio
+
+Run `npm run studio` and open `http://127.0.0.1:4321/studio` to write and manage articles, issues, publications, and images. Hosted editing uses GitHub sign-in, an editorial branch, revision history, private previews, and checked releases. See [Studio operations and deployment](docs/studio.md) and [design references](docs/studio-design.md).
 
 ## Content model
 
 ```
 src/content/
   publications/<id>.json   A topic lane: name, beat, cover template, page theme
-  issues/<id>.json         A release: references a publication, has a slug, date, status
+  issues/<id>.json         A release: references a publication, has a slug, date, assembly status, visibility
   posts/<slug>.mdx         An article: references a publication and (optionally) an issue
 ```
 
 - Dates are ISO `YYYY-MM-DD`; the build fails on anything else.
 - A post's `section` must exist in its publication's `sections`, and its `issue` must exist. The build fails on broken references.
+- Draft issues hide their assigned articles from public routes, listings, and feeds. Article order and cover prominence are independent.
 - Issues with `"status": "open"` show up shrink-wrapped as "in progress" on the rack.
 - MDX components (`Callout`, `PullQuote`, `ResourceGrid`, `ResourceCard`, `CollapsibleSection`, `CaptionedFigure`, `CaptionedVideo`) are available in every post without imports.
 
@@ -64,4 +69,4 @@ Pages never query collections directly; they go through `src/lib/content`. Globa
 
 ## Security
 
-Response headers live in `vercel.json`: a strict Content-Security-Policy (no inline scripts; Vite's asset inlining is disabled so this holds), HSTS, `nosniff`, a locked-down Permissions-Policy, and frame denial. Fonts are self-hosted. Video embeds accept YouTube (privacy-enhanced domain), Vimeo, and same-site files only.
+Response headers live in `vercel.json`: a strict Content-Security-Policy (no inline scripts; Vite's asset inlining is disabled so this holds), HSTS, `nosniff`, a locked-down Permissions-Policy, and framing restrictions (same-origin framing is allowed only for private Studio previews). Fonts are self-hosted. Video embeds accept YouTube (privacy-enhanced domain), Vimeo, and same-site files only.

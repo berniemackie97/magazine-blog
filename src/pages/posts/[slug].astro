@@ -1,119 +1,39 @@
 ---
 import type { GetStaticPaths } from "astro";
 import { render } from "astro:content";
-import ArticleFooterNav from "../../components/article/ArticleFooterNav.astro";
-import ArticleHeader from "../../components/article/ArticleHeader.astro";
-import ArticleRail from "../../components/article/ArticleRail.astro";
-import Prose from "../../components/article/Prose.astro";
-import ReadingProgress from "../../components/article/ReadingProgress.astro";
-import Folio from "../../components/issue/Folio.astro";
+import ArticleDocument from "../../components/article/ArticleDocument.astro";
 import { mdxComponents } from "../../components/mdx";
-import Container from "../../components/site/Container.astro";
-import HandLink from "../../components/site/HandLink.astro";
-import { site } from "../../config/site";
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import { startPages } from "../../lib/content/folio";
 import { findIssue } from "../../lib/content/issues";
-import { byRunningOrder, getPosts, getPostsForIssue } from "../../lib/content/posts";
+import {
+  byRunningOrder,
+  getPosts,
+  getPostsForIssue,
+} from "../../lib/content/posts";
 import { requirePublication } from "../../lib/content/publications";
 import type { Post } from "../../lib/content/types";
-import { urls } from "../../lib/urls";
-
-export const getStaticPaths = (async () => {
-  const posts = await getPosts();
-  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
-}) satisfies GetStaticPaths;
-
+export const getStaticPaths = (async () =>
+  (await getPosts()).map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }))) satisfies GetStaticPaths;
 interface Props {
   post: Post;
 }
-
 const { post } = Astro.props;
 const publication = await requirePublication(post.publicationId);
-const issue = post.issueSlug ? await findIssue(publication.id, post.issueSlug) : undefined;
+const issue = post.issueSlug
+  ? await findIssue(publication.id, post.issueSlug)
+  : undefined;
+const siblings = issue
+  ? (await getPostsForIssue(publication.id, issue.slug)).sort(byRunningOrder)
+  : [];
 const { Content, headings } = await render(post.entry);
-
-const siblings = issue ? (await getPostsForIssue(publication.id, issue.slug)).sort(byRunningOrder) : [];
-const index = siblings.findIndex((p) => p.id === post.id);
-const previous = index > 0 ? siblings[index - 1] : undefined;
-const next = index >= 0 ? siblings[index + 1] : undefined;
-const page = startPages(siblings).get(post.id) ?? 1;
-
-const backHref = issue ? urls.issue(publication.id, issue.slug) : urls.publication(publication.id);
-const backLabel = issue ? `back to ${issue.title} contents` : `back to ${publication.name}`;
 ---
 
-<BaseLayout
-  title={`${post.headline} · ${publication.name}`}
-  description={post.summary || post.dek}
+<ArticleDocument
+  post={post}
   publication={publication}
-  backdrop="counter"
-  ogType="article"
+  issue={issue}
+  siblings={siblings}
+  headings={headings}><Content components={mdxComponents} /></ArticleDocument
 >
-  <Fragment slot="head">
-    <meta property="article:published_time" content={post.publishedAt} />
-    {post.tags.map((tag) => <meta property="article:tag" content={tag} />)}
-  </Fragment>
-
-  <ReadingProgress />
-  <Container>
-    <HandLink href={backHref}>← {backLabel}</HandLink>
-
-    <article class="page">
-      <ArticleHeader post={post} publication={publication} issue={issue} />
-      <div class="layout">
-        <div class="body">
-          <Prose><Content components={mdxComponents} /></Prose>
-        </div>
-        <div class="rail">
-          <ArticleRail headings={headings} tags={post.tags} issue={issue} publicationId={publication.id} />
-        </div>
-      </div>
-      <Folio page={page} side={page % 2 === 0 ? "left" : "right"} label={`${site.name} · ${publication.name}`} />
-    </article>
-
-    <ArticleFooterNav
-      previous={previous}
-      next={next}
-      back={{ href: backHref, label: "← flip back", title: issue ? `${issue.title} contents` : publication.name }}
-      onward={{ href: urls.home(), label: "grab another off the rack →", title: "Back to the rack" }}
-    />
-  </Container>
-</BaseLayout>
-
-<style>
-  .page {
-    position: relative;
-    margin-top: 16px;
-    padding: 32px clamp(20px, 5vw, 64px) 72px;
-    background: var(--page-bg);
-    color: var(--page-text);
-    box-shadow: 0 40px 60px rgb(0 0 0 / 0.5);
-  }
-
-  .layout {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    gap: 48px;
-    margin-top: 40px;
-  }
-
-  .body {
-    flex: 999 1 560px;
-    min-width: 0;
-    max-width: 760px;
-  }
-
-  .rail {
-    flex: 1 1 200px;
-    max-width: 260px;
-    align-self: stretch;
-  }
-
-  @media (max-width: 900px) {
-    .rail {
-      max-width: none;
-    }
-  }
-</style>

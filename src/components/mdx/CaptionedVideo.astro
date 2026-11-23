@@ -1,15 +1,16 @@
 ---
 import { resolveVideo } from "../../lib/video";
 
-interface Props {
-  src?: string;
-  title?: string;
-  caption?: string;
-  poster?: string;
-  placeholder?: string;
-}
+import type { ComponentProps } from "../../lib/content/component-schema";
+type Props = ComponentProps<"CaptionedVideo">;
 
-const { src, title = "Video", caption, poster, placeholder = "Video coming soon." } = Astro.props;
+const {
+  src,
+  title = "Video",
+  caption,
+  poster,
+  placeholder = "Video coming soon.",
+} = Astro.props;
 const video = resolveVideo(src);
 ---
 

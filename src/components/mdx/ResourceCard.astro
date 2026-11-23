@@ -1,24 +1,22 @@
 ---
 /** A classified-ad style listing for an external tool or resource. */
-interface AltSource {
-  label: string;
-  href: string;
-  note?: string;
-}
+import type { ComponentProps } from "../../lib/content/component-schema";
+type Props = ComponentProps<"ResourceCard">;
 
-interface Props {
-  title: string;
-  href: string;
-  summary?: string;
-  badge?: string;
-  tone?: "free" | "paid" | "freemium" | "hardware";
-  meta?: string;
-  altSources?: AltSource[];
-}
-
-const { title, href, summary, badge, tone, meta, altSources = [] } = Astro.props;
+const {
+  title,
+  href,
+  summary,
+  badge,
+  tone,
+  meta,
+  tags = [],
+  altSources = [],
+} = Astro.props;
 const external = /^https?:\/\//.test(href);
-const linkAttrs = external ? { target: "_blank", rel: "noopener noreferrer" } : {};
+const linkAttrs = external
+  ? { target: "_blank", rel: "noopener noreferrer" }
+  : {};
 ---
 
 <li class="ad" data-tone={tone}>
@@ -29,6 +27,15 @@ const linkAttrs = external ? { target: "_blank", rel: "noopener noreferrer" } : 
     </span>
     <span class="title">{title}</span>
     {summary && <span class="summary">{summary}</span>}
+    {
+      tags.length > 0 && (
+        <span class="resource-tags">
+          {tags.map((tag) => (
+            <span>{tag}</span>
+          ))}
+        </span>
+      )
+    }
     {external && <span class="visually-hidden">(opens in a new tab)</span>}
   </a>
   {
@@ -47,6 +54,18 @@ const linkAttrs = external ? { target: "_blank", rel: "noopener noreferrer" } : 
 </li>
 
 <style>
+  .resource-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    font-size: 0.65rem;
+    color: var(--page-muted);
+  }
+  .resource-tags span {
+    padding: 2px 5px;
+    border: 1px solid var(--page-border);
+    border-radius: 3px;
+  }
   .ad {
     display: flex;
     flex-direction: column;
