@@ -1,15 +1,27 @@
 {
   "name": "Field Guide",
-  "description": "Adventurous engineering and trail-side dev stories.",
+  "description": "Adventurous engineering",
   "kicker": "trail-side dev stories",
   "accent": "#1f7a8c",
   "paperAccent": "#17616f",
   "featured": true,
   "sections": [
-    { "id": "trail", "label": "Trail" },
-    { "id": "build", "label": "Build" },
-    { "id": "lab", "label": "Lab" },
-    { "id": "dispatch", "label": "Dispatch" }
+    {
+      "id": "trail",
+      "label": "Trail"
+    },
+    {
+      "id": "build",
+      "label": "Build"
+    },
+    {
+      "id": "lab",
+      "label": "Lab"
+    },
+    {
+      "id": "dispatch",
+      "label": "Dispatch"
+    }
   ],
   "cover": {
     "template": "field-notes",
